@@ -93,13 +93,13 @@ function renderRequests(requestsToRender) {
                             <button class="cancel-btn requests-buttons">
                                 Cancelar
                             </button>
-                            <button class="view-details-btn requests-buttons">
+                            <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id})">
                                 Ver detalles
                             </button>
                         </div>
                     `
                     : `
-                        <button class="view-details-btn requests-buttons">
+                        <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id})">
                             Ver detalles
                         </button>
                     `;
@@ -158,6 +158,215 @@ statusTabs.forEach(tab => {
         filterRequests();
     });
 });
+
+
+
+
+
+
+
+/* DETAILES */
+
+// Updated view details function to show detailed view within same page
+function viewDetails(requestId) {
+    const request = requests.find(r => r.id === requestId);
+    if (!request) return;
+    
+    showDetailedView(request);
+}
+
+// Added function to show detailed view
+function showDetailedView(request) {
+    // Hide main content
+    const main_content_div = document.querySelector('.main-content')
+    // Create detailed view
+    const detailView = document.createElement('div');
+    detailView.className = 'detail-view';
+    detailView.innerHTML = createDetailedViewHTML(request);
+    
+    // Add to container
+    main_content_div.insertAdjacentElement('afterend',detailView);
+    main_content_div.style.display = 'none';
+    
+}
+
+// Added function to create detailed view HTML
+function createDetailedViewHTML(request) {
+    // Create timeline phases based on status
+    let timelinePhases = [];
+    
+    // Phase 1: Always present
+    timelinePhases.push({
+        title: "Solicitud Enviada",
+        date: request.fecha_solicitud,
+        description: "Tu solicitud ha sido enviada y está en cola para revisión.",
+        status: "completed",
+        icon: "📤"
+    });
+    
+    // Phase 2: Based on status
+    if (request.estado === 'pendiente') {
+        timelinePhases.push({
+            title: "Solicitud en Revisión",
+            date: request.fecha_vista || "En proceso",
+            description: "Tu solicitud está siendo revisada por el equipo de recursos humanos.",
+            status: "current",
+            icon: "👀"
+        });
+        timelinePhases.push({
+            title: "Decisión Pendiente",
+            date: "Por determinar",
+            description: "Esperando decisión final sobre tu solicitud.",
+            status: "pending",
+            icon: "⏳"
+        });
+    } else if (request.estado === 'aprobada') {
+        timelinePhases.push({
+            title: "Solicitud Revisada",
+            date: request.fecha_vista || request.fecha_solicitud,
+            description: "Tu solicitud ha sido revisada completamente.",
+            status: "completed",
+            icon: "👀"
+        });
+        timelinePhases.push({
+            title: "Solicitud Aprobada",
+            date: request.fecha_inicio,
+            description: "¡Felicidades! Tu solicitud ha sido aprobada.",
+            status: "completed",
+            icon: "✅"
+        });
+    } else if (request.estado === 'rechazada') {
+        timelinePhases.push({
+            title: "Solicitud Revisada",
+            date: request.fecha_vista || request.fecha_solicitud,
+            description: "Tu solicitud ha sido revisada completamente.",
+            status: "completed",
+            icon: "👀"
+        });
+        timelinePhases.push({
+            title: "Solicitud Rechazada",
+            date: request.fecha_inicio,
+            description: "Tu solicitud no pudo ser aprobada en esta ocasión.",
+            status: "rejected",
+            icon: "❌"
+        });
+    }
+
+    return `
+        <div class="detail-main-content">
+            <!-- Header with back button -->
+            <div class="detail-header">
+                <button class="back-btn" onclick="goBackToList()">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+                    </svg>
+                    Volver a Solicitudes
+                </button>
+                <h1>Detalles de Solicitud</h1>
+            </div>
+
+            <!-- Request Details Card -->
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <div class="detail-icon">
+                        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z"/>
+                        </svg>
+                    </div>
+                    <div class="detail-title-section">
+                        <h2>${request.asunto}</h2>
+                        <div class="status-badge-large ${request.estado}">
+                            ${request.estado === 'aprobada' ? '✓' : request.estado === 'pendiente' ? '⏳' : '✗'}
+                            ${statusLabels[request.estado]}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-info-grid">
+                    <div class="detail-section">
+                        <h3>Descripción</h3>
+                        <div class="detail-description">
+                            ${request.descripcion}
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Tipo de Solicitud</h3>
+                        <span class="type-badge">${request.tipo}</span>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Fechas</h3>
+                        <div class="dates-grid">
+                            <div class="date-item">
+                                <div class="date-label">Fecha de Solicitud</div>
+                                <div class="date-value">${request.fecha_solicitud}</div>
+                            </div>
+                            ${request.fecha_vista ? `
+                                <div class="date-item">
+                                    <div class="date-label">Fecha de Revisión</div>
+                                    <div class="date-value">${request.fecha_vista}</div>
+                                </div>
+                            ` : ''}
+                            <div class="date-item">
+                                <div class="date-label">Fecha de Inicio</div>
+                                <div class="date-value">${request.fecha_inicio}</div>
+                            </div>
+                            <div class="date-item">
+                                <div class="date-label">Fecha de Fin</div>
+                                <div class="date-value">${request.fecha_fin}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Section -->
+            <div class="timeline-section">
+                <h2>Historial de la Solicitud</h2>
+                <div class="timeline">
+                    ${timelinePhases.map((phase, index) => `
+                        <div class="timeline-item ${phase.status}">
+                            <div class="timeline-marker">
+                                <span class="timeline-icon">${phase.icon}</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h3>${phase.title}</h3>
+                                    <span class="timeline-date">${phase.date}</span>
+                                </div>
+                                <p>${phase.description}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Added function to go back to main list
+function goBackToList() {
+    const detailView = document.querySelector('.detail-view');
+    if (detailView) {
+        detailView.remove();
+    }
+    document.querySelector('.main-content').style.display = 'block';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Initial render
 renderRequests(filteredRequests);
