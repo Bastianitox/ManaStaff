@@ -1,4 +1,5 @@
 const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const logoutButton = document.getElementById("logout-btn");
 const sidebar = document.getElementById("sidebar");
 const mobileOverlay = document.getElementById("mobileOverlay");
 
@@ -15,3 +16,7 @@ mobileOverlay.addEventListener("click", () => {
     mobileOverlay.classList.remove("active");
     mobileMenuBtn.classList.remove("hidden"); 
 });
+
+logoutButton.onclick = function () {
+    window.location.href = "/";
+};
