@@ -36,15 +36,22 @@ body {
 }
 
 .logo-icon {
+    background: white;
+    border-radius: 8px;
     width: 40px;
     height: 40px;
-    background: #4299e1;
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
+}
+
+.logo-img {
+    width: 100%;
+    height: 100%;
+    background-image: url('../img/logo.png');
+    background-size: contain; 
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .logo-text {
@@ -156,9 +163,93 @@ body {
     color: white;
 }
 
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px 40px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 32px;
+    color: #1e40af;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+
+/* mobile */ 
+
+
+/* Botón hamburguesa */
+.mobile-menu-btn {
+    opacity: 1;
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 1s opacity;
+}
+
+.mobile-menu-btn span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background: #062f63;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Overlay oscuro detrás del menú */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 900;
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hidden {
+    display: none !important;
+    opacity: 0;
+}
+
+/* Mostrar botón solo en móvil */
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+    }
+}
 
 @media (max-width: 768px) {
     .sidebar {
+        transition: all 0.3s ease;
         position: fixed;
         left: -280px;
         z-index: 1000;
@@ -171,5 +262,10 @@ body {
 
     .main-content {
         margin-left: 0;
+        padding: 0;
+    }
+
+    .sidebar.mobile-open ~ .mobile-menu-btn {
+        display: none;
     }
 }
