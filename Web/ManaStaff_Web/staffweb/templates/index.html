@@ -9,11 +9,38 @@
 
     <link rel="stylesheet" href="{% static 'staffweb/js/index.js' %}">
  
-    <title>Document</title>
+    <title>Login - ManaStaff</title>
 </head>
 <body>
+    <div class="container">
+        <div class="login-box">
+          <!-- Columna Izquierda -->
+          <div class="login-left">
+            <img src="logo.png" alt="ManaStaff Logo">
+            <h2>MANA STAFF</h2>
+            <p>Para iniciar sesión introduce tu usuario y contraseña.</p>
     
-    a
-
+            <form>
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="Introduce tu correo">
+    
+              <label for="password">Contraseña</label>
+              <input type="password" id="password" placeholder="Introduce tu contraseña">
+    
+              <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+              <button type="submit">Iniciar sesión</button>
+            </form>
+          </div>
+    
+          <!-- Columna Derecha -->
+          <div class="login-right">
+            <img src="logo.png" alt="ManaStaff Logo">
+            <div>
+              <h1>MANA</h1>
+              <span>STAFF</span>
+            </div>
+          </div>
+        </div>
+      </div>
 </body>
 </html>
