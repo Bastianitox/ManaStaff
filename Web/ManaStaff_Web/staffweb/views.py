@@ -10,3 +10,15 @@ def recuperar_contrasena(request):
 
 def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
+
+def inicio_documentos(request):
+    return render(request, 'staffweb/inicio_documentos.html')
+    
+def inicio_perfil(request):
+    return render(request, 'staffweb/inicio_perfil.html')
+    
+def inicio_noticias_eventos(request):
+    return render(request, 'staffweb/inicio_noticias_eventos.html')
+    
+def inicio_dashboard(request):
+    return render(request, 'staffweb/inicio_dashboard.html')

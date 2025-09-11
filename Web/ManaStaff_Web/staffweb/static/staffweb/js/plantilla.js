@@ -15,11 +15,3 @@ mobileOverlay.addEventListener("click", () => {
     mobileOverlay.classList.remove("active");
     mobileMenuBtn.classList.remove("hidden"); 
 });
-
-// Ya tienes setActive, lo dejamos
-function setActive(element) {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    element.classList.add('active');
-}
