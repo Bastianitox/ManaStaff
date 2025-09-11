@@ -4,3 +4,6 @@ from django.shortcuts import render
 
 def index(request):
     return render(request, 'staffweb/index.html')
+
+def recuperar_contrasena(request):
+    return render(request, 'staffweb/recuperar_contrasena.html')

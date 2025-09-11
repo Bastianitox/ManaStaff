@@ -1,0 +1,42 @@
+{% csrf_token %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- STATIC CSS -->
+    <link rel="stylesheet" href="{% static 'staffweb/css/recuperar_contrasena.css' %}">
+    <link rel="stylesheet" href="{% static 'staffweb/js/recuperar_contrasena.js' %}">
+ 
+    <title>Recuperar Contraseña - ManaStaff</title>
+</head>
+<body>
+    
+    <div class="container">
+        <!-- Sección izquierda: Formulario -->
+         <div class="left-section">
+            <h2>Recuperar Contraseña</h2>
+            <p>Introduce tu correo electrónico para recibir un código de verificación.</p>
+            <form method="POST">
+                <div class="input-group">
+                    <input type="email" name="email" placeholder="Correo electrónico" required>
+                </div>
+                <button type="submit" class="button">Enviar código</button>
+            </form>
+            <div class="back-link">
+                <a href="{% url 'index' %}"> Volver al inicio de sesión</a>
+            </div>
+         </div>
+
+         <!-- Sección derecha: logo -->
+          <div class="right-section">
+            <div class="logo">
+                <img src="" alt="Logo ManaStaff">
+                <h1>ManaStaff</h1>
+            </div>
+          </div>
+    </div>
+
+</body>
+</html>
