@@ -8,6 +8,7 @@ const requests = [
         fecha_solicitud: "8 de agosto, 2025",
         fecha_inicio: "15 Agosto, 2025",
         fecha_fin: "20 Agosto, 2025",
+        archivo: null,
         tipo: "vacaciones"
     },
     {
@@ -18,6 +19,7 @@ const requests = [
         fecha_solicitud: "8 de agosto, 2025",
         fecha_inicio: "15 Agosto, 2025",
         fecha_fin: "20 Agosto, 2025",
+        archivo: null,
         tipo: "administrativo"
     },
     {
@@ -28,6 +30,7 @@ const requests = [
         fecha_solicitud: "8 de agosto, 2025",
         fecha_inicio: "15 Agosto, 2025",
         fecha_fin: null,
+        archivo: 'licencia.pdf',
         tipo: "salud"
     },
     {
@@ -38,6 +41,7 @@ const requests = [
         fecha_solicitud: "8 de agosto, 2025",
         fecha_inicio: null,
         fecha_fin: null,
+        archivo: null,
         tipo: "equipo"
     },
     {
@@ -48,6 +52,7 @@ const requests = [
         fecha_solicitud: "20 de agosto, 2025",
         fecha_inicio: "22 Agosto, 2025",
         fecha_fin: "23 Agosto, 2025",
+        archivo: 'capacitacion_plan.pdf',
         tipo: "equipo"
     }
 ];
@@ -82,9 +87,20 @@ function renderRequests(requestsToRender) {
 
     requestsGrid.innerHTML = requestsToRender.map(request => {
         // Create date range display
-                const dateRange = request.fecha_inicio === request.fecha_fin 
-                    ? request.fecha_inicio 
-                    : `${request.fecha_inicio} - ${request.fecha_fin}`;
+                let dateRange;
+
+                if (!request.fecha_inicio && !request.fecha_fin) {
+                    dateRange = "En revisión";
+                } else if (request.fecha_inicio && !request.fecha_fin) {
+                    dateRange = `${request.fecha_inicio} - Decisión pendiente`;
+                } else if (request.fecha_inicio === request.fecha_fin) {
+                    dateRange = request.fecha_inicio;
+                } else {
+                    dateRange = `${request.fecha_inicio} - ${request.fecha_fin}`;
+                }
+
+
+
 
                 // Create buttons based on status
                 const buttons = request.estado === 'pendiente' 
@@ -295,6 +311,23 @@ function createDetailedViewHTML(request) {
                         <h3>Tipo de Solicitud</h3>
                         <span class="type-badge">${request.tipo}</span>
                     </div>
+
+                    ${request.archivo ? `
+                    <div class="detail-section">
+                        <h3>Archivos subidos</h3>
+                        <div id="uploadedFile" class="uploaded-file">
+                            <svg class="file-icon" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+                            </svg>
+                            <div class="file-info">
+                                <div class="file-name">${request.archivo}</div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+
+
 
                     <div class="detail-section">
                         <h3>Fechas</h3>
