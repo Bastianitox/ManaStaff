@@ -1,2 +1,10 @@
 {% extends 'staffweb/plantilla.html' %}
 {% load static %}
+
+{% block head %}
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/inicio_documentos.css' %}">
+<link rel="stylesheet" href="{% static 'staffweb/js/inicio_documentos.js' %}">
+
+<title>Documentos</title>
+{% endblock head %}
