@@ -23,5 +23,5 @@ def inicio_noticias_eventos(request):
 def inicio_dashboard(request):
     return render(request, 'staffweb/inicio_dashboard.html')
     
-def pagina_crear_solicitud(request):
-    return render(request, 'staffweb/pagina_crear_solicitud.html')
+def crear_solicitud(request):
+    return render(request, 'staffweb/crear_solicitud.html')
