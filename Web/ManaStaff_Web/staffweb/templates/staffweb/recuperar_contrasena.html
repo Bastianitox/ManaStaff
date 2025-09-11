@@ -15,29 +15,34 @@
 <body>
     
     <div class="container">
-        <!-- Sección izquierda: Formulario -->
-         <div class="left-section">
-            <h2>Recuperar Contraseña</h2>
-            <p>Introduce tu correo electrónico para recibir un código de verificación.</p>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="input-group">
-                    <input type="email" name="email" placeholder="Correo electrónico" required>
-                </div>
-                <button type="submit" class="button">Enviar código</button>
-            </form>
-            <div class="back-link">
-                <a href="{% url 'index' %}"> Volver al inicio de sesión</a>
-            </div>
-         </div>
+      <div class="recover-box">
 
-         <!-- Sección derecha: logo -->
-          <div class="right-section">
-            <div class="logo">
-                <img src="{% static 'staffweb/img/logo.png' %}" alt="Logo ManaStaff">
-                <h1>ManaStaff</h1>
-            </div>
+        <!--Sección izquierda, formulario de recuperación-->
+        <div class="recover-left">
+          <img src="{% static 'staffweb/img/logo.png' %}" alt="Logo ManaStaff">
+          <h2>Recuperar contraseña</h2>
+          <p>Introduce tu correo electrónico y te enviaremos un código para restaurar tu cuenta.</p>
+
+          <form action="/enviar-codigo" method="POST">
+            {% csrf_token %}
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" placeholder="tu@correo.com" required>
+            <button type="submit">Enviar código</button>
+          </form>
+          <a class="back-login" href="index.html">Volver al inicio de sesión</a>
+        </div>
+
+        <!--Sección derecha, logo-->
+        <div class="recover-right">
+          <div class="logo-box">
+            <img src="{% static 'staffweb/img/logo.png' %}" alt="Logo ManaStaff">
           </div>
+          <div class="brand-text">
+            <h1>MANA</h1>
+            <span>STAFF</span>
+          </div>
+        </div>
+      </div>
     </div>
 
 </body>
