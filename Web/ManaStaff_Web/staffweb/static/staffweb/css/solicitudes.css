@@ -1,3 +1,26 @@
+.new-request-btn {
+    right: 0;
+    position: absolute;
+    width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    text-decoration: none;
+}
+
+.new-request-btn:hover {
+    background: #1e3a8a;
+}
+
 /* FITRO Y BUSCADOR */
 .search-filter-section {
     display: flex;
