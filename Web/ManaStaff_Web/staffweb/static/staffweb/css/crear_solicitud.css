@@ -1,0 +1,257 @@
+/* Main Content */
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    text-decoration: none;
+}
+
+.back-btn:hover {
+    background: #1e3a8a;
+}
+
+.header h1 {
+    font-size: 32px;
+    color: #1e40af;
+    margin: 0;
+}
+
+/* Form Container */
+.form-container {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    max-width: 800px;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.form-section h2 {
+    font-size: 20px;
+    color: #1f2937;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-icon {
+    width: 24px;
+    height: 24px;
+    color: #1e40af;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.required {
+    color: #ef4444;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    font-family: inherit;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+/* File Upload */
+.file-upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    background: #f9fafb;
+}
+
+.file-upload-area:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.file-upload-area.dragover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.upload-icon {
+    width: 48px;
+    height: 48px;
+    color: #6b7280;
+    margin: 0 auto 16px;
+}
+
+.upload-text {
+    font-size: 16px;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.upload-subtext {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.file-input {
+    display: none;
+}
+
+.uploaded-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.file-icon {
+    width: 20px;
+    height: 20px;
+    color: #0284c7;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-secondary {
+    padding: 12px 24px;
+    background: #f3f4f6;
+    color: #374151;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.btn-primary {
+    padding: 12px 24px;
+    background: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background: #1e3a8a;
+}
+
+.btn-primary:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Success Message */
+.success-message {
+    display: none;
+    background: #d1fae5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.success-message.show {
+    display: block;
+}
+
+/* Error Message */
+.error-message {
+    display: none;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.error-message.show {
+    display: block;
+}
