@@ -115,7 +115,7 @@ function handleSubmit(e) {
         
         // Redirect after 2 seconds
         setTimeout(() => {
-            window.location.href = 'solicitudes.html';
+            window.location.href = '/inicio_solicitudes';
         }, 2000);
     }, 1500);
 }
