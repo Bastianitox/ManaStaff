@@ -29,13 +29,13 @@
             <input type="email" id="email" name="email" placeholder="tu@correo.com" required>
             <button type="submit">Enviar código</button>
           </form>
-          <a class="back-login" href="">Volver al inicio de sesión</a>
+          <a class="back-login" href="{% url 'index' %}">Volver al inicio de sesión</a>
         </div>
 
         <!--Sección derecha, logo-->
         <div class="recover-right">
           <div class="logo-box">
-            <img src="{% static 'staffweb/img/logo.png' %}" alt="Logo ManaStaff">
+            <div class="img-logo"></div>
           </div>
           <div class="brand-text">
             <h1>MANA</h1>
