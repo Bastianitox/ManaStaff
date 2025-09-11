@@ -12,10 +12,23 @@
     {% endblock head %}
 </head>
 <body>
+
+    <!-- Botón hamburguesa -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <div class="logo-icon">M</div>
+                <div class="logo-icon">
+                    <div class="logo-img"></div>
+                </div>
                 <div class="logo-text">MANA STAFF</div>
             </div>
         </div>
@@ -84,9 +97,12 @@
             </button>
         </div>
     </div>
+
+
+    <div class="main-content">
         {% block principal %}
         {% endblock principal %}
-
+    </div>
         
     <!-- STATIC CSS -->
     <script src="{% static 'staffweb/js/plantilla.js' %}"></script>
