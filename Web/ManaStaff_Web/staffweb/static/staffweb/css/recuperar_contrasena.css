@@ -1,0 +1,93 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #003366, #ffffff);
+    display: flex;
+    height: 100vh;
+}
+
+/* Contenedor principal dividido en dos */
+.container {
+    display: flex;
+    width: 100%;
+}
+
+/* Sección izquierda: formulario */
+.left-section {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #ffffff;
+}
+
+.left-section h2 {
+    color: #003366;
+    margin-bottom: 20px;
+}
+
+.left-section p {
+    color: #666666;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.button {
+    background-color: #003366;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #003366;
+}
+
+.back-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-link a {
+    color: #0052cc;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* Sección derecha: logo */
+.right-section {
+    flex: 1;
+    background-color: #003366;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo {
+    text-align: center;
+}
+
+.logo img {
+    width: 200px;
+    margin-bottom: 20px;
+}
+
+.logo h1 {
+    color: #ffffff;
+    font-size: 50px;
+}
