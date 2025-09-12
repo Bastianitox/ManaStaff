@@ -1,2 +1,97 @@
 {% extends 'staffweb/plantilla.html' %}
 {% load static %}
+
+{% block head %}
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/inicio_dashboard.css' %}">
+<title>Dashboard</title>
+{% endblock head %}
+
+{% block principal %}
+
+<div class="header">
+    <h1>Dashboard</h1>
+    <p>¡Revisa aquí que la actividad de ManaStaff!</p>
+    
+</div>
+
+<section class="dashboard-rapido">
+    <!-- Métricas rápidas -->
+  <div class="dashboard-cards">
+    <div class="card">
+      <h3>Solicitudes Totales</h3>
+      <p>150</p>
+    </div>
+    <div class="card">
+      <h3>Documentos Disponibles</h3>
+      <p>320</p>
+    </div>
+    <div class="card">
+      <h3>Usuarios Regulares</h3>
+      <p>58</p>
+    </div>
+    <div class="card">
+      <h3>Tiempo Promedio de Respuesta</h3>
+      <p>3.2 días</p>
+    </div>
+  </div>
+</section>
+<div class="dashboard">
+
+      <!-- Solicitudes por estado -->
+      <div class="card">
+        <h3>Solicitudes por Estado</h3>
+        <canvas id="statusChart"></canvas>
+      </div>
+
+      <!-- Tiempo de respuesta -->
+      <div class="card">
+        <h3>Tiempo de Respuesta Promedio</h3>
+        <canvas id="responseTimeChart"></canvas>
+      </div>
+
+      <!-- Documentos disponibles -->
+      <div class="card">
+        <h3>Documentos Cargados por Mes</h3>
+        <canvas id="documentsChart"></canvas>
+      </div>
+
+      <!-- Tipo de solicitudes -->
+      <div class="card">
+        <h3>Tipo de Solicitudes</h3>
+        <canvas id="typeChart"></canvas>
+      </div>
+
+      <!-- Usuarios con más solicitudes -->
+      <div class="card">
+        <h3>Usuarios con Más Solicitudes</h3>
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Solicitudes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Luciano Torrejón</td><td>15</td></tr>
+            <tr><td>María Pérez</td><td>12</td></tr>
+            <tr><td>Carlos Díaz</td><td>9</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Tasa de aprobación / rechazo en el tiempo -->
+      <div class="card">
+        <h3>Tasa Aprobación / Rechazo</h3>
+        <canvas id="approvalRateChart"></canvas>
+      </div>
+      
+    </div>
+
+  </div>
+{% endblock principal %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'staffweb/js/inicio_dashboard.js' %}"></script>
+{% endblock js %}

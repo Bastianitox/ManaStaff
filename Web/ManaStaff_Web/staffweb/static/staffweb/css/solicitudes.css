@@ -294,7 +294,6 @@
 }
 
 
-/* Ajustes para pantallas pequeñas */
 @media (max-width: 768px) {
     .new-request-btn {
         max-width: 300p;
