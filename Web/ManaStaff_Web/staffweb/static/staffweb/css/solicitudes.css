@@ -292,3 +292,25 @@
     font-weight: 500;
     color: #0f172a;
 }
+
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    .new-request-btn {
+        max-width: 300p;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .status-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+}
