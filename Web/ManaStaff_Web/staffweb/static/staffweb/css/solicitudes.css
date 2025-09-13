@@ -217,6 +217,16 @@
     color: #991b1b;
 }
 
+.status-badge.noticia {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.aviso {
+    background: #fef3c7;
+    color: #92400e;
+}
+
 .requests-buttons{
     width: 100%;
     padding: 12px;
