@@ -4,31 +4,22 @@
 {% block head %}
 <!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/inicio_documentos.css' %}">
-<link rel="stylesheet" href="{% static 'staffweb/js/inicio_documentos.js' %}">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<!-- Modified Tailwind config to be more specific and avoid conflicts -->
+
 <script>
-    tailwind.config = {
-        corePlugins: {
-            preflight: false, // Disable Tailwind's base styles reset
-        },
-        theme: {
-            extend: {
-                colors: {
-                    'azul-principal': '#2563eb',
-                    'azul-claro': '#3b82f6',
-                    'celeste': '#0ea5e9',
-                    'celeste-claro': '#38bdf8'
-                }
+    tailwind = {
+        config: {
+            corePlugins: {
+                preflight: false
             }
         }
     }
 </script>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <title>Documentos</title>
-
 {% endblock head %}
 
 {% block principal %}
@@ -37,195 +28,152 @@
     <p>Accede y descarga tus archivos</p>   
 </div>
 
-<!-- Search and Filter Section -->
+<!-- SECCIÓN DE BUSCADOR Y FILTRO -->
 <div class="search-filter-section">
     <div class="search-container">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <input type="text" class="search-input" placeholder="Busca tus archivos..." id="searchInput">
     </div>
     <button class="filter-btn" id="filterBtn">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
+            <path fill-rule="evenodd" 
+                  d="M3 3a1 1 0 011-1h12a1 1 0 
+                     011 1v3a1 1 0 01-.293.707L12 
+                     11.414V15a1 1 0 01-.293.707l-2 
+                     2A1 1 0 018 17v-5.586L3.293 
+                     6.707A1 1 0 013 6V3z"/>
         </svg>
         Filtrar
     </button>
 </div>
 
 <!-- Grid de Documentos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Documento 1 -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="bg-red-100 p-3 rounded-lg">
-                        <i class="fas fa-file-pdf text-red-600 text-2xl"></i>
+<div class="document-grid">
+    <!-- Documento 1 -->
+    <div class="document-card">
+        <div class="document-header">
+            <div class="icon bg-red">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="document-info">
+                <h3>Contrato de trabajo</h3>
+                <div class="details">
+                    <div class="tags">
+                        <span class="tag">PDF</span>
+                        <span>2.4MB</span>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-azul-principal text-lg mb-2">Contrato de trabajo</h3>
-                        <div class="text-sm text-gray-500 space-y-1">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">PDF</span>
-                                <span>2.4MB</span>
-                            </div>
-                            <p>15 Diciembre, 2024</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-azul-principal hover:bg-azul-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-eye"></i>
-                        Mirar
-                    </button>
-                    <button class="flex-1 bg-celeste hover:bg-celeste-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Descargar
-                    </button>
+                    <p>15 Diciembre, 2024</p>
                 </div>
             </div>
+        </div>
+        <div class="document-actions">
+            <button class="btn view">
+                <i class="fas fa-eye"></i> Mirar
+            </button>
+            <button class="btn download">
+                <i class="fas fa-download"></i> Descargar
+            </button>
+        </div>
+    </div>
 
-            <!-- Documento 2 -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <i class="fas fa-file-word text-blue-600 text-2xl"></i>
+    <!-- Documento 2 -->
+    <div class="document-card">
+        <div class="document-header">
+            <div class="icon bg-blue">
+                <i class="fas fa-file-word"></i>
+            </div>
+            <div class="document-info">
+                <h3>Carta de recomendación</h3>
+                <div class="details">
+                    <div class="tags">
+                        <span class="tag">DOCX</span>
+                        <span>1.2MB</span>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-azul-principal text-lg mb-2">Carta de recomendación</h3>
-                        <div class="text-sm text-gray-500 space-y-1">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">DOCX</span>
-                                <span>1.2MB</span>
-                            </div>
-                            <p>10 Diciembre, 2024</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-azul-principal hover:bg-azul-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-eye"></i>
-                        Mirar
-                    </button>
-                    <button class="flex-1 bg-celeste hover:bg-celeste-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Descargar
-                    </button>
+                    <p>10 Diciembre, 2024</p>
                 </div>
             </div>
+        </div>
+        <div class="document-actions">
+            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
+            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
+        </div>
+    </div>
 
-            <!-- Documento 3 -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <i class="fas fa-file-excel text-green-600 text-2xl"></i>
+    <!-- Documento 3 -->
+    <div class="document-card">
+        <div class="document-header">
+            <div class="icon bg-green">
+                <i class="fas fa-file-excel"></i>
+            </div>
+            <div class="document-info">
+                <h3>Nómina Diciembre</h3>
+                <div class="details">
+                    <div class="tags">
+                        <span class="tag">XLSX</span>
+                        <span>856KB</span>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-azul-principal text-lg mb-2">Nómina Diciembre</h3>
-                        <div class="text-sm text-gray-500 space-y-1">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">XLSX</span>
-                                <span>856KB</span>
-                            </div>
-                            <p>8 Diciembre, 2024</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-azul-principal hover:bg-azul-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-eye"></i>
-                        Mirar
-                    </button>
-                    <button class="flex-1 bg-celeste hover:bg-celeste-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Descargar
-                    </button>
+                    <p>8 Diciembre, 2024</p>
                 </div>
             </div>
+        </div>
+        <div class="document-actions">
+            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
+            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
+        </div>
+    </div>
+    
+    <!-- Documento 2 -->
+    <div class="document-card">
+        <div class="document-header">
+            <div class="icon bg-blue">
+                <i class="fas fa-file-word"></i>
+            </div>
+            <div class="document-info">
+                <h3>Carta de recomendación</h3>
+                <div class="details">
+                    <div class="tags">
+                        <span class="tag">DOCX</span>
+                        <span>1.2MB</span>
+                    </div>
+                    <p>10 Diciembre, 2024</p>
+                </div>
+            </div>
+        </div>
+        <div class="document-actions">
+            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
+            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
+        </div>
+    </div>
 
-            <!-- Documento 4 -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="bg-red-100 p-3 rounded-lg">
-                        <i class="fas fa-file-pdf text-red-600 text-2xl"></i>
+    <!-- Documento 2 -->
+    <div class="document-card">
+        <div class="document-header">
+            <div class="icon bg-blue">
+                <i class="fas fa-file-word"></i>
+            </div>
+            <div class="document-info">
+                <h3>Carta de recomendación</h3>
+                <div class="details">
+                    <div class="tags">
+                        <span class="tag">DOCX</span>
+                        <span>1.2MB</span>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-azul-principal text-lg mb-2">Certificado médico</h3>
-                        <div class="text-sm text-gray-500 space-y-1">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">PDF</span>
-                                <span>3.1MB</span>
-                            </div>
-                            <p>5 Diciembre, 2024</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-azul-principal hover:bg-azul-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-eye"></i>
-                        Mirar
-                    </button>
-                    <button class="flex-1 bg-celeste hover:bg-celeste-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Descargar
-                    </button>
+                    <p>10 Diciembre, 2024</p>
                 </div>
             </div>
+        </div>
+        <div class="document-actions">
+            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
+            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
+        </div>
+    </div>
+</div>
+{% endblock principal %}
 
-            <!-- Documento 5 -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="bg-purple-100 p-3 rounded-lg">
-                        <i class="fas fa-file-image text-purple-600 text-2xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-azul-principal text-lg mb-2">Foto de perfil</h3>
-                        <div class="text-sm text-gray-500 space-y-1">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">JPG</span>
-                                <span>1.8MB</span>
-                            </div>
-                            <p>1 Diciembre, 2024</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-azul-principal hover:bg-azul-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-eye"></i>
-                        Mirar
-                    </button>
-                    <button class="flex-1 bg-celeste hover:bg-celeste-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Descargar
-                    </button>
-                </div>
-            </div>
 
-            <!-- Documento 6 -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="bg-orange-100 p-3 rounded-lg">
-                        <i class="fas fa-file-powerpoint text-orange-600 text-2xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-azul-principal text-lg mb-2">Presentación proyecto</h3>
-                        <div class="text-sm text-gray-500 space-y-1">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">PPTX</span>
-                                <span>4.7MB</span>
-                            </div>
-                            <p>28 Noviembre, 2024</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-azul-principal hover:bg-azul-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-eye"></i>
-                        Mirar
-                    </button>
-                    <button class="flex-1 bg-celeste hover:bg-celeste-claro text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Descargar
-                    </button>
-                </div>
-            </div>
-{% endblock principal %}    
+{% block js %}
+    <script src="{% static 'staffweb/js/inicio_solicitudes.js' %}"></script>
+{% endblock js %}
