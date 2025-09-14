@@ -1,2 +1,65 @@
 {% extends 'staffweb/plantilla.html' %}
 {% load static %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="{% static 'staffweb/img/logo.png' %}" alt="ManaStaff Logo">
+      <h2>MANA <span>STAFF</span></h2>
+    </div>
+
+    <nav class="menu">
+      <a href="#" class="item"><i>📄</i> Mis documentos</a>
+      <a href="#" class="item"><i>✈️</i> Solicitudes</a>
+      <a href="#" class="item active"><i>👤</i> Perfil</a>
+      <a href="#" class="item"><i>🔔</i> Noticias y Eventos</a>
+      <a href="#" class="item"><i>📊</i> Dashboard</a>
+    </nav>
+
+    <div class="user-info">
+      <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto usuario">
+      <div>
+        <p class="name">Luciano Torrejón</p>
+        <span class="role">Representante de Envíos</span>
+      </div>
+    </div>
+
+    <a href="#" class="logout">⏻ Cerrar sesión</a>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+    <h1>Perfil</h1>
+    <p class="subtitle">Aquí puedes ver y modificar tus datos</p>
+
+    <div class="profile-box">
+      <div class="form">
+        <h2>Mis datos</h2>
+
+        <label>Nombre Completo</label>
+        <input type="text" value="Luciano Ignacio" disabled>
+
+        <label>Apellidos</label>
+        <input type="text" value="Torrejón Díaz" disabled>
+
+        <label>RUT</label>
+        <input type="text" value="19.753.951-K" disabled>
+
+        <label>Número de celular</label>
+        <input type="text" value="945838563">
+
+        <label>Dirección</label>
+        <input type="text" value="Las Colombas 1234, Quilicura">
+      </div>
+
+      <div class="profile-pic">
+        <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil">
+        <button>Cambiar foto de perfil</button>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

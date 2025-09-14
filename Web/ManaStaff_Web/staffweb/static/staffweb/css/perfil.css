@@ -1,0 +1,153 @@
+/* Contenedor general */
+.contenedor {
+  display: flex;
+  min-height: 100vh;
+  background: #f8f9fd;
+  font-family: Arial, sans-serif;
+}
+
+/* Barra lateral */
+.barra-lateral {
+  width: 250px;
+  background: #002b5c;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.barra-lateral .logo {
+  text-align: center;
+}
+
+.barra-lateral .logo img {
+  width: 50px;
+}
+
+.barra-lateral .logo h2 {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+.menu {
+  margin-top: 30px;
+}
+
+.menu .item {
+  display: block;
+  padding: 10px;
+  color: white;
+  text-decoration: none;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.menu .item:hover,
+.menu .item.activo {
+  background: #004080;
+}
+
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.usuario-info img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+}
+
+.nombre {
+  font-weight: bold;
+}
+
+.rol {
+  font-size: 12px;
+  color: #ccc;
+}
+
+.cerrar-sesion {
+  display: block;
+  margin-top: 20px;
+  color: #ff4d4d;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* Contenido */
+.contenido {
+  flex: 1;
+  padding: 40px;
+}
+
+.contenido h1 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.subtitulo {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* Caja de perfil */
+.perfil-caja {
+  display: flex;
+  justify-content: space-between;
+  background: #e8f0ff;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.formulario {
+  width: 60%;
+}
+
+.formulario h2 {
+  margin-bottom: 20px;
+}
+
+.formulario label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.formulario input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Foto de perfil */
+.perfil-foto {
+  text-align: center;
+}
+
+.perfil-foto img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.perfil-foto button {
+  background: #004080;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.perfil-foto button:hover {
+  background: #002b5c;
+}
