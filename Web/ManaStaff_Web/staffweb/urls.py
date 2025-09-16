@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
+from .views import ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
 
 urlpatterns = [
 
@@ -12,5 +12,6 @@ urlpatterns = [
     path('inicio_noticias_eventos',inicio_noticias_eventos,name="inicio_noticias_eventos"),
     path('inicio_dashboard',inicio_dashboard,name="inicio_dashboard"),
     path('crear_solicitud',crear_solicitud,name="crear_solicitud"),
+    path('ver_documentos',ver_documentos,name="ver_documentos"),
 
 ]

@@ -161,8 +161,24 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".view-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
       const documentTitle = this.closest(".document-card").querySelector(".document-title").textContent
-      alert(`Visualizando: ${documentTitle}`)
-      // Aquí puedes agregar la lógica para abrir el documento
+
+      // Mapear títulos de documentos a archivos PDF
+      const documentFiles = {
+        "Contrato de trabajo": "contrato_trabajo.pdf",
+        "Certificado médico": "certificado_medico.pdf",
+        "Nómina Noviembre": "nomina_noviembre.pdf",
+        "Vacaciones 2024": "vacaciones_2024.pdf",
+        "Seguro médico": "seguro_medico.pdf",
+        "Evaluación anual": "evaluacion_anual.pdf",
+      }
+
+      // Obtener nombre del archivo o usar uno por defecto
+      const fileName = documentFiles[documentTitle] || "documento.pdf"
+      const pdfPath = `/static/pdf/${fileName}`
+
+      // Redirigir a la página de visualización con parámetros
+      const viewerUrl = `/ver_documentos/?doc=${encodeURIComponent(documentTitle)}&path=${encodeURIComponent(pdfPath)}`
+      window.location.href = viewerUrl
     })
   })
 
