@@ -4,176 +4,285 @@
 {% block head %}
 <!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/inicio_documentos.css' %}">
+<script src="{% static 'staffweb/js/inicio_documentos.js' %}"></script>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-<script>
-    tailwind = {
-        config: {
-            corePlugins: {
-                preflight: false
-            }
-        }
-    }
-</script>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<title>Documentos</title>
+<title>Mis Documentos</title>
 {% endblock head %}
 
 {% block principal %}
 <div class="header">
     <h1>Mis Documentos</h1>
-    <p>Accede y descarga tus archivos</p>   
+    <p>Ve y descarga tus documentos</p>   
 </div>
 
-<!-- SECCIÓN DE BUSCADOR Y FILTRO -->
+<!-- Buscador y filtro -->
 <div class="search-filter-section">
     <div class="search-container">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <input type="text" class="search-input" placeholder="Busca tus archivos..." id="searchInput">
     </div>
     <button class="filter-btn" id="filterBtn">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" 
-                  d="M3 3a1 1 0 011-1h12a1 1 0 
-                     011 1v3a1 1 0 01-.293.707L12 
-                     11.414V15a1 1 0 01-.293.707l-2 
-                     2A1 1 0 018 17v-5.586L3.293 
-                     6.707A1 1 0 013 6V3z"/>
+            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
         </svg>
         Filtrar
     </button>
 </div>
 
-<!-- Grid de Documentos -->
-<div class="document-grid">
-    <!-- Documento 1 -->
-    <div class="document-card">
-        <div class="document-header">
-            <div class="icon bg-red">
-                <i class="fas fa-file-pdf"></i>
-            </div>
-            <div class="document-info">
-                <h3>Contrato de trabajo</h3>
-                <div class="details">
-                    <div class="tags">
-                        <span class="tag">PDF</span>
-                        <span>2.4MB</span>
-                    </div>
-                    <p>15 Diciembre, 2024</p>
-                </div>
-            </div>
-        </div>
-        <div class="document-actions">
-            <button class="btn view">
-                <i class="fas fa-eye"></i> Mirar
-            </button>
-            <button class="btn download">
-                <i class="fas fa-download"></i> Descargar
+<!-- Modal de filtros -->
+<div class="filter-modal" id="filterModal">
+    <div class="filter-content">
+        <div class="filter-header">
+            <h3>Filtrar documentos</h3>
+            <button class="close-filter" id="closeFilter">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                </svg>
             </button>
         </div>
+        <div class="filter-options">
+            <div class="filter-group">
+                <label>Tipo de archivo:</label>
+                <select id="formatFilter">
+                    <option value="">Todos los formatos</option>
+                    <option value="PDF">PDF</option>
+                    <option value="DOC">DOC</option>
+                    <option value="DOCX">DOCX</option>
+                    <option value="XLS">XLS</option>
+                    <option value="XLSX">XLSX</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Ordenar por:</label>
+                <select id="sortFilter">
+                    <option value="date-desc">Fecha (más reciente)</option>
+                    <option value="date-asc">Fecha (más antiguo)</option>
+                    <option value="name-asc">Nombre (A-Z)</option>
+                    <option value="name-desc">Nombre (Z-A)</option>
+                    <option value="size-desc">Tamaño (mayor)</option>
+                    <option value="size-asc">Tamaño (menor)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Tamaño del archivo:</label>
+                <select id="sizeFilter">
+                    <option value="">Todos los tamaños</option>
+                    <option value="small">Menos de 1MB</option>
+                    <option value="medium">1MB - 3MB</option>
+                    <option value="large">Más de 3MB</option>
+                </select>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="clear-filters" id="clearFilters">Limpiar filtros</button>
+            <button class="apply-filters" id="applyFilters">Aplicar filtros</button>
+        </div>
     </div>
+</div>
 
-    <!-- Documento 2 -->
-    <div class="document-card">
-        <div class="document-header">
-            <div class="icon bg-blue">
-                <i class="fas fa-file-word"></i>
-            </div>
-            <div class="document-info">
-                <h3>Carta de recomendación</h3>
-                <div class="details">
-                    <div class="tags">
-                        <span class="tag">DOCX</span>
-                        <span>1.2MB</span>
+<!-- Agregando sección de documentos con recuadros -->
+<!-- Sección de documentos -->
+<div class="documents-section">
+    <div class="documents-grid">
+        <!-- Documento 1 -->
+        <div class="document-card">
+            <div class="document-content">
+                <div class="document-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <div class="document-info">
+                    <h3 class="document-title">Contrato de trabajo</h3>
+                    <div class="document-details">
+                        <span class="document-format">PDF</span>
+                        <span class="document-size">2.4MB</span>
+                        <span class="document-date">15 Diciembre, 2024</span>
                     </div>
-                    <p>10 Diciembre, 2024</p>
                 </div>
             </div>
+            <div class="document-actions">
+                <button class="action-btn view-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                    </svg>
+                    Mirar
+                </button>
+                <button class="action-btn download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
+            </div>
         </div>
-        <div class="document-actions">
-            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
-            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
-        </div>
-    </div>
 
-    <!-- Documento 3 -->
-    <div class="document-card">
-        <div class="document-header">
-            <div class="icon bg-green">
-                <i class="fas fa-file-excel"></i>
-            </div>
-            <div class="document-info">
-                <h3>Nómina Diciembre</h3>
-                <div class="details">
-                    <div class="tags">
-                        <span class="tag">XLSX</span>
-                        <span>856KB</span>
+        <!-- Documento 2 -->
+        <div class="document-card">
+            <div class="document-content">
+                <div class="document-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <div class="document-info">
+                    <h3 class="document-title">Certificado médico</h3>
+                    <div class="document-details">
+                        <span class="document-format">PDF</span>
+                        <span class="document-size">1.8MB</span>
+                        <span class="document-date">10 Diciembre, 2024</span>
                     </div>
-                    <p>8 Diciembre, 2024</p>
                 </div>
             </div>
-        </div>
-        <div class="document-actions">
-            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
-            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
-        </div>
-    </div>
-    
-    <!-- Documento 2 -->
-    <div class="document-card">
-        <div class="document-header">
-            <div class="icon bg-blue">
-                <i class="fas fa-file-word"></i>
-            </div>
-            <div class="document-info">
-                <h3>Carta de recomendación</h3>
-                <div class="details">
-                    <div class="tags">
-                        <span class="tag">DOCX</span>
-                        <span>1.2MB</span>
-                    </div>
-                    <p>10 Diciembre, 2024</p>
-                </div>
+            <div class="document-actions">
+                <button class="action-btn view-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                    </svg>
+                    Mirar
+                </button>
+                <button class="action-btn download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
             </div>
         </div>
-        <div class="document-actions">
-            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
-            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
-        </div>
-    </div>
 
-    <!-- Documento 2 -->
-    <div class="document-card">
-        <div class="document-header">
-            <div class="icon bg-blue">
-                <i class="fas fa-file-word"></i>
-            </div>
-            <div class="document-info">
-                <h3>Carta de recomendación</h3>
-                <div class="details">
-                    <div class="tags">
-                        <span class="tag">DOCX</span>
-                        <span>1.2MB</span>
+        <!-- Documento 3 -->
+        <div class="document-card">
+            <div class="document-content">
+                <div class="document-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <div class="document-info">
+                    <h3 class="document-title">Nómina Noviembre</h3>
+                    <div class="document-details">
+                        <span class="document-format">PDF</span>
+                        <span class="document-size">950KB</span>
+                        <span class="document-date">30 Noviembre, 2024</span>
                     </div>
-                    <p>10 Diciembre, 2024</p>
                 </div>
             </div>
+            <div class="document-actions">
+                <button class="action-btn view-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                    </svg>
+                    Mirar
+                </button>
+                <button class="action-btn download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
+            </div>
         </div>
-        <div class="document-actions">
-            <button class="btn view"><i class="fas fa-eye"></i> Mirar</button>
-            <button class="btn download"><i class="fas fa-download"></i> Descargar</button>
+
+        <!-- Documento 4 -->
+        <div class="document-card">
+            <div class="document-content">
+                <div class="document-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <div class="document-info">
+                    <h3 class="document-title">Vacaciones 2024</h3>
+                    <div class="document-details">
+                        <span class="document-format">PDF</span>
+                        <span class="document-size">1.2MB</span>
+                        <span class="document-date">20 Noviembre, 2024</span>
+                    </div>
+                </div>
+            </div>
+            <div class="document-actions">
+                <button class="action-btn view-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                    </svg>
+                    Mirar
+                </button>
+                <button class="action-btn download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
+            </div>
+        </div>
+
+        <!-- Documento 5 -->
+        <div class="document-card">
+            <div class="document-content">
+                <div class="document-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <div class="document-info">
+                    <h3 class="document-title">Seguro médico</h3>
+                    <div class="document-details">
+                        <span class="document-format">PDF</span>
+                        <span class="document-size">3.1MB</span>
+                        <span class="document-date">05 Noviembre, 2024</span>
+                    </div>
+                </div>
+            </div>
+            <div class="document-actions">
+                <button class="action-btn view-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                    </svg>
+                    Mirar
+                </button>
+                <button class="action-btn download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
+            </div>
+        </div>
+
+        <!-- Documento 6 -->
+        <div class="document-card">
+            <div class="document-content">
+                <div class="document-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <div class="document-info">
+                    <h3 class="document-title">Evaluación anual</h3>
+                    <div class="document-details">
+                        <span class="document-format">PDF</span>
+                        <span class="document-size">1.7MB</span>
+                        <span class="document-date">25 Octubre, 2024</span>
+                    </div>
+                </div>
+            </div>
+            <div class="document-actions">
+                <button class="action-btn view-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                    </svg>
+                    Mirar
+                </button>
+                <button class="action-btn download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
+            </div>
         </div>
     </div>
 </div>
 {% endblock principal %}
-
-
-{% block js %}
-    <script src="{% static 'staffweb/js/inicio_solicitudes.js' %}"></script>
-{% endblock js %}
