@@ -6,49 +6,6 @@
   font-family: Arial, sans-serif;
 }
 
-/* Barra lateral */
-.barra-lateral {
-  width: 250px;
-  background: #002b5c;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 20px;
-}
-
-.barra-lateral .logo {
-  text-align: center;
-}
-
-.barra-lateral .logo img {
-  width: 50px;
-}
-
-.barra-lateral .logo h2 {
-  margin-top: 10px;
-  font-size: 18px;
-}
-
-.menu {
-  margin-top: 30px;
-}
-
-.menu .item {
-  display: block;
-  padding: 10px;
-  color: white;
-  text-decoration: none;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  transition: background 0.3s;
-}
-
-.menu .item:hover,
-.menu .item.activo {
-  background: #004080;
-}
-
 .usuario-info {
   display: flex;
   align-items: center;
@@ -102,6 +59,14 @@
   background: #e8f0ff;
   padding: 20px;
   border-radius: 12px;
+}
+
+.login-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
 }
 
 .formulario {
