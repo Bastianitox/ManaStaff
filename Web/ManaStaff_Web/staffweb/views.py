@@ -1,5 +1,8 @@
 from django.shortcuts import render
 
+import os
+from django.conf import settings
+from django.shortcuts import render
 # Create your views here.
 
 def index(request):
@@ -12,6 +15,7 @@ def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
 
 def inicio_documentos(request):
+    
     return render(request, 'staffweb/inicio_documentos.html')
     
 def inicio_perfil(request):
@@ -28,3 +32,4 @@ def crear_solicitud(request):
 
 def ver_documentos(request):
     return render(request, "staffweb/ver_documentos.html")
+

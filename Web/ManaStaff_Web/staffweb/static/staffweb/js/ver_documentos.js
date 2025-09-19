@@ -1,130 +1,134 @@
+const documentsData = [
+  {
+    id: 1,
+    title: "Contrato de trabajo",
+    format: "PDF",
+    size: "2.4MB",
+    date: "15 Diciembre, 2024",
+    available: true,
+    filePath: "/static/staffweb/pdf/Contrato.pdf",
+  },
+  {
+    id: 2,
+    title: "Certificado médico",
+    format: "PDF",
+    size: "1.8MB",
+    date: "10 Diciembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 3,
+    title: "Nómina Noviembre",
+    format: "PDF",
+    size: "950KB",
+    date: "30 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 4,
+    title: "Vacaciones 2024",
+    format: "PDF",
+    size: "1.2MB",
+    date: "20 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 5,
+    title: "Seguro médico",
+    format: "PDF",
+    size: "3.1MB",
+    date: "05 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 6,
+    title: "Evaluación anual",
+    format: "PDF",
+    size: "1.7MB",
+    date: "25 Octubre, 2024",
+    available: false,
+    filePath: null,
+  },
+]
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Variables globales
-  let currentZoom = 100
+  console.log("[v0] ver_documentos loaded, initializing viewer")
 
-  // Elementos del DOM
-  const pdfViewer = document.getElementById("pdfViewer")
-  const zoomInBtn = document.getElementById("zoomIn")
-  const zoomOutBtn = document.getElementById("zoomOut")
-  const zoomLevel = document.getElementById("zoomLevel")
-  const fallbackMessage = document.getElementById("fallbackMessage")
+  const documentTitle = document.getElementById("documentTitle")
+  const documentMeta = document.getElementById("documentMeta")
+  const documentContent = document.getElementById("documentContent")
+  const downloadBtn = document.getElementById("downloadBtn")
 
-  // Inicialización
-  init()
+  const urlParams = new URLSearchParams(window.location.search)
+  const docId = Number.parseInt(urlParams.get("docId"))
+  const docTitle = urlParams.get("doc")
 
-  function init() {
-    setupEventListeners()
-    checkPDFSupport()
-    updateUI()
-  }
+  console.log("[v0] URL params - docId:", docId, "docTitle:", docTitle)
 
-  function setupEventListeners() {
-    // Controles de zoom
-    zoomInBtn.addEventListener("click", zoomIn)
-    zoomOutBtn.addEventListener("click", zoomOut)
+  const foundDocument = documentsData.find((doc) => doc.id === docId)
+  console.log("[v0] Found document:", foundDocument)
 
-    // Eventos de teclado simplificados
-    document.addEventListener("keydown", handleKeyboard)
+  if (foundDocument && foundDocument.available) {
+    documentTitle.textContent = foundDocument.title
+    documentMeta.innerHTML = `
+            <span class="meta-item">
+                <strong>Formato:</strong> ${foundDocument.format}
+            </span>
+            <span class="meta-item">
+                <strong>Tamaño:</strong> ${foundDocument.size}
+            </span>
+            <span class="meta-item">
+                <strong>Fecha:</strong> ${foundDocument.date}
+            </span>
+        `
 
-    // Detectar cambios en el iframe
-    pdfViewer.addEventListener("load", onPDFLoad)
-    pdfViewer.addEventListener("error", onPDFError)
+    documentContent.innerHTML = `
+            <div class="pdf-viewer">
+                <iframe src="${foundDocument.filePath}" width="100%" height="600px" frameborder="0">
+                    <p>Tu navegador no soporta la visualización de PDFs. 
+                    <a href="${foundDocument.filePath}" target="_blank">Haz clic aquí para descargar el archivo</a>.</p>
+                </iframe>
+            </div>
+        `
 
-    // Responsive - ajustar en cambio de tamaño
-    window.addEventListener("resize", handleResize)
-  }
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a")
+      link.href = foundDocument.filePath
+      link.download = `${foundDocument.title}.pdf`
+      link.target = "_blank"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    })
+  } else {
+    documentTitle.textContent = docTitle || "Documento no encontrado"
+    documentMeta.innerHTML = `
+            <span class="meta-item error">
+                <strong>Estado:</strong> No disponible
+            </span>
+        `
 
-  function checkPDFSupport() {
-    // Verificar si el navegador soporta PDFs
-    const isSupported =
-      navigator.mimeTypes["application/pdf"] ||
-      navigator.plugins["Chrome PDF Viewer"] ||
-      navigator.plugins["WebKit built-in PDF"]
+    documentContent.innerHTML = `
+            <div class="document-not-found">
+                <div class="not-found-icon">
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5A1.5,1.5 0 0,1 10.5,9A1.5,1.5 0 0,1 12,7.5A1.5,1.5 0 0,1 13.5,9A1.5,1.5 0 0,1 12,10.5Z"/>
+                    </svg>
+                </div>
+                <h3>Documento no encontrado</h3>
+                <p>El documento solicitado no está disponible o no se pudo encontrar.</p>
+                <button class="back-to-documents" onclick="window.location.href='/inicio_documentos/'">
+                    Volver a Mis Documentos
+                </button>
+            </div>
+        `
 
-    if (!isSupported) {
-      showFallback()
-    }
-  }
-
-  function onPDFLoad() {
-    console.log("[v0] PDF cargado correctamente")
-    hideFallback()
-  }
-
-  function onPDFError() {
-    console.log("[v0] Error al cargar PDF")
-    showFallback()
-  }
-
-  function showFallback() {
-    pdfViewer.style.display = "none"
-    fallbackMessage.style.display = "flex"
-  }
-
-  function hideFallback() {
-    pdfViewer.style.display = "block"
-    fallbackMessage.style.display = "none"
-  }
-
-  function zoomIn() {
-    if (currentZoom < 200) {
-      currentZoom += 25
-      applyZoom()
-    }
-  }
-
-  function zoomOut() {
-    if (currentZoom > 50) {
-      currentZoom -= 25
-      applyZoom()
-    }
-  }
-
-  function applyZoom() {
-    // Para iframe, el zoom es limitado, pero podemos cambiar el tamaño del contenedor
-    const scale = currentZoom / 100
-    pdfViewer.style.transform = `scale(${scale})`
-    pdfViewer.style.transformOrigin = "top left"
-
-    // Ajustar el contenedor para el zoom
-    const container = pdfViewer.parentElement
-    container.style.overflow = currentZoom > 100 ? "auto" : "hidden"
-
-    updateZoomLevel()
-  }
-
-  function updateZoomLevel() {
-    zoomLevel.textContent = currentZoom + "%"
-  }
-
-  function handleKeyboard(event) {
-    switch (event.key) {
-      case "+":
-      case "=":
-        event.preventDefault()
-        zoomIn()
-        break
-      case "-":
-        event.preventDefault()
-        zoomOut()
-        break
-    }
-  }
-
-  function handleResize() {
-    // Reajustar el visor en cambios de tamaño
-    if (currentZoom !== 100) {
-      applyZoom()
-    }
-  }
-
-  function updateUI() {
-    updateZoomLevel()
-  }
-
-  // Exponer funciones globales si es necesario
-  window.PDFViewer = {
-    zoomIn,
-    zoomOut,
+    downloadBtn.disabled = true
+    downloadBtn.style.opacity = "0.5"
+    downloadBtn.style.cursor = "not-allowed"
   }
 })
