@@ -1,6 +1,8 @@
 {% extends 'staffweb/plantilla.html' %}
 {% load static %}
 
+{% block title %}Perfil{% endblock %}
+
 {% block head %}
 <div class="contenido">
 
@@ -9,39 +11,35 @@
   <script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
 {% endblock head%}
 
-{% block principal %}
-
-  <!-- Main content -->
-<main class="contenido">
+{% block head %}
+<div class="perfil-container">
     <h1>Perfil</h1>
-    <p class="subtitulo">Aquí puedes ver y modificar tus datos</p>
+    <p>Aquí puedes ver y modificar tus datos</p>
 
     <div class="perfil-caja">
-      <div class="login-left">
-        <div class="formulario">
-          <h2>Mis datos</h2>
+        <div class="perfil-datos">
+            <h2>Mis datos</h2>
 
-          <label>Nombre Completo</label>
-          <input type="text" value="Luciano Ignacio" disabled>
+            <label for="nombre">Nombre Completo</label>
+            <input type="text" id="nombre" value="Luciano Ignacio">
 
-          <label>Apellidos</label>
-          <input type="text" value="Torrejón Díaz" disabled>
+            <label for="apellidos">Apellidos</label>
+            <input type="text" id="apellidos" value="Torrejon Díaz">
 
-          <label>RUT</label>
-          <input type="text" value="19.753.951-K" disabled>
+            <label for="rut">RUT</label>
+            <input type="text" id="rut" value="19.753.951-K">
 
-          <label>Número de celular</label>
-          <input type="text" value="945838563">
+            <label for="celular">Número de celular</label>
+            <input type="text" id="celular" value="945838563">
 
-          <label>Dirección</label>
-          <input type="text" value="Las Colombas 1234, Quilicura">
-      </div>
+            <label for="direccion">Dirección</label>
+            <input type="text" id="direccion" value="Las Colombas 1234, Quilicura">
+        </div>
+
+        <div class="perfil-foto">
+            <img src="{% static 'staffweb/img/avatar.jpg' %}" alt="Foto de perfil">
+            <button class="btn-cambiar">Cambiar foto de perfil</button>
+        </div>
     </div>
-
-    <div class="perfil-foto">
-      <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil">
-      <button>Cambiar foto de perfil</button>
-    </div>
-  </div>
-</main>
-{% endblock principal %}
+</div>
+{% endblock head%}
