@@ -27,10 +27,4 @@ def crear_solicitud(request):
     return render(request, 'staffweb/crear_solicitud.html')
 
 def ver_documentos(request):
-    doc_name = request.GET.get("doc", "Documento")
-    doc_path = request.GET.get("path", "")
-    context = {
-        "doc_name": doc_name,
-        "doc_path": doc_path,
-    }
-    return render(request, "staffweb/ver_documentos.html", context)
+    return render(request, "staffweb/ver_documentos.html")

@@ -1,0 +1,98 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/ver_documentos.css' %}">
+<script src="{% static 'staffweb/js/ver_documentos.js' %}"></script>
+<title>Mis Documentos</title>
+{% endblock head %}
+
+{% block principal %}
+<div class="header">
+    <h1>Contrato de Trabajo</h1>
+    <p>Visualiza y descarga tu documento</p>
+</div>
+
+<div class="document-container">
+    <div class="document-controls">
+        <div class="control-group">
+            <button id="zoomOut" class="control-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="M21 21l-4.35-4.35"></path>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+            </button>
+            <span id="zoomLevel">100%</span>
+            <button id="zoomIn" class="control-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="M21 21l-4.35-4.35"></path>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="control-group">
+            <a href="{% static 'staffweb/pdf/Contrato.pdf' %}" download="Contrato.pdf" class="download-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Descargar
+            </a>
+        </div>
+    </div>
+
+    <div class="document-viewer">
+        <div class="pdf-container">
+            <iframe 
+                id="pdfViewer" 
+                src="{% static 'staffweb/pdf/Contrato.pdf' %}" 
+                type="application/pdf"
+                title="Documento PDF">
+            </iframe>
+        </div>
+        
+        <div class="fallback-message" id="fallbackMessage" style="display: none;">
+            <div class="fallback-content">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                </svg>
+                <h3>No se puede mostrar el PDF</h3>
+                <p>Tu navegador no soporta la visualización de PDFs integrada.</p>
+                <a href="{% static 'staffweb/pdf/Contrato.pdf' %}" target="_blank" class="view-external-btn">
+                    Ver en nueva pestaña
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="document-info">
+    <div class="info-card">
+        <h3>Información del Documento</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Nombre:</span>
+                <span class="info-value">Contrato.pdf</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tipo:</span>
+                <span class="info-value">Documento PDF</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Estado:</span>
+                <span class="info-value status-active">Activo</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock principal %}
