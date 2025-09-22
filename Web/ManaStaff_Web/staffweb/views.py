@@ -33,3 +33,5 @@ def crear_solicitud(request):
 def ver_documentos(request):
     return render(request, "staffweb/ver_documentos.html")
 
+def panel_administrar(request):
+    return render(request, "staffweb/panel_administrar.html")
