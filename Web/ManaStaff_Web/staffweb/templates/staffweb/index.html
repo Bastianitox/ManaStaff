@@ -1,49 +1,54 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- STATIC CSS -->
-    <link rel="stylesheet" href="{% static 'staffweb/css/index.css' %}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- STATIC JS -->
-    <script src="{% static 'staffweb/js/index.js' %}" defer></script>
- 
-    <title>Login - ManaStaff</title>
+  <!-- STATIC CSS -->
+  <link rel="stylesheet" href="{% static 'staffweb/css/index.css' %}">
+
+  <!-- STATIC JS -->
+  <script src="{% static 'staffweb/js/index.js' %}" defer></script>
+
+  <title>Login - ManaStaff</title>
 </head>
+
 <body>
-    <div class="container">
-        <div class="login-box">
-          <!-- Columna Izquierda -->
-          <div class="login-left">
-            <img src="{% static 'staffweb/img/logo.png' %}" alt="ManaStaff Logo">
-            <h2>MANA STAFF</h2>
-            <p>Para iniciar sesión introduce tu usuario y contraseña.</p>
-    
-            <form method="POST" action="{% url 'inicio_documentos' %}">
-              {% csrf_token %}
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="Introduce tu correo" required>
-    
-              <label for="password">Contraseña</label>
-              <input type="password" id="password" name="password" placeholder="Introduce tu contraseña" required>
-    
-              <a href="{% url 'recuperar_contrasena' %}" class="forgot">¿Olvidaste tu contraseña?</a>
-              <button type="submit">Iniciar sesión</button>
-            </form>
-          </div>
-    
-          <!-- Columna Derecha -->
-          <div class="login-right">
-            <img src="{% static 'staffweb/img/logo.png' %}" alt="ManaStaff Logo">
-            <div>
-              <h1>MANA</h1>
-              <span>STAFF</span>
-            </div>
-          </div>
+  <div class="container">
+    <div class="login-box">
+      <!-- Columna Izquierda -->
+      <div class="login-left">
+        <img src="{% static 'staffweb/img/logo.png' %}" alt="ManaStaff Logo">
+        <h2>MANA STAFF</h2>
+        <p>Para iniciar sesión introduce tu usuario y contraseña.</p>
+
+        <form method="POST" action="{% url 'inicio_documentos' %}">
+          {% csrf_token %}
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Introduce tu correo" required>
+
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" placeholder="Introduce tu contraseña" required>
+
+          <a href="{% url 'recuperar_contrasena' %}" class="forgot">¿Olvidaste tu contraseña?</a>
+          <button type="submit">Iniciar sesión</button>
+        </form>
+      </div>
+
+      <!-- Columna Derecha -->
+      <div class="recover-right">
+        <div class="logo-box">
+          <div class="img-logo"></div>
         </div>
+        <div class="brand-text">
+          <h1>MANA</h1>
+          <span>STAFF</span>
+        </div>
+      </div>
     </div>
+  </div>
 </body>
+
 </html>
