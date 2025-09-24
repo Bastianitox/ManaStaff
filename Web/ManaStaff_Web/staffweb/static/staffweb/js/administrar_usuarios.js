@@ -238,9 +238,10 @@ function editUser(userId) {
   )
 }
 
-// Función para crear nuevo usuario (placeholder)
+// Función para crear nuevo usuario
 function createNewUser() {
-  alert("Crear nuevo usuario\n\n(Esta funcionalidad se implementará más adelante)")
+  const url = document.getElementById("createUserBtn").dataset.url;
+  window.location.href = url;
 }
 
 // Event listeners
@@ -272,5 +273,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 })
-
 
