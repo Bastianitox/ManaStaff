@@ -1,0 +1,88 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/ver_documentos.css' %}">
+<!-- PDF.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="{% static 'staffweb/js/ver_documentos.js' %}"></script>
+
+<title>Visualizar Documento</title>
+{% endblock head %}
+
+{% block principal %}
+<div class="viewer-container">
+    <!-- Header con nombre del documento -->
+    <div class="document-header">
+        <div class="header-content">
+            <button class="back-btn" onclick="window.history.back()">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                </svg>
+                Volver
+            </button>
+            <h1 class="document-name" id="documentName">Cargando documento...</h1>
+        </div>
+    </div>
+
+    <!-- Controles del visor -->
+    <div class="viewer-controls">
+        <div class="controls-left">
+            <button class="control-btn" id="prevPage" disabled>
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/>
+                </svg>
+                Anterior
+            </button>
+            <span class="page-info">
+                Página <input type="number" id="pageInput" min="1" value="1" class="page-input"> 
+                de <span id="totalPages">0</span>
+            </span>
+            <button class="control-btn" id="nextPage" disabled>
+                Siguiente
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="controls-right">
+            <button class="control-btn" id="zoomOut">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19,13H5V11H19V13Z"/>
+                </svg>
+            </button>
+            <span class="zoom-info" id="zoomLevel">100%</span>
+            <button class="control-btn" id="zoomIn">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                </svg>
+            </button>
+            <button class="control-btn" id="fitWidth">Ajustar ancho</button>
+            <button class="control-btn download-btn" id="downloadBtn">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                </svg>
+                Descargar
+            </button>
+        </div>
+    </div>
+
+    <!-- Visor de PDF -->
+    <div class="pdf-viewer">
+        <div class="loading-message" id="loadingMessage">
+            <div class="loading-spinner"></div>
+            <p>Cargando documento...</p>
+        </div>
+        <canvas id="pdfCanvas" style="display: none;"></canvas>
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2L13.09,8.26L22,9L13.09,9.74L12,16L10.91,9.74L2,9L10.91,8.26L12,2Z"/>
+            </svg>
+            <h3>Error al cargar el documento</h3>
+            <p>No se pudo cargar el archivo PDF. Verifique que el archivo existe y es válido.</p>
+        </div>
+    </div>
+</div>
+{% endblock principal %}
