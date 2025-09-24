@@ -40,6 +40,9 @@ def panel_administrar(request):
 
 def administrar_usuarios(request):
     return render(request, "staffweb/administrar_usuarios.html")
+
+def crear_usuario(request):
+    return render(request, "staffweb/crear_usuario.html")
     
 def administrar_solicitudes(request):
     return render(request, "staffweb/administrar_solicitudes.html")
