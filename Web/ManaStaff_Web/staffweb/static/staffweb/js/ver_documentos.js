@@ -1,198 +1,134 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Variables globales
-  let pdfDoc = null
-  let pageNum = 1
-  let pageRendering = false
-  let pageNumPending = null
-  let scale = 1.0
-  const canvas = document.getElementById("pdfCanvas")
-  const ctx = canvas.getContext("2d")
-  const pdfjsLib = window["pdfjs-dist/build/pdf"]
+const documentsData = [
+  {
+    id: 1,
+    title: "Contrato de trabajo",
+    format: "PDF",
+    size: "2.4MB",
+    date: "15 Diciembre, 2024",
+    available: true,
+    filePath: "/static/staffweb/pdf/Contrato.pdf",
+  },
+  {
+    id: 2,
+    title: "Certificado médico",
+    format: "PDF",
+    size: "1.8MB",
+    date: "10 Diciembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 3,
+    title: "Nómina Noviembre",
+    format: "PDF",
+    size: "950KB",
+    date: "30 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 4,
+    title: "Vacaciones 2024",
+    format: "PDF",
+    size: "1.2MB",
+    date: "20 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 5,
+    title: "Seguro médico",
+    format: "PDF",
+    size: "3.1MB",
+    date: "05 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 6,
+    title: "Evaluación anual",
+    format: "PDF",
+    size: "1.7MB",
+    date: "25 Octubre, 2024",
+    available: false,
+    filePath: null,
+  },
+]
 
-  // Elementos del DOM
-  const loadingMessage = document.getElementById("loadingMessage")
-  const errorMessage = document.getElementById("errorMessage")
-  const documentName = document.getElementById("documentName")
-  const prevPageBtn = document.getElementById("prevPage")
-  const nextPageBtn = document.getElementById("nextPage")
-  const pageInput = document.getElementById("pageInput")
-  const totalPagesSpan = document.getElementById("totalPages")
-  const zoomInBtn = document.getElementById("zoomIn")
-  const zoomOutBtn = document.getElementById("zoomOut")
-  const fitWidthBtn = document.getElementById("fitWidth")
-  const zoomLevelSpan = document.getElementById("zoomLevel")
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[v0] ver_documentos loaded, initializing viewer")
+
+  const documentTitle = document.getElementById("documentTitle")
+  const documentMeta = document.getElementById("documentMeta")
+  const documentContent = document.getElementById("documentContent")
   const downloadBtn = document.getElementById("downloadBtn")
 
-  // Configurar PDF.js worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
-
-  // Obtener parámetros de la URL
   const urlParams = new URLSearchParams(window.location.search)
-  const documentTitle = urlParams.get("doc") || "Documento"
-  const pdfPath = urlParams.get("path") || "/static/pdf/documento.pdf"
+  const docId = Number.parseInt(urlParams.get("docId"))
+  const docTitle = urlParams.get("doc")
 
-  // Establecer nombre del documento
-  documentName.textContent = documentTitle
+  console.log("[v0] URL params - docId:", docId, "docTitle:", docTitle)
 
-  // Cargar PDF
-  loadPDF(pdfPath)
+  const foundDocument = documentsData.find((doc) => doc.id === docId)
+  console.log("[v0] Found document:", foundDocument)
 
-  function loadPDF(url) {
-    console.log("[v0] Loading PDF from:", url)
+  if (foundDocument && foundDocument.available) {
+    documentTitle.textContent = foundDocument.title
+    documentMeta.innerHTML = `
+            <span class="meta-item">
+                <strong>Formato:</strong> ${foundDocument.format}
+            </span>
+            <span class="meta-item">
+                <strong>Tamaño:</strong> ${foundDocument.size}
+            </span>
+            <span class="meta-item">
+                <strong>Fecha:</strong> ${foundDocument.date}
+            </span>
+        `
 
-    pdfjsLib
-      .getDocument(url)
-      .promise.then((pdfDoc_) => {
-        pdfDoc = pdfDoc_
-        totalPagesSpan.textContent = pdfDoc.numPages
+    documentContent.innerHTML = `
+            <div class="pdf-viewer">
+                <iframe src="${foundDocument.filePath}" width="100%" height="600px" frameborder="0">
+                    <p>Tu navegador no soporta la visualización de PDFs. 
+                    <a href="${foundDocument.filePath}" target="_blank">Haz clic aquí para descargar el archivo</a>.</p>
+                </iframe>
+            </div>
+        `
 
-        // Ocultar mensaje de carga y mostrar canvas
-        loadingMessage.style.display = "none"
-        canvas.style.display = "block"
-
-        // Renderizar primera página
-        renderPage(pageNum)
-
-        // Habilitar controles
-        updateControls()
-
-        console.log("[v0] PDF loaded successfully. Total pages:", pdfDoc.numPages)
-      })
-      .catch((error) => {
-        console.error("[v0] Error loading PDF:", error)
-        showError()
-      })
-  }
-
-  function renderPage(num) {
-    pageRendering = true
-
-    // Obtener página
-    pdfDoc.getPage(num).then((page) => {
-      const viewport = page.getViewport({ scale: scale })
-      canvas.height = viewport.height
-      canvas.width = viewport.width
-
-      // Renderizar página en canvas
-      const renderContext = {
-        canvasContext: ctx,
-        viewport: viewport,
-      }
-
-      const renderTask = page.render(renderContext)
-
-      renderTask.promise.then(() => {
-        pageRendering = false
-        if (pageNumPending !== null) {
-          renderPage(pageNumPending)
-          pageNumPending = null
-        }
-        console.log("[v0] Page rendered:", num)
-      })
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a")
+      link.href = foundDocument.filePath
+      link.download = `${foundDocument.title}.pdf`
+      link.target = "_blank"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     })
+  } else {
+    documentTitle.textContent = docTitle || "Documento no encontrado"
+    documentMeta.innerHTML = `
+            <span class="meta-item error">
+                <strong>Estado:</strong> No disponible
+            </span>
+        `
 
-    // Actualizar controles
-    pageInput.value = num
-    updateControls()
+    documentContent.innerHTML = `
+            <div class="document-not-found">
+                <div class="not-found-icon">
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5A1.5,1.5 0 0,1 10.5,9A1.5,1.5 0 0,1 12,7.5A1.5,1.5 0 0,1 13.5,9A1.5,1.5 0 0,1 12,10.5Z"/>
+                    </svg>
+                </div>
+                <h3>Documento no encontrado</h3>
+                <p>El documento solicitado no está disponible o no se pudo encontrar.</p>
+                <button class="back-to-documents" onclick="window.location.href='/inicio_documentos/'">
+                    Volver a Mis Documentos
+                </button>
+            </div>
+        `
+
+    downloadBtn.disabled = true
+    downloadBtn.style.opacity = "0.5"
+    downloadBtn.style.cursor = "not-allowed"
   }
-
-  function queueRenderPage(num) {
-    if (pageRendering) {
-      pageNumPending = num
-    } else {
-      renderPage(num)
-    }
-  }
-
-  function updateControls() {
-    // Actualizar botones de navegación
-    prevPageBtn.disabled = pageNum <= 1
-    nextPageBtn.disabled = pageNum >= pdfDoc.numPages
-
-    // Actualizar zoom
-    zoomLevelSpan.textContent = Math.round(scale * 100) + "%"
-
-    // Actualizar input de página
-    pageInput.max = pdfDoc.numPages
-  }
-
-  function showError() {
-    loadingMessage.style.display = "none"
-    errorMessage.style.display = "flex"
-    canvas.style.display = "none"
-  }
-
-  // Event listeners
-  prevPageBtn.addEventListener("click", () => {
-    if (pageNum <= 1) return
-    pageNum--
-    queueRenderPage(pageNum)
-  })
-
-  nextPageBtn.addEventListener("click", () => {
-    if (pageNum >= pdfDoc.numPages) return
-    pageNum++
-    queueRenderPage(pageNum)
-  })
-
-  pageInput.addEventListener("change", function () {
-    const inputPage = Number.parseInt(this.value)
-    if (inputPage >= 1 && inputPage <= pdfDoc.numPages) {
-      pageNum = inputPage
-      queueRenderPage(pageNum)
-    } else {
-      this.value = pageNum
-    }
-  })
-
-  zoomInBtn.addEventListener("click", () => {
-    scale += 0.25
-    queueRenderPage(pageNum)
-  })
-
-  zoomOutBtn.addEventListener("click", () => {
-    if (scale > 0.25) {
-      scale -= 0.25
-      queueRenderPage(pageNum)
-    }
-  })
-
-  fitWidthBtn.addEventListener("click", () => {
-    const container = document.querySelector(".pdf-viewer")
-    const containerWidth = container.clientWidth - 60 // Padding
-
-    if (pdfDoc) {
-      pdfDoc.getPage(1).then((page) => {
-        const viewport = page.getViewport({ scale: 1.0 })
-        scale = containerWidth / viewport.width
-        queueRenderPage(pageNum)
-      })
-    }
-  })
-
-  downloadBtn.addEventListener("click", () => {
-    // Crear enlace de descarga
-    const link = document.createElement("a")
-    link.href = pdfPath
-    link.download = documentTitle + ".pdf"
-    link.click()
-  })
-
-  // Navegación con teclado
-  document.addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "ArrowLeft":
-        if (pageNum > 1) {
-          pageNum--
-          queueRenderPage(pageNum)
-        }
-        break
-      case "ArrowRight":
-        if (pageNum < pdfDoc.numPages) {
-          pageNum++
-          queueRenderPage(pageNum)
-        }
-        break
-    }
-  })
 })
