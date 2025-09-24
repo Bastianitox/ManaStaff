@@ -179,7 +179,7 @@ function mostrarMensajeExito() {
     mensaje.classList.remove("show")
     // Redirigir después de ocultar el mensaje
     setTimeout(() => {
-      window.location.href = redirectUrl   // ✅ ahora usa la URL de Django
+      window.location.href = redirectUrl 
     }, 300)
   }, 1000)
 }

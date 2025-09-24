@@ -24,7 +24,6 @@
             <input type="text" id="searchInput" placeholder="Buscar usuario por nombre..." class="search-input">
         </div>
 
-        <!-- 🔹 Aquí se pasa la URL de Django -->
         <button id="createUserBtn" class="create-user-btn" data-url="{% url 'crear_usuario' %}">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
@@ -45,8 +44,7 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="usersTableBody">
-                <!-- Los usuarios se cargarán aquí con JavaScript -->
+            <tbody id="usersTableBody" data-edit-url="{% url 'modificar_usuario' %}">
             </tbody>
         </table>
     </div>

@@ -232,10 +232,8 @@ function nextPage() {
 
 // Función para editar usuario (placeholder)
 function editUser(userId) {
-  const user = sortedUsersData.find((u) => u.id === userId)
-  alert(
-    `Editar usuario: ${user.name}\nCorreo: ${user.email}\nCargo: ${user.position}\nFecha de creación: ${user.createdDate}\n\n(Esta funcionalidad se implementará más adelante)`,
-  )
+  const baseUrl = document.getElementById("usersTableBody").dataset.editUrl;
+  window.location.href = `${baseUrl}?id=${userId}`;
 }
 
 // Función para crear nuevo usuario

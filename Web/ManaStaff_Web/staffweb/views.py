@@ -43,6 +43,9 @@ def administrar_usuarios(request):
 
 def crear_usuario(request):
     return render(request, "staffweb/crear_usuario.html")
+
+def modificar_usuario(request):
+    return render(request, "staffweb/modificar_usuario.html")
     
 def administrar_solicitudes(request):
     return render(request, "staffweb/administrar_solicitudes.html")
