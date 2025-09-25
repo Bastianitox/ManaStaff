@@ -158,3 +158,10 @@ button:hover {
     background-repeat: no-repeat;
     background-position: center;
 }
+
+
+@media (max-width: 768px) {
+  .recover-right{
+    display: none;
+  }
+}
