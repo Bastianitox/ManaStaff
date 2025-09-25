@@ -33,6 +33,11 @@ def crear_solicitud(request):
 def ver_documentos(request):
     return render(request, "staffweb/ver_documentos.html")
 
+def cambiar_contrasena(request):
+    return render(request, "staffweb/cambiar_contrasena.html")
+
+def cambiar_pin(request):
+    return render(request, "staffweb/cambiar_pin.html")
 
 #ADMINISTRACION
 def panel_administrar(request):

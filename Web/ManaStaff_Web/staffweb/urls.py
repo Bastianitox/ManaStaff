@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import modificar_usuario,crear_usuario,administrar_usuarios,administrar_solicitudes,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
+from .views import modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
 
 urlpatterns = [
 
@@ -13,7 +13,9 @@ urlpatterns = [
     path('inicio_dashboard',inicio_dashboard,name="inicio_dashboard"),
     path('crear_solicitud',crear_solicitud,name="crear_solicitud"),
     path('ver_documentos',ver_documentos,name="ver_documentos"),
-
+    path('cambiar_contrasena',cambiar_contrasena,name="cambiar_contrasena"),
+    path('cambiar_pin',cambiar_pin,name="cambiar_pin"),
+    
     #ADMINISTRAR PAGINAS
     path('panel_administrar',panel_administrar,name="panel_administrar"),
     path('administrar_documentos',administrar_documentos,name="administrar_documentos"),

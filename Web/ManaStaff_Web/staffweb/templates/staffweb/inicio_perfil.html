@@ -2,44 +2,74 @@
 {% load static %}
 
 {% block head %}
-  <!-- STATIC CSS -->
-  <link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
-  <script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
+<script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
 {% endblock head%}
 
 {% block principal %}
+<div class="header">
+  <h1>Perfil</h1>
+  <p>Aquí puedes editar los datos de usuario</p>
+</div>
 
-  <!-- Main content -->
-<main class="contenido">
-    <h1>Perfil</h1>
-    <p class="subtitulo">Aquí puedes ver y modificar tus datos</p>
-
-    <div class="perfil-caja">
-      <div class="login-left">
-        <div class="formulario">
-          <h2>Mis datos</h2>
-
-          <label>Nombre Completo</label>
-          <input type="text" value="Luciano Ignacio" disabled>
-
-          <label>Apellidos</label>
-          <input type="text" value="Torrejón Díaz" disabled>
-
-          <label>RUT</label>
-          <input type="text" value="19.753.951-K" disabled>
-
-          <label>Número de celular</label>
-          <input type="text" value="945838563">
-
-          <label>Dirección</label>
-          <input type="text" value="Las Colombas 1234, Quilicura">
-      </div>
+<div class="perfil-formulario">
+   <!-- Foto de perfil -->
+    <div class="foto-seccion">
+        <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil" class="foto">
+        <button type="button" class="btn-foto">Cambiar foto</button>
     </div>
 
-    <div class="perfil-foto">
-      <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil">
-      <button>Cambiar foto de perfil</button>
-    </div>
-  </div>
-</main>
+    <form>
+        <div class="fila">
+            <div class="campo">
+                <label for="nombres">Nombres</label>
+                <input type="text" id="nombres" value="Luciano Ignacio" readonly>
+            </div>
+            <div class="campo">
+                <label for="apellidos">Apellidos</label>
+                <input type="text" id="apellidos" value="Torrejón Díaz" readonly>
+            </div>
+        </div>
+
+        <div class="fila">
+            <div class="campo">
+                <label for="rut">RUT</label>
+                <input type="text" id="rut" value="19.753.951-K" readonly>
+            </div>
+            <div class="campo">
+                <label for="correo">Correo Electrónico</label>
+                <input type="email" id="correo" value="luciano@email.com" readonly>
+            </div>
+        </div>
+
+        <div class="fila">
+            <div class="campo">
+                <label for="cargo">Cargo</label>
+                <input type="text" id="cargo" value="Empleado" readonly>
+            </div>
+            <div class="campo">
+                <label for="celular">Número de Celular</label>
+                <input type="text" id="celular" value="+56 9 4583 8563">
+            </div>
+        </div>
+
+        <div class="fila">
+            <div class="campo">
+                <label for="direccion">Dirección</label>
+                <input type="text" id="direccion" value="Las Colombas 1234, Quilicura">
+            </div>
+        </div>
+
+        <div class="acciones">
+          <a href="{% url 'cambiar_contrasena' %}" class="btn-secundario">
+            Cambiar Contraseña
+        </a>
+         <a href="{% url 'cambiar_pin' %}" class="btn-secundario">
+            Cambiar Pin
+        </a>
+            <button type="submit" class="btn-guardar">Guardar Cambios</button>
+        </div>
+    </form>
+</div>
 {% endblock principal %}

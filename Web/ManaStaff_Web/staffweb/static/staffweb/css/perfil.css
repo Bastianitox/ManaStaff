@@ -1,118 +1,138 @@
-/* Contenedor general */
-.contenedor {
-  display: flex;
-  min-height: 100vh;
-  background: #f8f9fd;
-  font-family: Arial, sans-serif;
+.perfil-formulario {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    max-width: 800px;
+    margin: 20px auto;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
 }
 
-.usuario-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 30px;
+.perfil-formulario h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #0A3C7D;
+    text-align: left;
 }
 
-.usuario-info img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
+.perfil-formulario p {
+    margin-bottom: 20px;
+    color: #666;
+    text-align: left;
 }
 
-.nombre {
-  font-weight: bold;
+/* Foto centrada */
+.foto-seccion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
 }
 
-.rol {
-  font-size: 12px;
-  color: #ccc;
+.foto-seccion .foto {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    margin-bottom: 10px;
 }
 
-.cerrar-sesion {
-  display: block;
-  margin-top: 20px;
-  color: #ff4d4d;
-  text-decoration: none;
-  font-weight: bold;
+.btn-foto {
+    background: #0A3C7D;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.btn-foto:hover {
+    background: #062a54;
 }
 
-/* Contenido */
-.contenido {
-  flex: 1;
-  padding: 40px;
+/* Campos */
+.fila {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    text-align: left;
 }
 
-.contenido h1 {
-  font-size: 24px;
-  margin-bottom: 5px;
+.campo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-.subtitulo {
-  color: #666;
-  margin-bottom: 20px;
+.campo label {
+    font-weight: 600;
+    margin-bottom: 5px;
 }
 
-/* Caja de perfil */
-.perfil-caja {
-  display: flex;
-  justify-content: space-between;
-  background: #e8f0ff;
-  padding: 20px;
-  border-radius: 12px;
+.campo input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
 }
 
-.login-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 40px;
+.campo input[readonly] {
+    background: #f5f5f5;
+    cursor: not-allowed;
 }
 
-.formulario {
-  width: 60%;
+.campo input:focus {
+    border-color: #0A3C7D;
 }
 
-.formulario h2 {
-  margin-bottom: 20px;
+/* Acciones */
+.acciones {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
 }
 
-.formulario label {
-  display: block;
-  font-weight: bold;
-  margin-top: 10px;
+.btn-secundario {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.btn-secundario:hover {
+    background: #c7c7c7;
 }
 
-.formulario input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 6px;
-  background: #fff;
+.btn-guardar {
+    background: #0A3C7D;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+.btn-guardar:hover {
+    background: #062a54;
 }
 
-/* Foto de perfil */
-.perfil-foto {
-  text-align: center;
-}
-
-.perfil-foto img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-}
-
-.perfil-foto button {
-  background: #004080;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.perfil-foto button:hover {
-  background: #002b5c;
+/* Responsive */
+@media (max-width: 768px) {
+    .fila {
+        flex-direction: column;
+    }
+    .acciones {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
