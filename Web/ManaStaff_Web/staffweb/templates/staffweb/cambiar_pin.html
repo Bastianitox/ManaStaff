@@ -11,22 +11,38 @@
 {% block principal %}
 
 <div class="header">
-  <h1>Cambiar Pin</h1>
-  <p>Aquí puedes editar el pin de usuario</p>
+    <h1>Cambiar Pin</h1>
+    <p>Aquí puedes editar el pin de usuario</p>
 </div>
 
+<div class="perfil-contenedor">
+    <div class="perfil-caja">
+        <form method="post">
+            {% csrf_token %}
 
+            <div class="campo">
+                <label for="pin_actual">PIN Actual</label>
+                <input type="password" id="pin_actual" name="pin_actual" maxlength="4" required>
+            </div>
 
+            <div class="campo">
+                <label for="nuevo_pin">Nuevo PIN</label>
+                <input type="password" id="nuevo_pin" name="nuevo_pin" maxlength="4" required>
+            </div>
 
+            <div class="campo">
+                <label for="confirmar_pin">Confirmar Nuevo PIN</label>
+                <input type="password" id="confirmar_pin" name="confirmar_pin" maxlength="4" required>
+            </div>
 
-
-
-
-
-
-
-
-
-
+            <div class="acciones">
+                <button type="submit" class="btn-guardar">Guardar Cambios</button>
+                <a href="{% url 'inicio_perfil' %}">
+                    <button type="button" class="btn-guardar">Cancelar</button>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 
 {% endblock principal %}

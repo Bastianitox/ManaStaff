@@ -15,9 +15,11 @@
     <p>Aquí puedes editar la contraseña de usuario</p>
 </div>
 
-<form method="post">
-    <div class="perfil-contenedor">
-        <div class="perfil-caja">
+<div class="perfil-contenedor">
+    <div class="perfil-caja">
+        <form method="post">
+            {% csrf_token %}
+
             <div class="campo">
                 <label for="password_actual">Contraseña Actual</label>
                 <input type="password" id="password_actual" name="password_actual" required>
