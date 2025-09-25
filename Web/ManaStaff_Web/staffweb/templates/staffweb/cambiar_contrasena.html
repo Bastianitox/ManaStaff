@@ -11,12 +11,34 @@
 {% block principal %}
 
 <div class="header">
-  <h1>Cambiar Contraseña</h1>
-  <p>Aquí puedes editar la contraseña de usuario</p>
+    <h1>Cambiar Contraseña</h1>
+    <p>Aquí puedes editar la contraseña de usuario</p>
 </div>
 
+<form>
+    <div class="campo">
+        <label for="actual">Contraseña Actual</label>
+        <input type="password" id="actual" placeholder="Ingresa tu contraseña actual">
+    </div>
 
+    <div class="campo">
+        <label for="nueva">Nueva Contraseña</label>
+        <input type="password" id="nueva" placeholder="Ingresa tu nueva contraseña">
+    </div>
 
+    <div class="campo">
+        <label for="confirmar">Confirmar Nueva Contraseña</label>
+        <input type="password" id="confirmar" placeholder="Repite la nueva contraseña">
+    </div>
+
+    <div class="acciones">
+        <button type="submit" class="btn-guardar">Guardar cambios</button>
+        <a href="{% url 'inicio_perfil' %}">
+            <button type="button" class="btn-guardar">Cancelar</button>
+        </a>
+    </div>
+</form>
+</div>
 
 
 

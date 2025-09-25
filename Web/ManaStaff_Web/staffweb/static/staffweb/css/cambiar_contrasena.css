@@ -1,0 +1,84 @@
+.seguridad-formulario {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    max-width: 500px;
+    margin: 40px auto;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.seguridad-formulario h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #0A3C7D;
+}
+
+.seguridad-formulario p {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.campo label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.campo input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.campo input:focus {
+    border-color: #0A3C7D;
+}
+
+/* Botones */
+.acciones {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-guardar {
+    background: #0A3C7D;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    text-decoration: none;
+}
+.btn-guardar:hover {
+    background: #062a54;
+}
+
+.btn-cancelar {
+      background: #0A3C7D;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    text-decoration: none;
+}
+.btn-cancelar:hover {
+    background: #c7c7c7;
+}
