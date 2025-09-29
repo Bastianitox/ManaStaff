@@ -111,3 +111,77 @@ body {
     font-size: 18px;
     letter-spacing: 6px;
   }
+
+.recover-right {
+  flex: 1;
+  background-color: #003366;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.recover-right img {
+  width: 120px;
+  margin-right: 15px;
+}
+
+.recover-right h1 {
+  color: white;
+  font-size: 40px;
+  margin: 0;
+}
+
+.recover-right span {
+  color: white;
+  font-size: 18px;
+  letter-spacing: 6px;
+}
+
+.logo-box {
+  width: 120px;        
+  height: 120px;            
+  background-color: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+
+.logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+
+.brand-text h1 {
+  color: white;
+  font-size: 40px;
+  margin: 0;
+}
+
+.brand-text span {
+  color: white;
+  font-size: 18px;
+  letter-spacing: 6px;
+}
+
+.img-logo {
+    background-image: url('../img/logo.png');
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+@media (max-width: 768px) {
+  .recover-right{
+    display: none;
+  }
+}

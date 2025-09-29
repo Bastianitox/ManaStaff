@@ -1,11 +1,70 @@
+const documents = [
+  {
+    id: 1,
+    title: "Contrato de trabajo",
+    format: "PDF",
+    size: "2.4MB",
+    date: "15 Diciembre, 2024",
+    available: true, // Solo este documento está disponible
+    filePath: "/static/staffweb/pdf/Contrato.pdf",
+  },
+  {
+    id: 2,
+    title: "Certificado médico",
+    format: "PDF",
+    size: "1.8MB",
+    date: "10 Diciembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 3,
+    title: "Nómina Noviembre",
+    format: "PDF",
+    size: "950KB",
+    date: "30 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 4,
+    title: "Vacaciones 2024",
+    format: "PDF",
+    size: "1.2MB",
+    date: "20 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 5,
+    title: "Seguro médico",
+    format: "PDF",
+    size: "3.1MB",
+    date: "05 Noviembre, 2024",
+    available: false,
+    filePath: null,
+  },
+  {
+    id: 6,
+    title: "Evaluación anual",
+    format: "PDF",
+    size: "1.7MB",
+    date: "25 Octubre, 2024",
+    available: false,
+    filePath: null,
+  },
+]
+
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("[v0] DOM loaded, initializing documents")
+  console.log("[v0] Documents array:", documents)
+
   const searchInput = document.getElementById("searchInput")
   const filterBtn = document.getElementById("filterBtn")
   const filterModal = document.getElementById("filterModal")
   const closeFilter = document.getElementById("closeFilter")
   const applyFilters = document.getElementById("applyFilters")
   const clearFilters = document.getElementById("clearFilters")
-  const documentCards = document.querySelectorAll(".document-card")
 
   let currentFilters = {
     search: "",
@@ -14,22 +73,117 @@ document.addEventListener("DOMContentLoaded", () => {
     size: "",
   }
 
-  // Funcionalidad de búsqueda mejorada
+  function renderDocuments() {
+    console.log("[v0] Rendering documents...")
+
+    const documentsGrid =
+      document.getElementById("documentsGrid") ||
+      document.querySelector(".documents-grid") ||
+      document.querySelector(".document-grid") ||
+      document.querySelector("[class*='document']")
+
+    if (!documentsGrid) {
+      console.error(
+        "[v0] Documents container not found! Available elements:",
+        document.querySelectorAll("[id*='document'], [class*='document']"),
+      )
+      return
+    }
+
+    console.log("[v0] Found documents container:", documentsGrid)
+    documentsGrid.innerHTML = ""
+
+    documents.forEach((doc) => {
+      console.log("[v0] Rendering document:", doc.title)
+
+      const documentCard = document.createElement("div")
+      documentCard.className = "document-card"
+      documentCard.innerHTML = `
+        <div class="document-content">
+          <div class="document-icon">
+            <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+          </div>
+          <div class="document-info">
+            <h3 class="document-title">${doc.title}</h3>
+            <div class="document-details">
+              <span class="document-format">${doc.format}</span>
+              <span class="document-size">${doc.size}</span>
+              <span class="document-date">${doc.date}</span>
+            </div>
+          </div>
+        </div>
+        <div class="document-actions">
+          <button class="action-btn view-btn" data-doc-id="${doc.id}">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+            </svg>
+            Ver
+          </button>
+          <button class="action-btn download-btn" data-doc-id="${doc.id}">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+            </svg>
+            Descargar
+          </button>
+        </div>
+      `
+      documentsGrid.appendChild(documentCard)
+    })
+
+    console.log("[v0] Documents rendered, total cards:", documentsGrid.children.length)
+    addDocumentEventListeners()
+  }
+
+  function addDocumentEventListeners() {
+    // --- MIRAR DOCUMENTO ---
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const docId = Number.parseInt(this.getAttribute("data-doc-id"))
+        const docObj = documents.find((doc) => doc.id === docId)
+
+        if (docObj && docObj.available) {
+          const viewerUrl = `ver_documentos?doc=${encodeURIComponent(docObj.title)}&docId=${docId}`
+          window.location.href = viewerUrl
+        } else {
+          alert("Documento no encontrado o no disponible")
+        }
+      })
+    })
+
+    // --- DESCARGAR DOCUMENTO ---
+    document.querySelectorAll(".download-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const docId = Number.parseInt(this.getAttribute("data-doc-id"))
+        const docObj = documents.find((doc) => doc.id === docId)
+
+        if (docObj && docObj.available && docObj.filePath) {
+          const link = document.createElement("a")
+          link.href = docObj.filePath
+          link.download = `${docObj.title}.pdf`
+          link.target = "_blank"
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        } else {
+          alert("Documento no encontrado o no disponible para descarga")
+        }
+      })
+    })
+  }
+
   searchInput.addEventListener("input", function () {
     currentFilters.search = this.value.toLowerCase().trim()
     applyAllFilters()
-
-    // Mostrar mensaje si no hay resultados
     showNoResultsMessage()
   })
 
-  // Abrir modal de filtros
   filterBtn.addEventListener("click", () => {
     filterModal.style.display = "flex"
     document.body.style.overflow = "hidden"
   })
 
-  // Cerrar modal de filtros
   closeFilter.addEventListener("click", closeFilterModal)
   filterModal.addEventListener("click", (e) => {
     if (e.target === filterModal) {
@@ -69,6 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   function applyAllFilters() {
+    const documentCards = document.querySelectorAll(".document-card")
     const visibleCards = []
 
     documentCards.forEach((card) => {
@@ -81,18 +236,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (currentFilters.search) {
         const searchTerms = currentFilters.search.split(" ").filter((term) => term.length > 0)
-        const matchesSearch = searchTerms.every((term) => title.includes(term) || format.toLowerCase().includes(term))
+        const matchesSearch = searchTerms.every(
+          (term) => title.includes(term) || format.toLowerCase().includes(term),
+        )
         if (!matchesSearch) {
           showCard = false
         }
       }
 
-      // Filtro de formato
       if (currentFilters.format && format !== currentFilters.format) {
         showCard = false
       }
 
-      // Filtro de tamaño
       if (currentFilters.size) {
         const sizeValue = Number.parseFloat(sizeText.replace(/[^\d.]/g, ""))
         const sizeUnit = sizeText.includes("KB") ? "KB" : "MB"
@@ -130,7 +285,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function sortDocuments(cards, sortType) {
-    const container = document.querySelector(".documents-grid")
+    const container =
+      document.getElementById("documentsGrid") ||
+      document.querySelector(".documents-grid") ||
+      document.querySelector(".document-grid") ||
+      document.querySelector("[class*='document']")
+
+    if (!container) {
+      console.error("[v0] Container not found for sorting")
+      return
+    }
 
     cards.sort((a, b) => {
       switch (sortType) {
@@ -151,56 +315,32 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
 
-    // Reordenar elementos en el DOM
     cards.forEach((card) => {
       container.appendChild(card.element)
     })
   }
 
-  // Funcionalidad de los botones de acción
-  document.querySelectorAll(".view-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const documentTitle = this.closest(".document-card").querySelector(".document-title").textContent
-
-      // Mapear títulos de documentos a archivos PDF
-      const documentFiles = {
-        "Contrato de trabajo": "contrato_trabajo.pdf",
-        "Certificado médico": "certificado_medico.pdf",
-        "Nómina Noviembre": "nomina_noviembre.pdf",
-        "Vacaciones 2024": "vacaciones_2024.pdf",
-        "Seguro médico": "seguro_medico.pdf",
-        "Evaluación anual": "evaluacion_anual.pdf",
-      }
-
-      // Obtener nombre del archivo o usar uno por defecto
-      const fileName = documentFiles[documentTitle] || "documento.pdf"
-      const pdfPath = `/static/pdf/${fileName}`
-
-      // Redirigir a la página de visualización con parámetros
-      const viewerUrl = `/ver_documentos/?doc=${encodeURIComponent(documentTitle)}&path=${encodeURIComponent(pdfPath)}`
-      window.location.href = viewerUrl
-    })
-  })
-
-  document.querySelectorAll(".download-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const documentTitle = this.closest(".document-card").querySelector(".document-title").textContent
-      alert(`Descargando: ${documentTitle}`)
-      // Aquí puedes agregar la lógica para descargar el documento
-    })
-  })
-
   function showNoResultsMessage() {
-    const container = document.querySelector(".documents-grid")
-    const visibleCards = Array.from(documentCards).filter((card) => card.style.display !== "none")
+    const container =
+      document.getElementById("documentsGrid") ||
+      document.querySelector(".documents-grid") ||
+      document.querySelector(".document-grid") ||
+      document.querySelector("[class*='document']")
 
-    // Remover mensaje anterior si existe
+    if (!container) {
+      console.error("[v0] Container not found for no results message")
+      return
+    }
+
+    const visibleCards = Array.from(document.querySelectorAll(".document-card")).filter(
+      (card) => card.style.display !== "none",
+    )
+
     const existingMessage = document.querySelector(".no-results-message")
     if (existingMessage) {
       existingMessage.remove()
     }
 
-    // Mostrar mensaje si no hay resultados y hay texto de búsqueda
     if (visibleCards.length === 0 && currentFilters.search) {
       const noResultsDiv = document.createElement("div")
       noResultsDiv.className = "no-results-message"
@@ -215,5 +355,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  renderDocuments()
   applyAllFilters()
 })

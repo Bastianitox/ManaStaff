@@ -1,0 +1,52 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'staffweb/css/administrar_solicitudes.css' %}">
+<link rel="stylesheet" href="{% static 'staffweb/css/detalle_solicitud.css' %}">
+<title>Administrar solicitudes</title>
+{% endblock head %}
+
+{% block principal %}
+<div class="header">
+    <h1>Administrar solicitudes</h1>
+    <p>Gestiona las solicitudes de los usuarios</p>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="search-filter-section">
+    <div class="search-container">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Busca solicitudes..." id="searchInput">
+    </div>
+    <div class="sort-container">
+    <select id="sortSelect">
+        <option value="asc">Más antigua</option>
+        <option value="desc">Más reciente</option>
+    </select>
+</div>
+
+</div>
+
+<!-- Status Tabs -->
+<div class="status-tabs">
+    <button class="status-tab active" data-status="pendiente">Pendientes</button>
+    <button class="status-tab" data-status="asignada">Asignadas</button>
+    <button class="status-tab" data-status="cerrada">Cerradas</button>
+</div>
+
+<div class="requests-section">
+    <h2>Solicitudes</h2>
+    <div id="requestsGrid" class="requests-grid"></div>
+    <p id="noResults" class="no-results">No hay solicitudes disponibles</p>
+</div>
+
+
+{% endblock principal %}
+
+{% block js %}
+<script src="{% static 'staffweb/js/administrar_solicitudes.js' %}"></script>
+{% endblock js %}

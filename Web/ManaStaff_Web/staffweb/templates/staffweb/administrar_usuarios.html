@@ -1,0 +1,67 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'staffweb/css/administrar_usuarios.css' %}">
+<script src="{% static 'staffweb/js/administrar_usuarios.js' %}"></script>
+<title>Administración</title>
+{% endblock head %}
+
+{% block principal %}
+<div class="header">
+    <h1>Administrar usuarios</h1>
+    <p>Aquí puedes modificar, crear, eliminar usuarios o visualizar</p>
+</div>
+
+<div class="container">
+    <!-- Buscador y Crear Usuario -->
+    <div class="search-actions-section">
+        <div class="search-container">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Buscar usuario por nombre..." class="search-input">
+        </div>
+
+        <button id="createUserBtn" class="create-user-btn" data-url="{% url 'crear_usuario' %}">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+            </svg>
+            Crear Usuario
+        </button>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="table-container">
+        <table id="usersTable" class="users-table">
+            <thead>
+                <tr>
+                    <th>Nombre Completo</th>
+                    <th>Correo Electrónico</th>
+                    <th>Cargo</th>
+                    <th>Fecha de Creación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody" data-edit-url="{% url 'modificar_usuario' %}">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination-container">
+        <button id="prevBtn" class="pagination-btn" disabled>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/>
+            </svg>
+        </button>
+        <span id="pageInfo" class="page-info">Página 1 de 1</span>
+        <button id="nextBtn" class="pagination-btn" disabled>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+            </svg>
+        </button>
+    </div>
+</div>
+{% endblock principal %}
