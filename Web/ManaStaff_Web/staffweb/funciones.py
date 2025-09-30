@@ -4,7 +4,7 @@ from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime
 
-from .firebase import authP, auth, database, storage
+from .firebase import authP, auth, database, storage, db
 
 @require_POST
 def iniciarSesion(request):
@@ -23,6 +23,8 @@ def iniciarSesion(request):
         return render(request, 'staffweb/index.html', {"mensaje": "El correo es inválido."})
 
     # VERIFICAR QUE EL CORREO EXISTA EN REALTIME DATABASE
+    usuario = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
+
     usuarioDATABASE = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
     if not usuarioDATABASE:
         return render(request, 'staffweb/index.html', {"mensaje": "El correo no está registrado."})
@@ -89,3 +91,40 @@ def iniciarSesion(request):
 def cerrarSesion(request):
     request.session.flush()
     return redirect("index")
+
+
+def ejemplo_crear(request):
+    ref = database.child('/Usuario/'+ "RUT")
+    ref.set({
+        "ApellidoPaterno": "Nuñez",
+        "Nombre": "Javier",
+        "Telefono": "912345678",
+        "Direccion": "asdasda",
+        "Rol": "Dos",
+        "Cargo": "Uno",
+        "Fecha_creacion": datetime.now().isoformat()
+    })
+
+    return redirect("inicio_documentos")
+
+def ejemplo_modificar(request):
+
+    rut = "RUT"
+    ref = database.child('/Usuario/'+ rut)
+    ref.update({
+        "ApellidoPaterno": "Nuñez_nuevo",
+        "Nombre": "Javier_nuevo",
+        "Telefono": "912345678",
+        "Direccion": "asdasda_nuevo",
+        "Fecha_creacion": datetime.now().isoformat()
+    })
+
+    return redirect("inicio_documentos")
+
+def ejemplo_eliminar(request):
+    #NO funciona por permisos
+    rut = "RUT"
+    ref = db.reference('/Usuario/'+ rut)
+    ref.delete()
+
+    return redirect("inicio_documentos")
