@@ -1,126 +1,25 @@
 // Datos de usuarios de prueba
-const usersData = [
-  {
-    id: 1,
-    name: "Ana García López",
-    email: "ana.garcia@empresa.com",
-    position: "Gerente de Ventas",
-    createdDate: "15 Enero, 2024",
-    sortDate: new Date("2024-01-15"),
-  },
-  {
-    id: 2,
-    name: "Carlos Rodríguez Martín",
-    email: "carlos.rodriguez@empresa.com",
-    position: "Desarrollador Senior",
-    createdDate: "22 Febrero, 2024",
-    sortDate: new Date("2024-02-22"),
-  },
-  {
-    id: 3,
-    name: "María Fernández Silva",
-    email: "maria.fernandez@empresa.com",
-    position: "Diseñadora UX/UI",
-    createdDate: "08 Marzo, 2024",
-    sortDate: new Date("2024-03-08"),
-  },
-  {
-    id: 4,
-    name: "José Luis Pérez",
-    email: "jose.perez@empresa.com",
-    position: "Contador",
-    createdDate: "14 Abril, 2024",
-    sortDate: new Date("2024-04-14"),
-  },
-  {
-    id: 5,
-    name: "Laura Sánchez Ruiz",
-    email: "laura.sanchez@empresa.com",
-    position: "Marketing Manager",
-    createdDate: "03 Mayo, 2024",
-    sortDate: new Date("2024-05-03"),
-  },
-  {
-    id: 6,
-    name: "Miguel Ángel Torres",
-    email: "miguel.torres@empresa.com",
-    position: "Analista de Sistemas",
-    createdDate: "19 Junio, 2024",
-    sortDate: new Date("2024-06-19"),
-  },
-  {
-    id: 7,
-    name: "Carmen Jiménez Vega",
-    email: "carmen.jimenez@empresa.com",
-    position: "Recursos Humanos",
-    createdDate: "25 Julio, 2024",
-    sortDate: new Date("2024-07-25"),
-  },
-  {
-    id: 8,
-    name: "Francisco Morales",
-    email: "francisco.morales@empresa.com",
-    position: "Supervisor de Producción",
-    createdDate: "11 Agosto, 2024",
-    sortDate: new Date("2024-08-11"),
-  },
-  {
-    id: 9,
-    name: "Isabel Romero Castro",
-    email: "isabel.romero@empresa.com",
-    position: "Asistente Administrativa",
-    createdDate: "07 Septiembre, 2024",
-    sortDate: new Date("2024-09-07"),
-  },
-  {
-    id: 10,
-    name: "Antonio Herrera",
-    email: "antonio.herrera@empresa.com",
-    position: "Técnico de Soporte",
-    createdDate: "16 Octubre, 2024",
-    sortDate: new Date("2024-10-16"),
-  },
-  {
-    id: 11,
-    name: "Pilar Navarro Díaz",
-    email: "pilar.navarro@empresa.com",
-    position: "Coordinadora de Proyectos",
-    createdDate: "28 Noviembre, 2024",
-    sortDate: new Date("2024-11-28"),
-  },
-  {
-    id: 12,
-    name: "Rafael Guerrero",
-    email: "rafael.guerrero@empresa.com",
-    position: "Desarrollador Frontend",
-    createdDate: "05 Diciembre, 2024",
-    sortDate: new Date("2024-12-05"),
-  },
-  {
-    id: 13,
-    name: "Rocío Mendoza Luna",
-    email: "rocio.mendoza@empresa.com",
-    position: "Especialista en Calidad",
-    createdDate: "12 Diciembre, 2024",
-    sortDate: new Date("2024-12-12"),
-  },
-  {
-    id: 14,
-    name: "Javier Ortega Ramos",
-    email: "javier.ortega@empresa.com",
-    position: "Consultor de Negocios",
-    createdDate: "18 Diciembre, 2024",
-    sortDate: new Date("2024-12-18"),
-  },
-  {
-    id: 15,
-    name: "Beatriz Vargas Cruz",
-    email: "beatriz.vargas@empresa.com",
-    position: "Directora de Operaciones",
-    createdDate: "24 Diciembre, 2024",
-    sortDate: new Date("2024-12-24"),
-  },
-]
+var usersData = []
+
+async function obtener_usuarios() {
+  try {
+    const response = await fetch("obtener_usuarios")
+    if (!response.ok) throw new Error("Error HTTP " + response.status)
+
+    const data = await response.json()
+    usersData = data.usuarios
+
+    filteredUsers = [...usersData].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate))
+    renderTable()
+  } catch (error) {
+    console.error("Error al obtener los usuarios:", error)
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  obtener_usuarios()
+})
+
 
 const sortedUsersData = [...usersData].sort((a, b) => b.sortDate - a.sortDate)
 

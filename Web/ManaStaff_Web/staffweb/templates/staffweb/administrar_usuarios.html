@@ -3,7 +3,6 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'staffweb/css/administrar_usuarios.css' %}">
-<script src="{% static 'staffweb/js/administrar_usuarios.js' %}"></script>
 <title>Administración</title>
 {% endblock head %}
 
@@ -65,3 +64,8 @@
     </div>
 </div>
 {% endblock principal %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'staffweb/js/administrar_usuarios.js' %}"></script>
+{% endblock js %}

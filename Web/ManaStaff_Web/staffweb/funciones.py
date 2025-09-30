@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime
+from django.http import JsonResponse
 
 from .firebase import authP, auth, database, storage, db
 
@@ -92,6 +93,53 @@ def cerrarSesion(request):
     request.session.flush()
     return redirect("index")
 
+def obtener_usuarios(request):
+    # OBTENER LOS USUARIOS DE LA BASE DE DATOS
+    usuarios = database.child("Usuario").get().val() or {}
+
+    usuarios_lista = []
+    for id_usu, usuario in usuarios.items():
+        # OBTENER EL NOMBRE DEL CARGO
+        cargo_id = usuario.get("Cargo")
+        cargo_data = database.child("Cargo").child(cargo_id).get()
+        cargo_nombre = cargo_data.val().get("Nombre") if cargo_data.val() else "Sin cargo"
+
+        # NOMBRE COMPLETO
+        nombre_completo = f"{usuario.get('Nombre', '')} {usuario.get('ApellidoPaterno', '')} {usuario.get('ApellidoMaterno', '')}".strip()
+
+        # FECHA CREACIÓN DESDE LA BD
+        fecha_creacion_str = usuario.get("Fecha_creacion")
+        created_date = "Sin fecha"
+        sort_date = None
+        if fecha_creacion_str:
+            try:
+                fecha_creacion = datetime.fromisoformat(fecha_creacion_str)
+                created_date = fecha_creacion.strftime("%d %B, %Y")  # Ej: "15 Enero, 2024"
+                sort_date = fecha_creacion.date().isoformat()        # Ej: "2024-01-15"
+            except ValueError:
+                created_date = fecha_creacion_str  # Dejar como viene si no es ISO
+
+        usuarios_lista.append({
+            "id": id_usu,
+            "name": nombre_completo,
+            "email": usuario.get("correo", ""),
+            "position": cargo_nombre,
+            "createdDate": created_date,
+            "sortDate": sort_date or fecha_creacion_str
+        })
+
+    return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
+
+
+
+
+
+
+
+
+
+
+#EJEMPLOS
 
 def ejemplo_crear(request):
     ref = database.child('/Usuario/'+ "RUT")
