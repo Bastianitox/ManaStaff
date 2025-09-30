@@ -2,8 +2,74 @@
 {% load static %}
 
 {% block head %}
-<title>Administración</title>
+<link rel="stylesheet" href="{% static 'staffweb/css/administrar_documentos.css' %}">
+<title>Administrar documentos</title>
 {% endblock head %}
 
 {% block principal %}
+<div class="header">
+    <h1>Administrar Documentos</h1>
+    <p>Gestiona los documentos de los usuarios</p>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="search-filter-section">
+    <div class="search-container">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" 
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Busca por nombre de usuario..." id="searchInput">
+    </div>
+
+    <div class="sort-container">
+        <select id="sortSelect">
+            <option value="asc">Más antiguos</option>
+            <option value="desc">Más recientes</option>
+        </select>
+    </div>
+</div>
+
+<!-- Status Tabs -->
+<div class="status-tabs">
+    <button class="status-tab active" data-status="activo">Activos</button>
+    <button class="status-tab" data-status="pendiente">Pendientes</button>
+    <button class="status-tab" data-status="caducado">Caducados</button>
+</div>
+
+<!-- Documents Section -->
+<div class="documents-section">
+    <h2>Documentos por Usuario</h2>
+
+    <!-- Ejemplo Usuario -->
+    <div class="user-documents">
+        <div class="bloque-usuario">
+        <h3 class="usuario-nombre">Juan Pérez</h3>
+        <div class="documents-grid">
+            <div class="document-card">
+                <p><strong>Contrato.pdf</strong></p>
+                <p>Subido: 2025-09-01</p>
+                <p class="status activo">Activo</p>
+                <div class="document-actions">
+                    <button class="btn-view">Ver</button>
+                    <button class="btn-up">Subir</button>
+                    <button class="btn-download">Descargar</button>
+                    <button class="btn-delete">Eliminar</button>
+                </div>
+            </div>
+            <div class="document-card">
+                <p><strong>Certificado.jpg</strong></p>
+                <p>Subido: 2025-09-05</p>
+                <p class="status pendiente">Pendiente</p>
+                <div class="document-actions">
+                    <button class="btn-view">Ver</button>
+                    <button class="btn-up">Subir</button>
+                    <button class="btn-download">Descargar</button>
+                    <button class="btn-delete">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock principal %}
