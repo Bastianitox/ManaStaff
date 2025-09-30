@@ -1,7 +1,8 @@
 import re
 from django.shortcuts import render, redirect
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
+from datetime import datetime
 
 from .firebase import authP, auth, database, storage
 
@@ -60,6 +61,10 @@ def iniciarSesion(request):
     # inicio correcto → guardar datos del usuario
     for id_usu, usuario in usuarioDATABASE.items():
 
+        #ACTUALIZAR ULTIMO_LOGIN
+        usuario_ref = database.child("Usuario").child(id_usu)
+        usuario_ref.update({"Ultimo_login": datetime.now().isoformat()})
+
         #OBTENER EL NOMBRE DEL CARGO
         cargo_id = usuario.get("Cargo")
 
@@ -78,4 +83,9 @@ def iniciarSesion(request):
         request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
         request.session['rol_usu'] = usuario.get('Rol', '')
 
-        return render(request, 'staffweb/inicio_documentos.html', {"mensaje": "Sesión Iniciada."})
+        return redirect("inicio_documentos")
+
+@require_GET
+def cerrarSesion(request):
+    request.session.flush()
+    return redirect("index")

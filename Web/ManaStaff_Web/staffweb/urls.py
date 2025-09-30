@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
-from .funciones import iniciarSesion
+from .funciones import iniciarSesion, cerrarSesion
 
 urlpatterns = [
 
@@ -29,6 +29,7 @@ urlpatterns = [
 
     #FUNCIONES
     path('iniciarSesion',iniciarSesion,name="iniciarSesion"),
+    path('cerrarSesion',cerrarSesion,name="cerrarSesion"),
 
 ]
 

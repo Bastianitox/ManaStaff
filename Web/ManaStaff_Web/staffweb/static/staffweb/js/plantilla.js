@@ -18,5 +18,5 @@ mobileOverlay.addEventListener("click", () => {
 });
 
 logoutButton.onclick = function () {
-    window.location.href = "/";
+    window.location.href = "/cerrarSesion";
 };
