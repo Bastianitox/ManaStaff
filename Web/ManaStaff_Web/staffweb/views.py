@@ -3,7 +3,15 @@ from django.shortcuts import render
 import os
 from django.conf import settings
 from django.shortcuts import render
-# Create your views here.
+
+#IMPORTS DE FIREBASE
+from firebase_admin import auth
+from .firebase import firebase, db, storage
+
+
+# VARIABLES FIREBASE
+database = firebase.database()
+authP = firebase.auth()
 
 def index(request):
     return render(request, 'staffweb/index.html')
