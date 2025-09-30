@@ -24,7 +24,7 @@
         <h2>MANA STAFF</h2>
         <p>Para iniciar sesión introduce tu usuario y contraseña.</p>
 
-        <form method="POST" action="{% url 'inicio_documentos' %}">
+        <form method="POST" action="{% url 'iniciarSesion' %}">
           {% csrf_token %}
           <label for="email">Email</label>
           <input type="email" id="email" name="email" placeholder="Introduce tu correo" required>
@@ -34,6 +34,7 @@
 
           <a href="{% url 'recuperar_contrasena' %}" class="forgot">¿Olvidaste tu contraseña?</a>
           <button type="submit">Iniciar sesión</button>
+          {{mensaje}}
         </form>
       </div>
 
