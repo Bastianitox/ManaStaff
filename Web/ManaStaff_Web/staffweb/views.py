@@ -217,3 +217,9 @@ def administrar_solicitudes(request):
     
 def administrar_documentos(request):
     return render(request, "staffweb/administrar_documentos.html")
+
+def administrar_noticiasyeventos(request):
+    return render(request, "staffweb/administrar_noticiasyeventos.html")
+
+def administrar_logs(request):
+    return render(request, "staffweb/administrar_logs.html")
