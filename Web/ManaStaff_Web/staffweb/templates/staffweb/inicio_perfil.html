@@ -25,9 +25,13 @@
         <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil" class="foto">
         <button type="button" class="btn-foto">Cambiar foto</button>
     </div>
-=======
     <form method="post">
         {% csrf_token %}
+=======
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
         <div class="fila">
             <div class="campo">
                 <label for="nombres">Nombres</label>
