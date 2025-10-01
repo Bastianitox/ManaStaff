@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from .firebase import authP, auth, database, storage, db
 
 
-bucket = storage.bucket()
 @require_POST
 def iniciarSesion(request):
     request.session.flush()
@@ -42,9 +41,9 @@ def iniciarSesion(request):
         request.session['firebase_id_token'] = id_token
         request.session['firebase_refresh_token'] = refresh_token
 
-        # VERIFICAR E ID DEL TOKEN CON FIREBASE_ADMIN
-        decoded_token = auth.verify_id_token(id_token)
-        uid = decoded_token['uid']
+        uid = user['localId']
+        request.session['usuario_id'] = uid
+
 
     except HTTPError as e:
         #VALIDAR QUE EL USUARIO Y CONTRASEÑA SEAN CORRECTOS
@@ -147,13 +146,19 @@ def crear_usuario_funcion(request):
     pin = request.POST.get('pin', None)
     password = request.POST.get('password', None)
 
+
+
+
     #CACHE CONTROL
     cache_control_header = "public, max-age=3600, s-maxage=86400"
 
     #SUBIR IMAGEN A STORAGE
+    bucket = storage.bucket()
 
     blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
-    blob.upload_from_file(imagen)
+    blob.upload_from_file(imagen, content_type=imagen.content_type)
+
+    imagen.width
     
     blob.cache_control = cache_control_header
     blob.patch()
@@ -181,14 +186,13 @@ def crear_usuario_funcion(request):
         "imagen":urlImagen,
         "rol":rol,
         "PIN":pin,
-        "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+
+
+        "tamano_docmento": imagen.width
     })
 
     return redirect("administrar_usuarios")
-
-
-
-
 
 
 
