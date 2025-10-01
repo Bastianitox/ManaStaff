@@ -128,3 +128,30 @@ def ejemplo_eliminar(request):
     ref.delete()
 
     return redirect("inicio_documentos")
+
+###EDITAR PERFIL############
+def editar_usuario(request):
+    RUT = request.session.get('usuario')
+    if not RUT:
+        return None
+    
+    ref = database.child("Usuario").child(RUT).get()
+    return ref.val()
+
+@require_POST
+def actualizar_perfil(request):
+    RUT = request.session.get('RUT')
+    if not RUT:
+        return redirect("index")
+
+    direccion = request.POST.get("direccion")
+    telefono = request.POST.get("telefono")
+
+    ref = database.child("Usuario").child(RUT)
+    ref.update({
+        "Direccion": direccion,
+        "Telefono": telefono,
+        "Fecha_modificacion": datetime.now().isoformat()
+    })
+
+    return redirect("inicio_perfil")

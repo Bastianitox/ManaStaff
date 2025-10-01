@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
-from .funciones import iniciarSesion, cerrarSesion, ejemplo_crear, ejemplo_modificar, ejemplo_eliminar
+from .funciones import iniciarSesion, cerrarSesion, ejemplo_crear, ejemplo_modificar, ejemplo_eliminar, editar_usuario, actualizar_perfil
 
 urlpatterns = [
 
@@ -33,6 +33,8 @@ urlpatterns = [
     path('ejemplo_crear',ejemplo_crear,name="ejemplo_crear"),
     path('ejemplo_modificar',ejemplo_modificar,name="ejemplo_modificar"),
     path('ejemplo_eliminar',ejemplo_eliminar,name="ejemplo_eliminar"),
+    path('actualizar_perfil',actualizar_perfil,name="actualizar_perfil"),
+    path('editar_usuario',editar_usuario,name="editar_usuario"),
 
 ]
 
