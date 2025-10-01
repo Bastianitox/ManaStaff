@@ -2,11 +2,13 @@ import re
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import JsonResponse
 
 from .firebase import authP, auth, database, storage, db
 
+
+bucket = storage.bucket()
 @require_POST
 def iniciarSesion(request):
     request.session.flush()
@@ -130,7 +132,59 @@ def obtener_usuarios(request):
 
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
 
+def crear_usuario_funcion(request):
+    nombre = request.POST.get('nombre', None)
+    segundo_nombre = request.POST.get('Segundo_nombre', None)
+    apellido_paterno = request.POST.get('apellido_paterno', None)
+    apellido_materno = request.POST.get('apellido_materno', None)
+    rut = request.POST.get('rut', None)
+    celular = request.POST.get('celular', None)
+    direccion = request.POST.get('direccion', None)
+    email = request.POST.get('email', None)
+    cargo = request.POST.get('cargo', None)
+    imagen = request.FILES.get('imagen', None)
+    rol = request.POST.get('rol', None)
+    pin = request.POST.get('pin', None)
+    password = request.POST.get('password', None)
 
+    #CACHE CONTROL
+    cache_control_header = "public, max-age=3600, s-maxage=86400"
+
+    #SUBIR IMAGEN A STORAGE
+
+    blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
+    blob.upload_from_file(imagen)
+    
+    blob.cache_control = cache_control_header
+    blob.patch()
+
+    urlImagen = blob.generate_signed_url(
+        expiration=timedelta(weeks=150),
+    method="GET")
+
+
+    #CREAR USUARIO EN AUTENTICATION
+    userFIREBASE = auth.create_user(email = email, password= password)
+
+    #CREAR USUARIO DENTRO DE LA BASE DE DATOS
+    rut_limpio = rut.replace(".", "").replace("-", "")
+    ref = database.child(f"Usuario/{rut_limpio}")
+    ref.set({
+        "Nombre":nombre,
+        "Segundo_nombre":segundo_nombre,
+        "ApellidoPaterno":apellido_paterno,
+        "ApellidoMaterno":apellido_materno,
+        "Telefono":celular,
+        "Direccion":direccion,
+        "correo":email,
+        "Cargo":cargo,
+        "imagen":urlImagen,
+        "rol":rol,
+        "PIN":pin,
+        "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    })
+
+    return redirect("administrar_usuarios")
 
 
 

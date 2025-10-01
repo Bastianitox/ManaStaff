@@ -56,7 +56,28 @@ def administrar_usuarios(request):
     return render(request, "staffweb/administrar_usuarios.html")
 
 def crear_usuario(request):
-    return render(request, "staffweb/crear_usuario.html")
+    roles_lista = []
+    cargos_lista = []
+    #OBTENER ROLES
+    roles = database.child("Rol").get().val() or {}
+    for id_rol, rol in roles.items():
+        roles_lista.append({
+            "id_rol": id_rol,
+            "nombre": rol.get("nombre")
+        })
+    #OBTENER CARGOS
+    cargos = database.child("Cargo").get().val() or {}
+    for id_cargo, cargo in cargos.items():
+        cargos_lista.append({
+            "id_cargo": id_cargo,
+            "nombre": cargo.get("Nombre")
+        })
+    
+    valores = {
+        "roles": roles_lista,
+        "cargos": cargos_lista
+    }
+    return render(request, "staffweb/crear_usuario.html", valores)
 
 def modificar_usuario(request):
     return render(request, "staffweb/modificar_usuario.html")

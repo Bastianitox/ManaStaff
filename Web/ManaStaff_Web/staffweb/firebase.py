@@ -1,10 +1,11 @@
 import pyrebase
 import firebase_admin
+import os
 from firebase_admin import credentials, auth, db, storage
 
-certificados = 'staffweb/static/staffweb/xe/manastaff-7ef1d-firebase-adminsdk-fbsvc-075d54f81b.json'
+certificados = 'staffweb/static/staffweb/xe/manastaff-7ef1d-firebase-adminsdk-fbsvc-305b357f9e.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = certificados
 
-# --- Pyrebase (cliente) ---
 firebase_config = {
     "apiKey": "AIzaSyDrogTFQNg_BNb1qmkIhJ6cpppzPw-DLOo",
     "authDomain": "manastaff-7ef1d.firebaseapp.com",
@@ -19,16 +20,10 @@ authP = firebase.auth()
 database = firebase.database()
 storageP = firebase.storage()   
 
-# --- Firebase Admin (servidor) ---
 cred = credentials.Certificate(certificados)
 
-# 👇 evitar inicialización múltiple
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
         "databaseURL": "https://manastaff-7ef1d-default-rtdb.firebaseio.com",
-        "storageBucket": "manastaff-7ef1d.appspot.com" 
+        "storageBucket": "manastaff-7ef1d.firebasestorage.app",
     })
-
-authA = auth
-dbA = db
-storageA = storage
