@@ -1,104 +1,183 @@
-const documents = [
-  {
-    id: 1,
-    title: "Contrato de trabajo",
-    format: "PDF",
-    size: "2.4MB",
-    date: "15 Diciembre, 2024",
-    available: true, // Solo este documento está disponible
-    filePath: "/static/staffweb/pdf/Contrato.pdf",
-  },
-  {
-    id: 2,
-    title: "Certificado médico",
-    format: "PDF",
-    size: "1.8MB",
-    date: "10 Diciembre, 2024",
-    available: false,
-    filePath: null,
-  },
-  {
-    id: 3,
-    title: "Nómina Noviembre",
-    format: "PDF",
-    size: "950KB",
-    date: "30 Noviembre, 2024",
-    available: false,
-    filePath: null,
-  },
-  {
-    id: 4,
-    title: "Vacaciones 2024",
-    format: "PDF",
-    size: "1.2MB",
-    date: "20 Noviembre, 2024",
-    available: false,
-    filePath: null,
-  },
-  {
-    id: 5,
-    title: "Seguro médico",
-    format: "PDF",
-    size: "3.1MB",
-    date: "05 Noviembre, 2024",
-    available: false,
-    filePath: null,
-  },
-  {
-    id: 6,
-    title: "Evaluación anual",
-    format: "PDF",
-    size: "1.7MB",
-    date: "25 Octubre, 2024",
-    available: false,
-    filePath: null,
-  },
-]
+// Tabla usada para interpretar meses en español cuando ordenamos por fecha
+const SPANISH_MONTHS = {
+  enero: 0,
+  febrero: 1,
+  marzo: 2,
+  abril: 3,
+  mayo: 4,
+  junio: 5,
+  julio: 6,
+  agosto: 7,
+  septiembre: 8,
+  setiembre: 8,
+  octubre: 9,
+  noviembre: 10,
+  diciembre: 11,
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("[v0] DOM loaded, initializing documents")
-  console.log("[v0] Documents array:", documents)
+// Convierte cualquier representación de tamaño (KB/MB/GB) a MB para comparaciones homogéneas
+function parseSizeToMb(sizeText) {
+  if (!sizeText) {
+    return null
+  }
+  const match = String(sizeText).trim().match(/([\d.,]+)\s*([a-zA-Z]+)?/)
+  if (!match) {
+    return null
+  }
+  const value = Number.parseFloat(match[1].replace(',', '.'))
+  if (Number.isNaN(value)) {
+    return null
+  }
+  const unit = (match[2] || 'MB').toUpperCase()
+  switch (unit) {
+    case 'KB':
+      return value / 1024
+    case 'GB':
+      return value * 1024
+    default:
+      return value
+  }
+}
 
-  const searchInput = document.getElementById("searchInput")
-  const filterBtn = document.getElementById("filterBtn")
-  const filterModal = document.getElementById("filterModal")
-  const closeFilter = document.getElementById("closeFilter")
-  const applyFilters = document.getElementById("applyFilters")
-  const clearFilters = document.getElementById("clearFilters")
-
-  let currentFilters = {
-    search: "",
-    format: "",
-    sort: "date-desc",
-    size: "",
+// Prepara una fecha comparable a partir del ISO entregado por Django o del texto visible en la tarjeta
+function parseDateForSorting(sortDate, fallbackText) {
+  if (sortDate) {
+    const isoDate = sortDate.length === 10 ? `${sortDate}T00:00:00` : sortDate
+    const parsed = new Date(isoDate)
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed
+    }
   }
 
-  function renderDocuments() {
-    console.log("[v0] Rendering documents...")
+  if (!fallbackText) {
+    return null
+  }
 
-    const documentsGrid =
-      document.getElementById("documentsGrid") ||
-      document.querySelector(".documents-grid") ||
-      document.querySelector(".document-grid") ||
+  const match = String(fallbackText)
+    .trim()
+    .match(/(\d{1,2})\s+([A-Za-z\u00c1\u00c9\u00cd\u00d3\u00da\u00e1\u00e9\u00f3\u00fa\u00f1]+),\s*(\d{4})/)
+
+  if (!match) {
+    return null
+  }
+
+  const day = Number.parseInt(match[1], 10)
+  const monthName = match[2].toLowerCase()
+  const year = Number.parseInt(match[3], 10)
+  const monthIndex = SPANISH_MONTHS[monthName]
+
+  if (!Number.isInteger(day) || !Number.isInteger(year) || monthIndex === undefined) {
+    return null
+  }
+
+  return new Date(year, monthIndex, day)
+}
+
+// Normaliza la estructura recibida desde Django para que el resto del código se mantenga igual
+function normalizeDocument(doc, index) {
+  const normalized = { ...doc }
+
+  normalized.id = doc.id || doc.firebaseId || `doc-${index + 1}`
+  normalized.title = (doc.title || doc.nombre || `Documento ${index + 1}`).trim()
+  normalized.format = (doc.format || doc.tipo || doc.tipo_documento || 'PDF').toUpperCase()
+  normalized.size = doc.size || doc.tamano_archivo || doc.tamano || '0MB'
+
+  const providedSize = Number.isFinite(doc.sizeInMb) ? doc.sizeInMb : parseSizeToMb(doc.size)
+  normalized.sizeInMb = Number.isFinite(providedSize) ? providedSize : null
+
+  normalized.date = doc.date || doc.Fecha_emitida || doc.fecha_emitida || ''
+  normalized.sortDate = doc.sortDate || null
+  normalized.available = Boolean(doc.available && doc.filePath)
+  normalized.filePath = doc.filePath || null
+
+  return normalized
+}
+
+// Lee el JSON embebido en el template y lo transforma en un arreglo utilizable por el front
+function readDocumentsData() {
+  const scriptElement = document.getElementById('documents-data')
+  if (!scriptElement) {
+    console.warn('[docs] JSON data element not found, fallback to empty list')
+    return []
+  }
+  try {
+    const parsed = JSON.parse(scriptElement.textContent)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed.map((doc, index) => normalizeDocument(doc, index))
+  } catch (error) {
+    console.error('[docs] Failed to parse documents JSON', error)
+    return []
+  }
+}
+
+// Data base que usarán los filtros y el renderizado en el frontend
+const documents = readDocumentsData()
+
+// Inicializa listeners y render cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('searchInput')
+  const filterBtn = document.getElementById('filterBtn')
+  const filterModal = document.getElementById('filterModal')
+  const closeFilter = document.getElementById('closeFilter')
+  const applyFilters = document.getElementById('applyFilters')
+  const clearFilters = document.getElementById('clearFilters')
+
+  const formatFilter = document.getElementById('formatFilter')
+  const sortFilter = document.getElementById('sortFilter')
+  const sizeFilter = document.getElementById('sizeFilter')
+
+  // Representa los filtros activos en la interfaz
+  const state = {
+    search: '',
+    format: '',
+    sort: 'date-desc',
+    size: '',
+  }
+
+  function getDocumentsContainer() {
+    return (
+      document.getElementById('documentsGrid') ||
+      document.querySelector('.documents-grid') ||
+      document.querySelector('.document-grid') ||
       document.querySelector("[class*='document']")
+    )
+  }
 
-    if (!documentsGrid) {
-      console.error(
-        "[v0] Documents container not found! Available elements:",
-        document.querySelectorAll("[id*='document'], [class*='document']"),
-      )
+  // Crea cada tarjeta conservando la estética original
+  function renderDocuments() {
+    const container = getDocumentsContainer()
+    if (!container) {
+      console.error('[docs] Documents container not found')
       return
     }
 
-    console.log("[v0] Found documents container:", documentsGrid)
-    documentsGrid.innerHTML = ""
+    container.innerHTML = ''
+
+    if (!documents.length) {
+      showNoResultsMessage(true)
+      return
+    }
 
     documents.forEach((doc) => {
-      console.log("[v0] Rendering document:", doc.title)
+      const card = document.createElement('div')
+      card.className = 'document-card'
+      card.dataset.docId = doc.id
+      card.dataset.title = doc.title.toLowerCase()
+      card.dataset.format = doc.format
+      card.dataset.available = String(doc.available)
+      if (doc.sortDate) {
+        card.dataset.sortDate = doc.sortDate
+      }
+      if (Number.isFinite(doc.sizeInMb)) {
+        card.dataset.sizeMb = String(doc.sizeInMb)
+      }
+      if (doc.filePath) {
+        card.dataset.fileUrl = doc.filePath
+      }
 
-      const documentCard = document.createElement("div")
-      documentCard.className = "document-card"
-      documentCard.innerHTML = `
+      card.innerHTML = `
         <div class="document-content">
           <div class="document-icon">
             <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
@@ -129,113 +208,73 @@ document.addEventListener("DOMContentLoaded", () => {
           </button>
         </div>
       `
-      documentsGrid.appendChild(documentCard)
+
+      container.appendChild(card)
     })
 
-    console.log("[v0] Documents rendered, total cards:", documentsGrid.children.length)
-    addDocumentEventListeners()
+    bindCardActions(container)
   }
 
-  function addDocumentEventListeners() {
-    // --- MIRAR DOCUMENTO ---
-    document.querySelectorAll(".view-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const docId = Number.parseInt(this.getAttribute("data-doc-id"))
-        const docObj = documents.find((doc) => doc.id === docId)
-
-        if (docObj && docObj.available) {
-          const viewerUrl = `ver_documentos?doc=${encodeURIComponent(docObj.title)}&docId=${docId}`
-          window.location.href = viewerUrl
+  // Mantiene los botones Ver/Descargar funcionando con las URLs reales
+  function bindCardActions(container) {
+    const viewButtons = container.querySelectorAll('.view-btn')
+    viewButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const docId = button.dataset.docId
+        const doc = documents.find((item) => String(item.id) === String(docId))
+        if (doc && doc.available && doc.filePath) {
+          window.open(doc.filePath, '_blank')
         } else {
-          alert("Documento no encontrado o no disponible")
+          alert('Este documento no esta disponible para previsualizacion.')
         }
       })
     })
 
-    // --- DESCARGAR DOCUMENTO ---
-    document.querySelectorAll(".download-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const docId = Number.parseInt(this.getAttribute("data-doc-id"))
-        const docObj = documents.find((doc) => doc.id === docId)
-
-        if (docObj && docObj.available && docObj.filePath) {
-          const link = document.createElement("a")
-          link.href = docObj.filePath
-          link.download = `${docObj.title}.pdf`
-          link.target = "_blank"
+    const downloadButtons = container.querySelectorAll('.download-btn')
+    downloadButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const docId = button.dataset.docId
+        const doc = documents.find((item) => String(item.id) === String(docId))
+        if (doc && doc.available && doc.filePath) {
+          const link = document.createElement('a')
+          link.href = doc.filePath
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          link.download = `${doc.title}.pdf`
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)
         } else {
-          alert("Documento no encontrado o no disponible para descarga")
+          alert('Documento no disponible para descarga.')
         }
       })
     })
   }
 
-  searchInput.addEventListener("input", function () {
-    currentFilters.search = this.value.toLowerCase().trim()
-    applyAllFilters()
-    showNoResultsMessage()
-  })
-
-  filterBtn.addEventListener("click", () => {
-    filterModal.style.display = "flex"
-    document.body.style.overflow = "hidden"
-  })
-
-  closeFilter.addEventListener("click", closeFilterModal)
-  filterModal.addEventListener("click", (e) => {
-    if (e.target === filterModal) {
-      closeFilterModal()
-    }
-  })
-
-  function closeFilterModal() {
-    filterModal.style.display = "none"
-    document.body.style.overflow = "auto"
-  }
-
-  applyFilters.addEventListener("click", () => {
-    currentFilters.format = document.getElementById("formatFilter").value
-    currentFilters.sort = document.getElementById("sortFilter").value
-    currentFilters.size = document.getElementById("sizeFilter").value
-
-    applyAllFilters()
-    closeFilterModal()
-  })
-
-  clearFilters.addEventListener("click", () => {
-    document.getElementById("formatFilter").value = ""
-    document.getElementById("sortFilter").value = "date-desc"
-    document.getElementById("sizeFilter").value = ""
-    searchInput.value = ""
-
-    currentFilters = {
-      search: "",
-      format: "",
-      sort: "date-desc",
-      size: "",
-    }
-
-    applyAllFilters()
-    closeFilterModal()
-  })
-
+  // Aplica búsqueda, formato, tamaño y orden sobre las tarjetas visibles
   function applyAllFilters() {
-    const documentCards = document.querySelectorAll(".document-card")
+    const cards = document.querySelectorAll('.document-card')
     const visibleCards = []
 
-    documentCards.forEach((card) => {
-      const title = card.querySelector(".document-title").textContent.toLowerCase()
-      const format = card.querySelector(".document-format").textContent
-      const sizeText = card.querySelector(".document-size").textContent
-      const dateText = card.querySelector(".document-date").textContent
+    const searchTerms = state.search
+      .split(' ')
+      .map((term) => term.trim())
+      .filter((term) => term.length > 0)
+
+    cards.forEach((card) => {
+      const title = card.dataset.title || card.querySelector('.document-title').textContent.toLowerCase()
+      const format = card.dataset.format || card.querySelector('.document-format').textContent
+      const sizeText = card.querySelector('.document-size').textContent
+      const dateText = card.querySelector('.document-date').textContent
+
+      const sizeFromDataset = card.dataset.sizeMb ? Number.parseFloat(card.dataset.sizeMb) : null
+      const sizeValue = Number.isFinite(sizeFromDataset)
+        ? sizeFromDataset
+        : parseSizeToMb(sizeText)
 
       let showCard = true
 
-      if (currentFilters.search) {
-        const searchTerms = currentFilters.search.split(" ").filter((term) => term.length > 0)
+      if (searchTerms.length > 0) {
         const matchesSearch = searchTerms.every(
           (term) => title.includes(term) || format.toLowerCase().includes(term),
         )
@@ -244,71 +283,67 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      if (currentFilters.format && format !== currentFilters.format) {
+      if (state.format && format !== state.format) {
         showCard = false
       }
 
-      if (currentFilters.size) {
-        const sizeValue = Number.parseFloat(sizeText.replace(/[^\d.]/g, ""))
-        const sizeUnit = sizeText.includes("KB") ? "KB" : "MB"
-        const sizeInMB = sizeUnit === "KB" ? sizeValue / 1024 : sizeValue
-
-        switch (currentFilters.size) {
-          case "small":
-            if (sizeInMB >= 1) showCard = false
+      if (state.size && Number.isFinite(sizeValue)) {
+        switch (state.size) {
+          case 'small':
+            if (sizeValue >= 1) showCard = false
             break
-          case "medium":
-            if (sizeInMB < 1 || sizeInMB > 3) showCard = false
+          case 'medium':
+            if (sizeValue < 1 || sizeValue > 3) showCard = false
             break
-          case "large":
-            if (sizeInMB <= 3) showCard = false
+          case 'large':
+            if (sizeValue <= 3) showCard = false
+            break
+          default:
             break
         }
       }
 
       if (showCard) {
-        card.style.display = "block"
+        card.style.display = 'block'
+        const sortDate = parseDateForSorting(card.dataset.sortDate || '', dateText) || new Date(0)
+        const sizeForSort = Number.isFinite(sizeValue) ? sizeValue : 0
         visibleCards.push({
           element: card,
-          title: title,
-          date: new Date(dateText.replace(/(\d+)\s(\w+),\s(\d+)/, "$2 $1, $3")),
-          size: Number.parseFloat(sizeText.replace(/[^\d.]/g, "")) * (sizeText.includes("KB") ? 0.001 : 1),
+          title,
+          date: sortDate,
+          size: sizeForSort,
         })
       } else {
-        card.style.display = "none"
+        card.style.display = 'none'
       }
     })
 
-    if (currentFilters.sort && visibleCards.length > 0) {
-      sortDocuments(visibleCards, currentFilters.sort)
+    if (visibleCards.length > 0) {
+      sortDocuments(visibleCards, state.sort)
     }
+
+    showNoResultsMessage(false)
   }
 
   function sortDocuments(cards, sortType) {
-    const container =
-      document.getElementById("documentsGrid") ||
-      document.querySelector(".documents-grid") ||
-      document.querySelector(".document-grid") ||
-      document.querySelector("[class*='document']")
-
+    const container = getDocumentsContainer()
     if (!container) {
-      console.error("[v0] Container not found for sorting")
       return
     }
 
     cards.sort((a, b) => {
       switch (sortType) {
-        case "date-desc":
+        case 'date-desc':
           return b.date - a.date
-        case "date-asc":
+        case 'date-asc':
           return a.date - b.date
-        case "name-asc":
-          return a.title.localeCompare(b.title)
-        case "name-desc":
-          return b.title.localeCompare(a.title)
-        case "size-desc":
+        case 'name-asc':
+          return a.title.localeCompare(b.title, 'es')
+        case 'name-desc':
+          return b.title.localeCompare(a.title, 'es')
+        case 'size-desc':
           return b.size - a.size
-        case "size-asc":
+        case 'size-asc':
           return a.size - b.size
         default:
           return 0
@@ -320,38 +355,91 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  function showNoResultsMessage() {
-    const container =
-      document.getElementById("documentsGrid") ||
-      document.querySelector(".documents-grid") ||
-      document.querySelector(".document-grid") ||
-      document.querySelector("[class*='document']")
-
+  // Muestra un mensaje cuando no hay documentos o no hay coincidencias
+  function showNoResultsMessage(noData) {
+    const container = getDocumentsContainer()
     if (!container) {
-      console.error("[v0] Container not found for no results message")
       return
     }
 
-    const visibleCards = Array.from(document.querySelectorAll(".document-card")).filter(
-      (card) => card.style.display !== "none",
-    )
-
-    const existingMessage = document.querySelector(".no-results-message")
+    const existingMessage = container.querySelector('.no-results-message')
     if (existingMessage) {
       existingMessage.remove()
     }
 
-    if (visibleCards.length === 0 && currentFilters.search) {
-      const noResultsDiv = document.createElement("div")
-      noResultsDiv.className = "no-results-message"
-      noResultsDiv.innerHTML = `
+    const hasVisibleCards = Array.from(container.querySelectorAll('.document-card')).some(
+      (card) => card.style.display !== 'none',
+    )
+
+    if (noData || (state.search && !hasVisibleCards)) {
+      const message = document.createElement('div')
+      message.className = 'no-results-message'
+      message.innerHTML = `
         <div style="text-align: center; padding: 40px; color: #6b7280;">
           <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
           <h3 style="margin: 0 0 8px 0; color: #374151;">No se encontraron documentos</h3>
-          <p style="margin: 0; font-size: 14px;">No hay documentos que coincidan con "${currentFilters.search}"</p>
+          <p style="margin: 0; font-size: 14px;">
+            ${noData ? 'No hay documentos disponibles.' : `No hay documentos que coincidan con "${state.search}"`}
+          </p>
         </div>
       `
-      container.appendChild(noResultsDiv)
+      container.appendChild(message)
+    }
+  }
+
+  // Eventos de UI que actualizan el estado y vuelven a renderizar las tarjetas
+  if (searchInput) {
+    searchInput.addEventListener('input', (event) => {
+      state.search = event.target.value.toLowerCase().trim()
+      applyAllFilters()
+    })
+  }
+
+  if (filterBtn && filterModal) {
+    filterBtn.addEventListener('click', () => {
+      filterModal.style.display = 'flex'
+      document.body.style.overflow = 'hidden'
+    })
+  }
+
+  if (closeFilter && filterModal) {
+    const closeModal = () => {
+      filterModal.style.display = 'none'
+      document.body.style.overflow = 'auto'
+    }
+
+    closeFilter.addEventListener('click', closeModal)
+    filterModal.addEventListener('click', (event) => {
+      if (event.target === filterModal) {
+        closeModal()
+      }
+    })
+
+    if (applyFilters) {
+      applyFilters.addEventListener('click', () => {
+        state.format = formatFilter ? formatFilter.value : ''
+        state.sort = sortFilter ? sortFilter.value : 'date-desc'
+        state.size = sizeFilter ? sizeFilter.value : ''
+        applyAllFilters()
+        closeModal()
+      })
+    }
+
+    if (clearFilters) {
+      clearFilters.addEventListener('click', () => {
+        if (formatFilter) formatFilter.value = ''
+        if (sortFilter) sortFilter.value = 'date-desc'
+        if (sizeFilter) sizeFilter.value = ''
+        if (searchInput) searchInput.value = ''
+
+        state.search = ''
+        state.format = ''
+        state.sort = 'date-desc'
+        state.size = ''
+
+        applyAllFilters()
+        closeModal()
+      })
     }
   }
 
