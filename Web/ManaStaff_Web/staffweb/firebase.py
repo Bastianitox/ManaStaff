@@ -3,7 +3,7 @@ import firebase_admin
 import os
 from firebase_admin import credentials, auth, db, storage
 
-certificados = 'staffweb/static/staffweb/xe/manastaff-7ef1d-firebase-adminsdk-fbsvc-305b357f9e.json'
+certificados = 'staffweb/static/staffweb/xe/manastaff-7ef1d-firebase-adminsdk-fbsvc-c07d15f8f5.json'
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = certificados
 
 firebase_config = {
