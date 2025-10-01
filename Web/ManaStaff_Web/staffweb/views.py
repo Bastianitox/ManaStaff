@@ -47,6 +47,7 @@ def cambiar_contrasena(request):
 def cambiar_pin(request):
     return render(request, "staffweb/cambiar_pin.html")
 
+
 #ADMINISTRACION
 def panel_administrar(request):
     return render(request, "staffweb/panel_administrar.html")

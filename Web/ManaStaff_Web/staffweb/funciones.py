@@ -190,7 +190,7 @@ def editar_usuario(request):
 def actualizar_perfil(request):
     RUT = request.session.get('RUT')
     if not RUT:
-        return redirect("index")
+        return redirect("inicio_perfil")
 
     direccion = request.POST.get("direccion")
     telefono = request.POST.get("telefono")
