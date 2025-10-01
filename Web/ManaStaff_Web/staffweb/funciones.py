@@ -157,8 +157,6 @@ def crear_usuario_funcion(request):
 
     blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
     blob.upload_from_file(imagen, content_type=imagen.content_type)
-
-    imagen.width
     
     blob.cache_control = cache_control_header
     blob.patch()
@@ -187,9 +185,6 @@ def crear_usuario_funcion(request):
         "rol":rol,
         "PIN":pin,
         "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-
-
-        "tamano_docmento": imagen.width
     })
 
     return redirect("administrar_usuarios")
