@@ -36,6 +36,7 @@
         <table id="usersTable" class="users-table">
             <thead>
                 <tr>
+                    <th>RUT</th>
                     <th>Nombre Completo</th>
                     <th>Correo Electrónico</th>
                     <th>Cargo</th>
@@ -63,6 +64,24 @@
         </button>
     </div>
 </div>
+
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Confirmar eliminación</h3>
+    <p>¿Estás seguro de que quieres eliminar este usuario?</p>
+    <div class="modal-actions">
+      <button id="cancelBtn">Cancelar</button>
+      <button id="confirmBtn" class="delete-btn">Eliminar</button>
+    </div>
+  </div>
+        <!-- Spinner de carga -->
+    <div id="loadingSpinner" class="hidden">
+        <div class="spinner"></div>
+    </div>
+</div>
+
 {% endblock principal %}
 
 {% block js %}

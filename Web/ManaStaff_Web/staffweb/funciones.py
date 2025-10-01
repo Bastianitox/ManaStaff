@@ -122,7 +122,7 @@ def obtener_usuarios(request):
                 created_date = fecha_creacion_str  # Dejar como viene si no es ISO
 
         usuarios_lista.append({
-            "id": id_usu,
+            "rut": id_usu,
             "name": nombre_completo,
             "email": usuario.get("correo", ""),
             "position": cargo_nombre,
@@ -172,6 +172,10 @@ def crear_usuario_funcion(request):
         return render(request, "staffweb/crear_usuario.html", {"mensaje": "El número de celular debe tener el formato: +56 9 1234 5678"})
 
     
+    #OBTENER EL RUT LIMPIO DEL USUARIO
+    rut_limpio = rut.replace(".", "").replace("-", "")
+
+
     #CACHE CONTROL
     cache_control_header = "public, max-age=3600, s-maxage=86400"
     #VALIDACION DE IMAGEN
@@ -183,7 +187,7 @@ def crear_usuario_funcion(request):
 
         # SUBIR IMAGEN A STORAGE
         bucket = storage.bucket()
-        blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
+        blob = bucket.blob(f"{rut_limpio}/Imagen/{imagen.name}")
         blob.upload_from_file(imagen, content_type=imagen.content_type)
         blob.cache_control = "public, max-age=3600, s-maxage=86400"
         blob.patch()
@@ -202,7 +206,6 @@ def crear_usuario_funcion(request):
         return render(request, "staffweb/crear_usuario.html", {"mensaje": f"Error al crear usuario en Firebase: {e}"})
 
     #CREAR USUARIO DENTRO DE LA BASE DE DATOS
-    rut_limpio = rut.replace(".", "").replace("-", "")
     ref = database.child(f"Usuario/{rut_limpio}")
     ref.set({
         "Nombre":nombre,
@@ -221,8 +224,54 @@ def crear_usuario_funcion(request):
 
     return redirect("administrar_usuarios")
 
+@require_POST
+def eliminar_usuario(request, rut):
+    try:
+        #Obtener el correo del usuario a traves del rut
+        usuario = database.child(f"Usuario/{rut}").get().val()
+        correo = usuario["correo"]
 
+        #Obtener el uid del usuario en autenthication a traves de su correo
+        uid = auth.get_user_by_email(correo).uid
 
+        #Eliminar el usuario de AUTENTHICATION
+        auth.delete_user(uid)
+
+        #Eliminar el usuario de Firebase (por su RUT)
+        database.child(f"Usuario/{rut}").remove()
+
+        #Eliminar los archivos del usuario
+        eliminar_archivos_usuario(rut)
+
+        #Eliminar las solicitudes del usuario
+        database.child(f"Solicitudes/{rut}").remove()
+
+        return JsonResponse({"status": "success", "message": "Usuario eliminado junto con sus Solicitudes y Documentos correctamente."})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+def eliminar_archivos_usuario(rut):
+    # Validación de entrada
+    if not rut or not isinstance(rut, str):
+        return {"status": "error", "mensaje": "El RUT proporcionado no es válido."}
+    
+    try:
+        # Referencia al bucket
+        bucket = storage.bucket()
+
+        # Listar todos los blobs que empiecen con el rut/
+        blobs = list(bucket.list_blobs(prefix=f"{rut}/"))
+
+        if not blobs:
+            return {"status": "warning", "mensaje": f"No se encontraron archivos para el RUT {rut}."}
+
+        # Eliminar todos los blobs encontrados
+        for blob in blobs:
+            blob.delete()
+
+        return {"status": "success", "mensaje": f"Se eliminaron {len(blobs)} archivos del usuario {rut}."}
+    except Exception as e:
+        return {"status": "error", "mensaje": f"Ocurrió un error al eliminar los archivos: {str(e)}"}
 
 #EJEMPLOS
 

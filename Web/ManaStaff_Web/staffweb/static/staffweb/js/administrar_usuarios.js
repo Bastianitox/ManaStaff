@@ -40,16 +40,25 @@ function renderTable() {
   usersToShow.forEach((user) => {
     const row = document.createElement("tr")
     row.innerHTML = `
+            <td>${user.rut}</td>
             <td>${user.name}</td>
             <td>${user.email}</td>
             <td>${user.position}</td>
             <td>${user.createdDate}</td>
             <td>
-                <button class="action-btn" onclick="editUser(${user.id})" title="Modificar usuario">
+                <button class="action-btn" onclick="editUser(${user.rut})" title="Modificar usuario">
                     <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
                     </svg>
                     Modificar
+                </button>
+                <button class="action-btn delete-btn" onclick="deleteUser(${user.rut})" title="Eliminar usuario">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.79,
+                        3.29C14.61,3.11 14.35,3 14.09,3H9.91C9.65,3 9.39,
+                        3.11 9.21,3.29L8.5,4H5V6H19V4Z"/>
+                    </svg>
+                    Eliminar
                 </button>
             </td>
         `
@@ -58,6 +67,7 @@ function renderTable() {
 
   updatePagination()
 }
+
 
 // Función para actualizar la paginación
 function updatePagination() {
@@ -171,3 +181,68 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 })
 
+
+
+// CREAR MODAL DE CONFIRMACION
+
+// VARIABLE PARA GUARDAR EL ID DEL USUARIO (RUT)
+let userToDelete = null;
+
+function deleteUser(userId) {
+  userToDelete = userId;
+  document.getElementById("confirmModal").classList.remove("hidden");
+}
+
+// Cancelar eliminación
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  userToDelete = null;
+  document.getElementById("confirmModal").classList.add("hidden");
+});
+
+// Confirmar eliminación
+document.getElementById("confirmBtn").addEventListener("click", () => {
+  if (!userToDelete) return;
+
+  // Mostrar spinner de carga
+  document.getElementById("loadingSpinner").classList.remove("hidden");
+
+  fetch(`/eliminar_usuario/${userToDelete}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        alert("Usuario eliminado con éxito");
+        obtener_usuarios();
+      } else {
+        alert("Error: " + data.message);
+      }
+    })
+    .catch((error) => console.error("Error:", error))
+    .finally(() => {
+      userToDelete = null;
+      document.getElementById("confirmModal").classList.add("hidden");
+      // Ocultar spinner
+      document.getElementById("loadingSpinner").classList.add("hidden");
+    });
+});
+
+
+// Helper para CSRF
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
