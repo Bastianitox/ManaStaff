@@ -280,10 +280,28 @@
     font-weight: 500;
 }
 
+.modal-actions button:hover{
+    background-color: rgb(223, 223, 223);
+}
+
+.modal-actions button:active{
+    background-color: rgb(197, 197, 197);
+}
+
 .modal-actions button.delete-btn {
     background: #ef4444;
     border-color: #ef4444;
     color: white;
+}
+
+.modal-actions button.delete-btn:hover {
+    background: #a53131;
+    border-color: #a53131;
+}
+
+.modal-actions button.delete-btn:active {
+    background: #832727;
+    border-color: #832727;
 }
 
 .hidden {

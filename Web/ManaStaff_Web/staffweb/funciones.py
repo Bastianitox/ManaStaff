@@ -309,6 +309,9 @@ def eliminar_archivos_usuario(rut):
     except Exception as e:
         return {"status": "error", "mensaje": f"Ocurrió un error al eliminar los archivos: {str(e)}"}
 
+@require_POST
+def modificar_usuario_funcion(request, rut):
+    pass
 
 
 
