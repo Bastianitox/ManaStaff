@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
 from django.http import JsonResponse
+import re
 
 from .firebase import authP, auth, database, storage, db
 
@@ -131,6 +132,7 @@ def obtener_usuarios(request):
 
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
 
+@require_POST
 def crear_usuario_funcion(request):
     nombre = request.POST.get('nombre', None)
     segundo_nombre = request.POST.get('Segundo_nombre', None)
@@ -146,28 +148,58 @@ def crear_usuario_funcion(request):
     pin = request.POST.get('pin', None)
     password = request.POST.get('password', None)
 
+    # VALIDAR CAMPOS VACIOS
+    if not all([nombre, segundo_nombre,apellido_paterno, apellido_materno, rut,celular, direccion,cargo,rol, imagen, pin, email, password]):
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": "Los campos no pueden estar vacíos."})
 
+    # Validación de RUT (simple)
+    import re
+    patron_rut = r"^\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]$"
+    if not re.match(patron_rut, rut):
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El RUT ingresado no es válido."})
+    
+    # Validación de correo
+    patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(patron_email, email):
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El correo electrónico no es válido."})
+    
+    # Validación de contraseña (mínimo 6 caracteres para Firebase)
+    if len(password) < 6:
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": "La contraseña debe tener al menos 6 caracteres."})
 
+    #VALIDAR TELEFENO EN FORMATO CHILENO (+56 9 1234 5678)
+    if celular and not re.match(r'^\+56 9 \d{4} \d{4}$', celular):
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El número de celular debe tener el formato: +56 9 1234 5678"})
 
+    
     #CACHE CONTROL
     cache_control_header = "public, max-age=3600, s-maxage=86400"
+    #VALIDACION DE IMAGEN
+    if imagen:
+        ext_permitidas = ["jpg", "jpeg", "png", "gif"]
+        ext = imagen.name.split(".")[-1].lower()
+        if ext not in ext_permitidas:
+            return render(request, "staffweb/crear_usuario.html", {"mensaje": "Formato de imagen no permitido. Usa JPG, PNG o GIF."})
 
-    #SUBIR IMAGEN A STORAGE
-    bucket = storage.bucket()
+        # SUBIR IMAGEN A STORAGE
+        bucket = storage.bucket()
+        blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
+        blob.upload_from_file(imagen, content_type=imagen.content_type)
+        blob.cache_control = "public, max-age=3600, s-maxage=86400"
+        blob.patch()
 
-    blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
-    blob.upload_from_file(imagen, content_type=imagen.content_type)
-    
-    blob.cache_control = cache_control_header
-    blob.patch()
+        urlImagen = blob.generate_signed_url(
+            expiration=timedelta(weeks=150),
+            method="GET"
+        )
+    else:
+        urlImagen = "/static/default.png"
 
-    urlImagen = blob.generate_signed_url(
-        expiration=timedelta(weeks=150),
-    method="GET")
-
-
-    #CREAR USUARIO EN AUTENTICATION
-    userFIREBASE = auth.create_user(email = email, password= password)
+    # CREAR USUARIO EN AUTHENTICATION
+    try:
+        userFIREBASE = auth.create_user(email=email, password=password)
+    except Exception as e:
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": f"Error al crear usuario en Firebase: {e}"})
 
     #CREAR USUARIO DENTRO DE LA BASE DE DATOS
     rut_limpio = rut.replace(".", "").replace("-", "")
