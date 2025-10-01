@@ -123,6 +123,7 @@ def obtener_usuarios(request):
 
         usuarios_lista.append({
             "rut": id_usu,
+            "rut_normal": formatear_rut(id_usu),
             "name": nombre_completo,
             "email": usuario.get("correo", ""),
             "position": cargo_nombre,
@@ -272,6 +273,30 @@ def eliminar_archivos_usuario(rut):
         return {"status": "success", "mensaje": f"Se eliminaron {len(blobs)} archivos del usuario {rut}."}
     except Exception as e:
         return {"status": "error", "mensaje": f"Ocurrió un error al eliminar los archivos: {str(e)}"}
+
+
+
+
+#FUNCIONES DE AYUDA
+def formatear_rut(rut_limpio):
+    """
+    Recibe un RUT sin puntos ni guion, devuelve el RUT formateado: 12.345.678-9
+    """
+    if not rut_limpio:
+        return ""
+    rut_sin_dv = rut_limpio[:-1]
+    dv = rut_limpio[-1]
+
+    # Agregar puntos cada 3 dígitos desde el final
+    rut_con_puntos = ""
+    while len(rut_sin_dv) > 3:
+        rut_con_puntos = "." + rut_sin_dv[-3:] + rut_con_puntos
+        rut_sin_dv = rut_sin_dv[:-3]
+    rut_con_puntos = rut_sin_dv + rut_con_puntos
+
+    return f"{rut_con_puntos}-{dv}"
+
+
 
 #EJEMPLOS
 

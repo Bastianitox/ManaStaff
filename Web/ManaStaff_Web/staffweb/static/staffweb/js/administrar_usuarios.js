@@ -40,7 +40,7 @@ function renderTable() {
   usersToShow.forEach((user) => {
     const row = document.createElement("tr")
     row.innerHTML = `
-            <td>${user.rut}</td>
+            <td>${user.rut_normal}</td>
             <td>${user.name}</td>
             <td>${user.email}</td>
             <td>${user.position}</td>
