@@ -122,24 +122,42 @@ function validateEmail(email) {
 }
 
 // Función para cargar datos del usuario
-function loadUserData() {
-  currentUserId = Number.parseInt(getUrlParameter("id"))
-  currentUser = usersData.find((user) => user.id === currentUserId)
-
-  if (!currentUser) {
-    alert("Usuario no encontrado")
-    window.location.href = "/administrar_usuarios"
-    return
+async function loadUserData() {
+  const currentUserId = getUrlParameter("id"); 
+  if (!currentUserId) {
+    alert("ID de usuario no especificado");
+    window.location.href = "/administrar_usuarios";
+    return;
   }
 
-  // Rellenar los campos con los datos del usuario
-  document.getElementById("nombres").value = currentUser.nombres
-  document.getElementById("apellidos").value = currentUser.apellidos
-  document.getElementById("rut").value = currentUser.rut
-  document.getElementById("celular").value = currentUser.celular
-  document.getElementById("direccion").value = currentUser.direccion
-  document.getElementById("email").value = currentUser.email
-  document.getElementById("cargo").value = currentUser.position
+  try {
+    const response = await fetch("/obtener_usuarios");
+    if (!response.ok) throw new Error("Error al obtener usuarios");
+
+    const data = await response.json();
+    const usuarios = data.usuarios || [];
+    
+    const currentUser = usuarios.find(u => u.rut === currentUserId || u.rut_normal === currentUserId);
+    if (!currentUser) {
+      alert("Usuario no encontrado");
+      window.location.href = "/administrar_usuarios";
+      return;
+    }
+
+    // Rellenar los campos con los datos
+    document.getElementById("nombres").value = currentUser.name.split(" ")[0] || "";
+    document.getElementById("apellidos").value = currentUser.name.split(" ").slice(1).join(" ") || "";
+    document.getElementById("rut").value = currentUser.rut;
+    document.getElementById("celular").value = currentUser.celular || "";
+    document.getElementById("direccion").value = currentUser.direccion || "";
+    document.getElementById("email").value = currentUser.email || "";
+    document.getElementById("cargo").value = currentUser.position || "";
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al cargar los datos del usuario");
+    window.location.href = "/administrar_usuarios";
+  }
 }
 
 // Función para limpiar errores
@@ -289,6 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Botón cancelar
   const cancelBtn = document.getElementById("cancelBtn")
   cancelBtn.addEventListener("click", () => {
-    window.location.href = "administrar_usuarios.html"
+    window.location.href = "/administrar_usuarios"
   })
 })

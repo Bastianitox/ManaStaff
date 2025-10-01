@@ -141,8 +141,7 @@ function nextPage() {
 
 // Función para editar usuario (placeholder)
 function editUser(userId) {
-  const baseUrl = document.getElementById("usersTableBody").dataset.editUrl;
-  window.location.href = `${baseUrl}?id=${userId}`;
+  window.location.href = `/modificar_usuario?id=${userId}`;
 }
 
 // Función para crear nuevo usuario
