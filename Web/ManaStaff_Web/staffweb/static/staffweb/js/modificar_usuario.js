@@ -1,67 +1,3 @@
-// Datos de usuarios de prueba (mismos que en administrar_usuarios.js)
-const usersData = [
-  {
-    id: 1,
-    name: "Ana García López",
-    email: "ana.garcia@empresa.com",
-    position: "Gerente de Ventas",
-    createdDate: "15 Enero, 2024",
-    rut: "12.345.678-9",
-    celular: "+56 9 8765 4321",
-    direccion: "Av. Providencia 1234, Santiago",
-    nombres: "Ana",
-    apellidos: "García López",
-  },
-  {
-    id: 2,
-    name: "Carlos Rodríguez Martín",
-    email: "carlos.rodriguez@empresa.com",
-    position: "Desarrollador Senior",
-    createdDate: "22 Febrero, 2024",
-    rut: "11.222.333-4",
-    celular: "+56 9 7654 3210",
-    direccion: "Calle Los Leones 567, Las Condes",
-    nombres: "Carlos",
-    apellidos: "Rodríguez Martín",
-  },
-  {
-    id: 3,
-    name: "María Fernández Silva",
-    email: "maria.fernandez@empresa.com",
-    position: "Diseñadora UX/UI",
-    createdDate: "08 Marzo, 2024",
-    rut: "15.678.901-2",
-    celular: "+56 9 6543 2109",
-    direccion: "Pasaje San Martín 890, Ñuñoa",
-    nombres: "María",
-    apellidos: "Fernández Silva",
-  },
-  {
-    id: 4,
-    name: "José Luis Pérez",
-    email: "jose.perez@empresa.com",
-    position: "Contador",
-    createdDate: "14 Abril, 2024",
-    rut: "18.765.432-1",
-    celular: "+56 9 5432 1098",
-    direccion: "Av. Libertador 456, Santiago Centro",
-    nombres: "José Luis",
-    apellidos: "Pérez",
-  },
-  {
-    id: 5,
-    name: "Laura Sánchez Ruiz",
-    email: "laura.sanchez@empresa.com",
-    position: "Marketing Manager",
-    createdDate: "03 Mayo, 2024",
-    rut: "16.543.210-9",
-    celular: "+56 9 4321 0987",
-    direccion: "Calle Moneda 789, Santiago",
-    nombres: "Laura",
-    apellidos: "Sánchez Ruiz",
-  },
-]
-
 // Variables globales
 let currentUserId = null
 let currentUser = null
@@ -75,238 +11,382 @@ function getUrlParameter(name) {
 }
 
 // Función para validar RUT chileno
-function validateRUT(rut) {
-  if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test(rut)) return false
+function validarRUT(rut) {
+  const rutLimpio = rut.replace(/\./g, "").replace("-", "")
+  if (rutLimpio.length < 8 || rutLimpio.length > 9) return false
 
-  const tmp = rut.split("-")
-  let digv = tmp[1]
-  const rut_num = tmp[0]
+  const cuerpo = rutLimpio.slice(0, -1)
+  const dv = rutLimpio.slice(-1).toLowerCase()
 
-  if (digv == "K") digv = "k"
-
-  return dv(rut_num) == digv
-}
-
-function dv(T) {
-  let M = 0,
-    S = 1
-  for (; T; T = Math.floor(T / 10)) {
-    S = (S + (T % 10) * (9 - (M++ % 6))) % 11
+  let suma = 0
+  let multiplicador = 2
+  for (let i = cuerpo.length - 1; i >= 0; i--) {
+    suma += Number.parseInt(cuerpo[i]) * multiplicador
+    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1
   }
-  return S ? S - 1 : "k"
+
+  const resto = suma % 11
+  const dvCalculado = resto === 0 ? "0" : resto === 1 ? "k" : (11 - resto).toString()
+  return dv === dvCalculado
 }
 
-// Función para formatear RUT
-function formatRUT(rut) {
-  const value = rut.replace(/[^0-9kK]/g, "")
-  if (value.length <= 1) return value
+// Formatear RUT
+function formatearRUT(rut) {
+  const rutLimpio = rut.replace(/[^0-9kK]/g, "").toLowerCase()
+  if (rutLimpio.length <= 1) return rutLimpio
 
-  const body = value.slice(0, -1)
-  const dv = value.slice(-1)
+  const cuerpo = rutLimpio.slice(0, -1)
+  const dv = rutLimpio.slice(-1)
 
-  let formattedBody = ""
-  for (let i = 0; i < body.length; i++) {
-    if (i > 0 && (body.length - i) % 3 === 0) {
-      formattedBody += "."
+  let cuerpoFormateado = ""
+  for (let i = 0; i < cuerpo.length; i++) {
+    if (i > 0 && (cuerpo.length - i) % 3 === 0) {
+      cuerpoFormateado += "."
     }
-    formattedBody += body[i]
+    cuerpoFormateado += cuerpo[i]
   }
 
-  return formattedBody + "-" + dv
+  return cuerpoFormateado + "-" + dv
 }
 
-// Función para validar email
-function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+// Validar email
+function validarEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email)
 }
 
-// Función para cargar datos del usuario
-async function loadUserData() {
-  const currentUserId = getUrlParameter("id"); 
-  if (!currentUserId) {
-    alert("ID de usuario no especificado");
-    window.location.href = "/administrar_usuarios";
-    return;
-  }
-
-  try {
-    const response = await fetch("/obtener_usuarios");
-    if (!response.ok) throw new Error("Error al obtener usuarios");
-
-    const data = await response.json();
-    const usuarios = data.usuarios || [];
-    
-    const currentUser = usuarios.find(u => u.rut === currentUserId || u.rut_normal === currentUserId);
-    if (!currentUser) {
-      alert("Usuario no encontrado");
-      window.location.href = "/administrar_usuarios";
-      return;
-    }
-
-    // Rellenar los campos con los datos
-    document.getElementById("nombres").value = currentUser.name.split(" ")[0] || "";
-    document.getElementById("apellidos").value = currentUser.name.split(" ").slice(1).join(" ") || "";
-    document.getElementById("rut").value = currentUser.rut;
-    document.getElementById("celular").value = currentUser.celular || "";
-    document.getElementById("direccion").value = currentUser.direccion || "";
-    document.getElementById("email").value = currentUser.email || "";
-    document.getElementById("cargo").value = currentUser.position || "";
-
-  } catch (error) {
-    console.error(error);
-    alert("Error al cargar los datos del usuario");
-    window.location.href = "/administrar_usuarios";
-  }
+// Validar celular chileno
+function validarCelular(celular) {
+  const regex = /^(\+56\s?)?9\s?\d{4}\s?\d{4}$/
+  return regex.test(celular)
 }
 
-// Función para limpiar errores
-function clearErrors() {
-  const errorMessages = document.querySelectorAll(".error-message")
-  const inputs = document.querySelectorAll("input, select")
+// Validar PIN (solo números, 4 dígitos)
+function validarPIN(pin) {
+  const regex = /^[0-9]{4,4}$/
+  return regex.test(pin)
+}
 
-  errorMessages.forEach((error) => {
-    error.classList.remove("show")
-    error.textContent = ""
-  })
+// Validar imagen (opcional)
+function validarImagen(fileInput) {
+  if (!fileInput.files || fileInput.files.length === 0) return true // opcional
+  const file = fileInput.files[0]
+  const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"]
+  const maxSize = 2 * 1024 * 1024
+  return validTypes.includes(file.type) && file.size <= maxSize
+}
 
-  inputs.forEach((input) => {
-    input.classList.remove("error")
+// Limpiar errores
+function limpiarTodosLosErrores() {
+  const campos = [
+    "nombre",
+    "Segundo_nombre",
+    "apellido_paterno",
+    "apellido_materno",
+    "rut",
+    "celular",
+    "direccion",
+    "email",
+    "cargo",
+    "password",
+    "imagen",
+    "rol",
+    "pin"
+  ]
+  campos.forEach(campo => {
+    document.getElementById(campo).classList.remove("error")
+    document.getElementById(campo + "-error").textContent = ""
+    document.getElementById(campo + "-error").classList.remove("show")
   })
 }
 
-// Función para mostrar error
-function showError(fieldId, message) {
+// Mostrar error
+function mostrarError(fieldId, mensaje) {
   const field = document.getElementById(fieldId)
   const errorElement = document.getElementById(fieldId + "-error")
-
   field.classList.add("error")
-  errorElement.textContent = message
+  errorElement.textContent = mensaje
   errorElement.classList.add("show")
 }
 
-// Función para validar formulario
-function validateForm() {
-  clearErrors()
-  let isValid = true
+// Validar formulario
+function validarFormulario() {
+  limpiarTodosLosErrores()
+  let esValido = true
 
-  // Validar nombres
-  const nombres = document.getElementById("nombres").value.trim()
-  if (!nombres) {
-    showError("nombres", "Los nombres son obligatorios")
-    isValid = false
+  // Validar nombre
+  const nombre = document.getElementById("nombre").value.trim()
+  if (!nombre) {
+    mostrarError("nombre", "El primer nombre es obligatorio")
+    esValido = false
+  } else if (nombre.length < 2) {
+    mostrarError("nombre", "El nombre debe tener al menos 2 caracteres")
+    esValido = false
   }
 
-  // Validar apellidos
-  const apellidos = document.getElementById("apellidos").value.trim()
-  if (!apellidos) {
-    showError("apellidos", "Los apellidos son obligatorios")
-    isValid = false
+  // Segundo nombre
+  const segundoNombre = document.getElementById("Segundo_nombre").value.trim()
+  if (!segundoNombre) {
+    mostrarError("Segundo_nombre", "El segundo nombre es obligatorio")
+    esValido = false
+  } else if (segundoNombre.length < 2) {
+    mostrarError("Segundo_nombre", "El segundo nombre debe tener al menos 2 caracteres")
+    esValido = false
   }
 
-  // Validar RUT
+  // Apellido paterno
+  const apellidoPaterno = document.getElementById("apellido_paterno").value.trim()
+  if (!apellidoPaterno) {
+    mostrarError("apellido_paterno", "El apellido paterno es obligatorio")
+    esValido = false
+  } else if (apellidoPaterno.length < 2) {
+    mostrarError("apellido_paterno", "El apellido paterno debe tener al menos 2 caracteres")
+    esValido = false
+  }
+
+  // Apellido materno
+  const apellidoMaterno = document.getElementById("apellido_materno").value.trim()
+  if (!apellidoMaterno) {
+    mostrarError("apellido_materno", "El apellido materno es obligatorio")
+    esValido = false
+  } else if (apellidoMaterno.length < 2) {
+    mostrarError("apellido_materno", "El apellido materno debe tener al menos 2 caracteres")
+    esValido = false
+  }
+
+  // RUT
   const rut = document.getElementById("rut").value.trim()
   if (!rut) {
-    showError("rut", "El RUT es obligatorio")
-    isValid = false
-  } else if (!validateRUT(rut)) {
-    showError("rut", "El RUT ingresado no es válido")
-    isValid = false
+    mostrarError("rut", "El RUT es obligatorio")
+    esValido = false
+  } else if (!validarRUT(rut)) {
+    mostrarError("rut", "El RUT ingresado no es válido")
+    esValido = false
   }
 
-  // Validar celular
+  // Celular
   const celular = document.getElementById("celular").value.trim()
   if (!celular) {
-    showError("celular", "El número de celular es obligatorio")
-    isValid = false
+    mostrarError("celular", "El número de celular es obligatorio")
+    esValido = false
+  } else if (!validarCelular(celular)) {
+    mostrarError("celular", "Formato inválido (ej: +56 9 1234 5678)")
+    esValido = false
   }
 
-  // Validar dirección
+  // Dirección
   const direccion = document.getElementById("direccion").value.trim()
   if (!direccion) {
-    showError("direccion", "La dirección es obligatoria")
-    isValid = false
+    mostrarError("direccion", "La dirección es obligatoria")
+    esValido = false
   }
 
-  // Validar email
+  // Email
   const email = document.getElementById("email").value.trim()
   if (!email) {
-    showError("email", "El correo electrónico es obligatorio")
-    isValid = false
-  } else if (!validateEmail(email)) {
-    showError("email", "El formato del correo electrónico no es válido")
-    isValid = false
+    mostrarError("email", "El correo electrónico es obligatorio")
+    esValido = false
+  } else if (!validarEmail(email)) {
+    mostrarError("email", "El formato del correo electrónico no es válido")
+    esValido = false
   }
 
-  // Validar cargo
+  // Cargo
   const cargo = document.getElementById("cargo").value
   if (!cargo) {
-    showError("cargo", "Debe seleccionar un cargo")
-    isValid = false
+    mostrarError("cargo", "Debe seleccionar un cargo")
+    esValido = false
   }
 
-  // Validar contraseña (opcional)
+  // Rol
+  const rol = document.getElementById("rol").value
+  if (!rol) {
+    mostrarError("rol", "Debe seleccionar un rol")
+    esValido = false
+  }
+
+  // PIN
+  const pin = document.getElementById("pin").value.trim()
+  if (!pin) {
+    mostrarError("pin", "El PIN es obligatorio")
+    esValido = false
+  } else if (!validarPIN(pin)) {
+    mostrarError("pin", "El PIN debe ser numérico y tener 4 dígitos")
+    esValido = false
+  }
+
+  // Contraseña (opcional)
   const password = document.getElementById("password").value
   if (password && password.length < 6) {
-    showError("password", "La contraseña debe tener al menos 6 caracteres")
-    isValid = false
+    mostrarError("password", "La contraseña debe tener al menos 6 caracteres")
+    esValido = false
   }
 
-  return isValid
+  // Imagen (opcional)
+  const imagenInput = document.getElementById("imagen")
+  if (!validarImagen(imagenInput)) {
+    mostrarError("imagen", "Debe subir una imagen válida (JPG, PNG, GIF, máx 2MB)")
+    esValido = false
+  }
+
+  return esValido
 }
 
-// Función para mostrar mensaje de éxito
-function showSuccessMessage() {
-  const successMessage = document.getElementById("successMessage")
-  successMessage.classList.add("show")
-
+// Mostrar mensaje de éxito
+function mostrarMensajeExito() {
+  const mensaje = document.getElementById("successMessage")
+  mensaje.classList.add("show")
   setTimeout(() => {
-    successMessage.classList.remove("show")
-    // Redirigir después de 1 segundo
+    mensaje.classList.remove("show")
     setTimeout(() => {
       window.location.href = "/administrar_usuarios"
     }, 300)
   }, 1000)
 }
 
+// Función para cargar datos del usuario
+async function loadUserData() {
+  const urlParams = new URLSearchParams(window.location.search)
+  const userId = urlParams.get("id")
+  if (!userId) {
+    alert("RUT de usuario no especificado")
+    window.location.href = "/administrar_usuarios"
+    return
+  }
+
+  try {
+    const response = await fetch(`/obtener_usuario?id=${userId}`)
+    const data = await response.json()
+    if (data.status !== "success") {
+      alert(data.message)
+      window.location.href = "/administrar_usuarios"
+      return
+    }
+
+    const user = data.usuario
+
+
+    document.getElementById("nombre").value = user.Nombre || ""
+    document.getElementById("Segundo_nombre").value = user.Segundo_nombre || ""
+    document.getElementById("apellido_paterno").value = user.ApellidoPaterno || ""
+    document.getElementById("apellido_materno").value = user.ApellidoMaterno || ""
+    document.getElementById("rut").value = user.rut_normal || ""
+    document.getElementById("celular").value = user.Telefono || ""
+    document.getElementById("direccion").value = user.Direccion || ""
+    document.getElementById("email").value = user.correo || ""
+    document.getElementById("cargo").value = user.Cargo || ""
+    document.getElementById("rol").value = user.rol || ""
+    document.getElementById("pin").value = user.PIN || ""
+    
+    // Imagen actual si existe
+    if (user.imagen) {
+      const imgPreview = document.getElementById("imagenPreview")
+      if (imgPreview) {
+        imgPreview.src = user.imagen
+        imgPreview.classList.remove("hidden")
+      }
+    }
+
+  } catch (error) {
+    console.error(error)
+    alert("Error al cargar los datos del usuario")
+    window.location.href = "/administrar_usuarios"
+  }
+}
+
+
+
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
   // Cargar datos del usuario
   loadUserData()
 
-  // Formateo automático del RUT
-  const rutInput = document.getElementById("rut")
-  rutInput.addEventListener("input", function () {
-    const formatted = formatRUT(this.value)
-    this.value = formatted
+
+  // Cambiar imagen al cambiar el archivo
+const imagenForm = document.getElementById("imagen");
+const imagenPreview = document.getElementById("imagenPreview");
+
+imagenForm.addEventListener("change", function () {
+  const file = this.files[0];
+
+  if (!file) {
+    // No hay archivo seleccionado
+    imagenPreview.src = "";
+    imagenPreview.classList.add("hidden");
+    return;
+  }
+
+  // Validar tipo de archivo
+  const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
+  const maxSize = 2 * 1024 * 1024; // 2MB
+
+  if (!validTypes.includes(file.type)) {
+    alert("El archivo debe ser una imagen (JPG, PNG, GIF)");
+    this.value = ""; // limpiar input
+    imagenPreview.src = "";
+    imagenPreview.classList.add("hidden");
+    return;
+  }
+
+  if (file.size > maxSize) {
+    alert("La imagen no debe superar los 2MB");
+    this.value = ""; // limpiar input
+    imagenPreview.src = "";
+    imagenPreview.classList.add("hidden");
+    return;
+  }
+
+  // Si pasa la validación, mostrar preview
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    imagenPreview.src = e.target.result;
+    imagenPreview.classList.remove("hidden");
+  };
+  reader.readAsDataURL(file);
+});
+
+  // Formatear RUT
+  document.getElementById("rut").addEventListener("input", function () {
+    this.value = formatearRUT(this.value)
+  })
+
+  // Formatear celular
+  document.getElementById("celular").addEventListener("input", function () {
+    let valor = this.value.replace(/[^\d]/g, "")
+    if (valor.length > 0) {
+      if (valor.startsWith("56")) valor = valor.substring(2)
+      if (valor.length >= 1) {
+        valor = "+56 " + valor.substring(0, 1) + " " + valor.substring(1, 5) + " " + valor.substring(5, 9)
+      }
+    }
+    this.value = valor.trim()
   })
 
   // Formulario
   const form = document.getElementById("editUserForm")
   form.addEventListener("submit", (e) => {
     e.preventDefault()
-
-    if (validateForm()) {
-      // Aquí iría la lógica para actualizar el usuario
+    if (validarFormulario()) {
       console.log("Usuario modificado:", {
-        id: currentUserId,
-        nombres: document.getElementById("nombres").value,
-        apellidos: document.getElementById("apellidos").value,
+        nombre: document.getElementById("nombre").value,
+        segundo_nombre: document.getElementById("Segundo_nombre").value,
+        apellido_paterno: document.getElementById("apellido_paterno").value,
+        apellido_materno: document.getElementById("apellido_materno").value,
         rut: document.getElementById("rut").value,
         celular: document.getElementById("celular").value,
         direccion: document.getElementById("direccion").value,
         email: document.getElementById("email").value,
         cargo: document.getElementById("cargo").value,
-        password: document.getElementById("password").value || "sin cambios",
+        rol: document.getElementById("rol").value,
+        pin: document.getElementById("pin").value,
+        password: document.getElementById("password").value || "sin cambios"
       })
-
-      showSuccessMessage()
+      mostrarMensajeExito()
     }
   })
 
   // Botón cancelar
-  const cancelBtn = document.getElementById("cancelBtn")
-  cancelBtn.addEventListener("click", () => {
+  document.getElementById("cancelBtn").addEventListener("click", () => {
     window.location.href = "/administrar_usuarios"
   })
 })

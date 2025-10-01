@@ -133,6 +133,41 @@ def obtener_usuarios(request):
 
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
 
+def obtener_usuario(request):
+    rut = request.GET.get("id")
+    if not rut:
+        return JsonResponse({"status": "error", "message": "RUT no especificado"}, status=400)
+
+    # Obtener usuario
+    usuario_data = database.child(f"Usuario/{rut}").get().val()
+    if not usuario_data:
+        return JsonResponse({"status": "error", "message": "Usuario no encontrado"}, status=404)
+
+    # Obtener cargo
+    cargo_id = usuario_data.get("Cargo")
+    cargo_data = database.child("Cargo").child(cargo_id).get().val()
+    cargo_nombre = cargo_data.get("Nombre") if cargo_data else "Sin cargo"
+
+    usuario_json = {
+        "Nombre": usuario_data.get("Nombre", ""),
+        "Segundo_nombre": usuario_data.get("Segundo_nombre", ""),
+        "ApellidoPaterno": usuario_data.get("ApellidoPaterno", ""),
+        "ApellidoMaterno": usuario_data.get("ApellidoMaterno", ""),
+        "Telefono": usuario_data.get("Telefono", ""),
+        "Direccion": usuario_data.get("Direccion", ""),
+        "correo": usuario_data.get("correo", ""),
+        "Cargo": cargo_id,
+        "cargo_nombre": cargo_nombre,
+        "imagen": usuario_data.get("imagen", ""),
+        "rol": usuario_data.get("rol", ""),
+        "PIN": usuario_data.get("PIN", ""),
+        "Fecha_creacion": usuario_data.get("Fecha_creacion", ""),
+        "rut": rut,
+        "rut_normal": formatear_rut(rut),
+    }
+
+    return JsonResponse({"status": "success", "usuario": usuario_json})
+
 @require_POST
 def crear_usuario_funcion(request):
     nombre = request.POST.get('nombre', None)
