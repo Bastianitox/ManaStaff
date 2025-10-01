@@ -4,7 +4,8 @@
 {% block head %}
 <!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/inicio_documentos.css' %}">
-<script src="{% static 'staffweb/js/inicio_documentos.js' %}"></script>
+{{ documents|json_script:"documents-data" }}
+<script src="{% static 'staffweb/js/inicio_documentos.js' %}" defer></script>
 
 <title>Mis Documentos</title>
 {% endblock head %}
@@ -57,21 +58,21 @@
             <div class="filter-group">
                 <label>Ordenar por:</label>
                 <select id="sortFilter">
-                    <option value="date-desc">Fecha (más reciente)</option>
-                    <option value="date-asc">Fecha (más antiguo)</option>
+                    <option value="date-desc">Fecha (m&aacute;s reciente)</option>
+                    <option value="date-asc">Fecha (m&aacute;s antiguo)</option>
                     <option value="name-asc">Nombre (A-Z)</option>
                     <option value="name-desc">Nombre (Z-A)</option>
-                    <option value="size-desc">Tamaño (mayor)</option>
-                    <option value="size-asc">Tamaño (menor)</option>
+                    <option value="size-desc">Tama&ntilde;o (mayor)</option>
+                    <option value="size-asc">Tama&ntilde;o (menor)</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Tamaño del archivo:</label>
+                <label>Tama&ntilde;o del archivo:</label>
                 <select id="sizeFilter">
-                    <option value="">Todos los tamaños</option>
+                    <option value="">Todos los tama&ntilde;os</option>
                     <option value="small">Menos de 1MB</option>
                     <option value="medium">1MB - 3MB</option>
-                    <option value="large">Más de 3MB</option>
+                    <option value="large">M&aacute;s de 3MB</option>
                 </select>
             </div>
         </div>
@@ -82,10 +83,9 @@
     </div>
 </div>
 
-<!-- Sección de documentos -->
+
 <div class="documents-section">
     <div class="documents-grid" id="documentsGrid">
-        <!-- Los documentos se cargarán dinámicamente desde JavaScript -->
     </div>
 </div>
 {% endblock principal %}
