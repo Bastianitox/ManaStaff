@@ -176,5 +176,3 @@ def ejemplo_eliminar(request):
     ref.delete()
 
     return redirect("inicio_documentos")
-
-
