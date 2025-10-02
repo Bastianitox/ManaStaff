@@ -44,13 +44,9 @@
                 </label>
                 <select id="requestType" class="form-select" required>
                     <option value="">Seleccionar tipo...</option>
-                    <option value="vacaciones">Vacaciones</option>
-                    <option value="administrativo">Día Administrativo</option>
-                    <option value="medico">Permiso Médico</option>
-                    <option value="remoto">Trabajo Remoto</option>
-                    <option value="capacitacion">Capacitación</option>
-                    <option value="personal">Asunto Personal</option>
-                    <option value="otro">Otro</option>
+                    {% for tipo in tipos_solicitud %} <!-- EL MISMO NOMBRE DE LA VARIABLE DENTRO DE CONTEXTO -->
+                        <option value="{{tipo.id_tipo}}">{{tipo.nombre}}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>

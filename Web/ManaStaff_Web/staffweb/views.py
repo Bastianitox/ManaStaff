@@ -139,7 +139,27 @@ def inicio_dashboard(request):
     
 
 def crear_solicitud(request):
-    return render(request, 'staffweb/crear_solicitud.html')
+    #TRAEMOS LOS TIPOS DE SOLICITUD
+    tipos_solicitud = database.child("TiposSolicitud").get().val() or {}  #RECORDAR QUE EL NOMBRE DE TABLA DEBE SER EXACTAMENTE EL MISMO DE LA BASE DE DATOS
+
+    #CREAMOS UNA VARIABLE PARA GUARDAR LA INFO
+    tipos_solicitud_lista = []
+
+    #AHORA INDEXAMOS POR CADA SOLICITUD Y OBTENER SU NOMBRE E ID
+    for id_tipo, tipo in tipos_solicitud.items():
+        nombre_tipo = tipo.get("nombre")
+
+        tipos_solicitud_lista.append({
+            "id_tipo": id_tipo,
+            "nombre": nombre_tipo
+        })
+
+    #SE GUARDA EN UNA VARIABLE DE CONTEXTO TIPO DICCIONARIO
+    contexto = {
+        "tipos_solicitud": tipos_solicitud_lista
+    }
+
+    return render(request, 'staffweb/crear_solicitud.html', contexto)
 
 def ver_documentos(request):
     return render(request, "staffweb/ver_documentos.html")

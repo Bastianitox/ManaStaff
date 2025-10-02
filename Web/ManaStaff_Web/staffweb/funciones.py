@@ -497,6 +497,9 @@ def obtener_solicitudes_usuario(request):
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
 
+@require_POST #SIGNIFICA QUE REQUIRE SER ENVIADO POR FORMULARIO EN METODO POST
+def crear_solicitud_funcion(request):
+    pass
 
 
 #FUNCIONES DE AYUDA
