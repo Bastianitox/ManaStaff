@@ -221,12 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     viewButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const docId = button.dataset.docId
-        const doc = documents.find((item) => String(item.id) === String(docId))
-        if (doc && doc.available && doc.filePath) {
-          window.open(doc.filePath, '_blank')
-        } else {
-          alert('Este documento no esta disponible para previsualizacion.')
-        }
+        window.location.href = `/ver_documentos?docId=${docId}` 
       })
     })
 
@@ -235,15 +230,13 @@ document.addEventListener('DOMContentLoaded', () => {
       button.addEventListener('click', () => {
         const docId = button.dataset.docId
         const doc = documents.find((item) => String(item.id) === String(docId))
-        if (doc && doc.available && doc.filePath) {
-          const link = document.createElement('a')
-          link.href = doc.filePath
-          link.target = '_blank'
-          link.rel = 'noopener noreferrer'
-          link.download = `${doc.title}.pdf`
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
+        if (doc && doc.available && doc.downloadPath) {
+          const a = document.createElement('a')
+          a.href = doc.downloadPath   //
+          a.download = `${doc.title}.${(doc.format || 'pdf').toLowerCase()}`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
         } else {
           alert('Documento no disponible para descarga.')
         }

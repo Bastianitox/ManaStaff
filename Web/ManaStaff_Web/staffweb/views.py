@@ -1,16 +1,18 @@
-﻿from datetime import datetime
+﻿from datetime import datetime, timedelta
 import re
 
 from django.shortcuts import render
 
-import os
+import os, re
 from django.conf import settings
 from django.shortcuts import render
+from urllib.parse import urlparse, unquote
+
+
 
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
 from .firebase import firebase, db, storage
-
 
 # VARIABLES FIREBASE
 database = firebase.database()
@@ -27,15 +29,13 @@ def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
 
 def inicio_documentos(request):
-    """muestra los documentos que le pertenecen al usuario autenticado"""
+    """Muestra los documentos que le pertenecen al usuario autenticado"""
     user_role = (request.session.get('rol_usu') or '').strip().lower()
 
     def normalize_rut(value):
-        """Deja un rut solo con números, sin puntos ni guión"""
         return ''.join(ch for ch in str(value or '') if ch.isdigit())
 
     def parse_date(value):
-        """convierte la fecha guardada en la BD a un objeto datetime"""
         if not value:
             return None
         value_str = str(value).strip()
@@ -57,7 +57,6 @@ def inicio_documentos(request):
         return str(value), None
 
     def parse_size(value):
-        """Toma valores como '3mb' o '950KB' y los transforma a MB"""
         if value is None:
             return None, None
         raw = str(value).strip()
@@ -82,10 +81,8 @@ def inicio_documentos(request):
         display = f"{size_value:g}{unit}"
         return display, size_mb
 
-    # rut limpio del usuario (guardado en la sesión durante el login)
-    normalized_user_rut = normalize_rut(request.session.get('usuario_rut'))
-    if not normalized_user_rut:
-        normalized_user_rut = normalize_rut(request.session.get('usuario_id'))
+    # rut del usuario en sesión
+    normalized_user_rut = normalize_rut(request.session.get('usuario_rut')) or normalize_rut(request.session.get('usuario_id'))
 
     documents = []
     ref = db.reference('Documentos')
@@ -101,6 +98,7 @@ def inicio_documentos(request):
         if not isinstance(data, dict):
             continue
 
+        # Solo ver los suyos
         rut_in_doc = normalize_rut(data.get('id_rut') or data.get('Rut') or data.get('rut'))
         if normalized_user_rut and user_role not in {'admin', 'administrador'} and rut_in_doc != normalized_user_rut:
             continue
@@ -108,24 +106,27 @@ def inicio_documentos(request):
         formatted_date, sort_date = format_date(data.get('Fecha_emitida') or data.get('fecha_emitida'))
         display_size, size_mb = parse_size(data.get('tamano_archivo') or data.get('tamano') or data.get('size'))
 
+        nombre = data.get('nombre') or data.get('titulo') or 'Documento'
+        raw_url = data.get('url')  # volvemos a usar la URL guardada
+
         documents.append({
             'id': doc_id,
-            'title': data.get('nombre') or data.get('titulo') or 'Documento',
+            'title': nombre,
             'format': (data.get('tipo_documento') or data.get('formato') or 'PDF').upper(),
             'size': display_size or '0MB',
             'sizeInMb': size_mb,
             'date': formatted_date or '',
             'sortDate': sort_date,
-            'available': bool(data.get('url')),
-            'filePath': data.get('url'),
+            'available': bool(raw_url),
+            'filePath': raw_url,          # se usará para VER
+            'downloadPath': raw_url,      # se usará para DESCARGAR
             'raw': data,
         })
 
-    context = {
-        'documents': documents,
-    }
+    context = {'documents': documents}
+    return render(request, "staffweb/inicio_documentos.html", context)
 
-    return render(request, 'staffweb/inicio_documentos.html', context)
+
 def inicio_perfil(request):
     return render(request, 'staffweb/inicio_perfil.html')
     
@@ -162,7 +163,37 @@ def crear_solicitud(request):
     return render(request, 'staffweb/crear_solicitud.html', contexto)
 
 def ver_documentos(request):
-    return render(request, "staffweb/ver_documentos.html")
+    doc_id = request.GET.get('docId')
+    data = db.reference('Documentos').child(doc_id).get() if doc_id else None
+
+    documento = None
+    if data:
+        raw = data.get('url')  # <- volvemos a usar la URL guardada
+        nombre = data.get('nombre') or data.get('titulo') or 'Documento'
+
+        # Detección de extensión para decidir visor
+        file_name_guess = raw if isinstance(raw, str) else ''
+        if file_name_guess.startswith('http') and '%2F' in file_name_guess:
+            file_name_guess = unquote(file_name_guess.split('%2F')[-1])
+        ext = os.path.splitext(file_name_guess)[1].lower()
+
+        office_exts = {'.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'}
+        if ext in office_exts:
+            viewer_url = f"https://view.officeapps.live.com/op/view.aspx?src={unquote(raw, safe='')}"
+        else:
+            viewer_url = raw  # PDF/imagen u otro inline
+
+        documento = {
+            'id': doc_id,
+            'title': nombre,
+            'format': (data.get('tipo_documento') or ext.replace('.', '') or 'PDF').upper(),
+            'size': data.get('tamano_archivo') or data.get('size') or '0MB',
+            'date': data.get('Fecha_emitida') or data.get('fecha_emitida') or '',
+            'filePath': viewer_url,   # para iframe
+            'downloadPath': raw       # descarga directa de la misma URL
+        }
+
+    return render(request, "staffweb/ver_documentos.html", {"documento": documento})
 
 def cambiar_contrasena(request):
     return render(request, "staffweb/cambiar_contrasena.html")
@@ -238,3 +269,33 @@ def administrar_logs(request):
     return render(request, "staffweb/administrar_logs.html")
 
 
+# Problemas con url
+def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=None, lifetime_hours=6):
+    """Acepta una URL cruda (de la BD) o un storage path y devuelve una URL firmada."""
+    if not raw_url_or_path:
+        return None
+    try:
+        # Si viene http(s), extraigo el path real del blob
+        if str(raw_url_or_path).startswith('http'):
+            path = urlparse(raw_url_or_path).path  # /v0/b/<bucket>/o/<objeto-enc>
+            if "/o/" not in path:
+                return raw_url_or_path
+            object_part = path.split("/o/", 1)[1]
+            blob_name = unquote(object_part)
+        else:
+            blob_name = raw_url_or_path
+
+        bucket = storage.bucket()
+        blob = bucket.blob(blob_name)
+
+        if not filename_hint:
+            filename_hint = os.path.basename(blob_name)
+
+        dispo = "attachment" if as_attachment else "inline"
+        return blob.generate_signed_url(
+            expiration=timedelta(hours=lifetime_hours),
+            method="GET",
+            response_disposition=f'{dispo}; filename="{filename_hint}"'
+        )
+    except Exception:
+        return None
