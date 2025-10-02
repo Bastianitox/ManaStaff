@@ -80,6 +80,11 @@ def iniciarSesion(request):
         # URL de la imagen
         url_imagen = usuario.get('imagen', '/static/default.png')
 
+        # Guardamos el rut del usuario en la sesión para reutilizarlo en otras vistas.
+        rut_usuario = usuario.get('id_rut') or usuario.get('Rut') or usuario.get('rut') or id_usu
+        rut_usuario = re.sub(r'[^0-9]', '', str(rut_usuario or ''))
+        request.session['usuario_rut'] = rut_usuario
+
         request.session['usuario_id'] = id_usu
         request.session['nombre_usu'] = usuario.get('Nombre', '')
         request.session['apellido_usu'] = usuario.get('ApellidoPaterno', '')

@@ -27,17 +27,15 @@ def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
 
 def inicio_documentos(request):
-    """Data proveniente de Firebase."""
-    # Obtiene datos del usuario autenticado para filtrar los registros que podrá ver
-    usuario_id = request.session.get('usuario_id')
+    """muestra los documentos que le pertenecen al usuario autenticado"""
     user_role = (request.session.get('rol_usu') or '').strip().lower()
 
-    # Normaliza cualquier RUT/id eliminando separadores para comparar con Firebase
     def normalize_rut(value):
-        return ''.join(ch for ch in str(value) if ch.isdigit())
+        """Deja un rut solo con números, sin puntos ni guión"""
+        return ''.join(ch for ch in str(value or '') if ch.isdigit())
 
-    # Intenta convertir la fecha almacenada en la BD en un objeto datetime utilizable
     def parse_date(value):
+        """convierte la fecha guardada en la BD a un objeto datetime"""
         if not value:
             return None
         value_str = str(value).strip()
@@ -48,29 +46,18 @@ def inicio_documentos(request):
                 continue
         return None
 
-    # Formatea la fecha a texto "DD Mes, YYYY" y devuelve un ISO para ordenamiento
     def format_date(value):
         months = [
-            "Enero",
-            "Febrero",
-            "Marzo",
-            "Abril",
-            "Mayo",
-            "Junio",
-            "Julio",
-            "Agosto",
-            "Septiembre",
-            "Octubre",
-            "Noviembre",
-            "Diciembre",
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
         ]
         parsed = parse_date(value)
         if parsed:
             return f"{parsed.day:02d} {months[parsed.month - 1]}, {parsed.year}", parsed.date().isoformat()
         return str(value), None
 
-    # Calcula el tamaño en MB independiente de la unidad original registrada
     def parse_size(value):
+        """Toma valores como '3mb' o '950KB' y los transforma a MB"""
         if value is None:
             return None, None
         raw = str(value).strip()
@@ -95,40 +82,27 @@ def inicio_documentos(request):
         display = f"{size_value:g}{unit}"
         return display, size_mb
 
-    documents = []
-    # Referencia la colección Documentos en Realtime Database
-    ref = db.reference('Documentos')
-    normalized_user_rut = normalize_rut(usuario_id) if usuario_id else ''
+    # rut limpio del usuario (guardado en la sesión durante el login)
+    normalized_user_rut = normalize_rut(request.session.get('usuario_rut'))
+    if not normalized_user_rut:
+        normalized_user_rut = normalize_rut(request.session.get('usuario_id'))
 
-    # Busca los documentos permitidos (solo los del usuario salvo rol administrador)
+    documents = []
+    ref = db.reference('Documentos')
+
     try:
-        raw_documents = {}
-        is_admin = user_role in {'admin', 'administrador'}
-        if normalized_user_rut and not is_admin:
-            candidates = [normalized_user_rut]
-            if normalized_user_rut.isdigit():
-                candidates.append(int(normalized_user_rut))
-            for candidate in candidates:
-                raw_documents = ref.order_by_child('id_rut').equal_to(candidate).get() or {}
-                if raw_documents:
-                    break
-            if not raw_documents:
-                all_docs = ref.get() or {}
-                raw_documents = {
-                    key: value for key, value in all_docs.items()
-                    if normalize_rut(value.get('id_rut')) == normalized_user_rut
-                }
-        else:
-            raw_documents = ref.get() or {}
+        raw_documents = ref.get() or {}
+        if not isinstance(raw_documents, dict):
+            raw_documents = {}
     except Exception:
         raw_documents = {}
 
-    # Construye la estructura que usará el frontend para pintar cada tarjeta
-    for doc_id, data in (raw_documents or {}).items():
+    for doc_id, data in raw_documents.items():
         if not isinstance(data, dict):
             continue
-        rut_in_doc = normalize_rut(data.get('id_rut'))
-        if normalized_user_rut and rut_in_doc and rut_in_doc != normalized_user_rut and user_role not in {'admin', 'administrador'}:
+
+        rut_in_doc = normalize_rut(data.get('id_rut') or data.get('Rut') or data.get('rut'))
+        if normalized_user_rut and user_role not in {'admin', 'administrador'} and rut_in_doc != normalized_user_rut:
             continue
 
         formatted_date, sort_date = format_date(data.get('Fecha_emitida') or data.get('fecha_emitida'))
@@ -152,8 +126,6 @@ def inicio_documentos(request):
     }
 
     return render(request, 'staffweb/inicio_documentos.html', context)
-    
-
 def inicio_perfil(request):
     return render(request, 'staffweb/inicio_perfil.html')
     
@@ -244,3 +216,5 @@ def administrar_noticiasyeventos(request):
 
 def administrar_logs(request):
     return render(request, "staffweb/administrar_logs.html")
+
+
