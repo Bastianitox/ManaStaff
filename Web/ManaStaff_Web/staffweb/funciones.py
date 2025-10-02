@@ -635,7 +635,7 @@ def obtener_solicitudes_administrar(request):
     #OBTENER USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
 
-    # OBTENER LOS USUARIOS DE LA BASE DE DATOS
+    # OBTENER LAS SOLICITUDES DE LA BASE DE DATOS
     solicitudes = database.child("Solicitudes").get().val() or {}
 
     solicitudes_lista = []
@@ -704,8 +704,41 @@ def obtener_solicitudes_administrar(request):
             })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
- 
-    
+
+def asignarme_solicitud(request, id_solicitud):
+    #OBTENER EL USUARIO ACTUAL
+    usuario_actual_rut = request.session.get("usuario_id")
+
+    #VALIDAR USUARIO ACTUAL
+    if not usuario_actual_rut:
+        return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
+
+    #VALIDAR QUE USUARIO SEA ADMIN (RECURSOS HUMANOS)
+    usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
+    usuario_actual_rol = usuario_actual.get("rol")
+
+    print(usuario_actual_rol)
+
+    if not usuario_actual_rol:
+        return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
+
+    if usuario_actual_rol != "Uno":
+        return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
+
+
+    #OBTENER LA REF DE SOLICITUD A ASIGNAR
+    ref = database.child('/Solicitudes/'+ id_solicitud)
+
+    #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
+    if ref.get("Fecha_inicio") != "null":
+        return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya asignada.'})
+
+    ref.update({
+        "Fecha_inicio": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "id_aprobador": usuario_actual_rut
+    })
+
+    return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
 
 
 #FUNCIONES DE AYUDA
