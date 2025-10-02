@@ -284,8 +284,18 @@ def eliminar_usuario(request, rut):
         #Eliminar los archivos del usuario
         eliminar_archivos_usuario(rut)
 
-        #Eliminar las solicitudes del usuario
-        database.child(f"Solicitudes/{rut}").remove()
+        # Eliminar solicitudes del usuario
+        solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(rut).get()
+        if solicitudes.each():
+            for solicitud in solicitudes.each():
+                database.child("Solicitudes").child(solicitud.key()).remove()
+
+        # Eliminar documentos del usuario
+        documentos = database.child("Documentos").order_by_child("id_rut").equal_to(rut).get()
+        if documentos.each():
+            for doc in documentos.each():
+                database.child("Documentos").child(doc.key()).remove()
+
 
         return JsonResponse({"status": "success", "message": "Usuario eliminado junto con sus Solicitudes y Documentos correctamente."})
     except Exception as e:
