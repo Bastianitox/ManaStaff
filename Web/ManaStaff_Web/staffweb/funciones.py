@@ -459,6 +459,31 @@ def modificar_usuario_funcion(request, rut):
 
     return JsonResponse({"status": "success", "message": "Usuario modificado correctamente."})
 
+#SOLICITUDES
+
+def obtener_solicitudes_usuario(request):
+    #OBTENER USUARIO ACTUAL
+    usuario_actual_rut = request.session.get("usuario_id")
+
+    # OBTENER LOS USUARIOS DE LA BASE DE DATOS
+    solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(usuario_actual_rut).get().val()
+
+    solicitudes_lista = []
+    for id_solicitud, solicitud in solicitudes.items():
+
+        solicitudes_lista.append({
+            "id_solicitud": id_solicitud,
+            "Asunto": solicitud.get("Asunto"),
+            "Descripcion": solicitud.get("Descripcion"),
+            "Estado": solicitud.get("Estado"),
+            "Fecha_fin": solicitud.get("Fecha_fin"),
+            "Fecha_inicio": solicitud.get("Fecha_inicio"),
+            "Fecha_solicitud": solicitud.get("Fecha_solicitud"),
+            "id_aprobador": solicitud.get("id_aprobador"),
+            "tipo_solicitud": solicitud.get("tipo_solicitud")
+        })
+
+    return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
 
 
 
