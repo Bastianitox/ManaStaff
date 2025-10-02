@@ -89,7 +89,7 @@ function limpiarTodosLosErrores() {
     "nombre",
     "Segundo_nombre",
     "apellido_paterno",
-    "apellidos_materno",
+    "apellido_materno",
     "rut",
     "celular",
     "direccion",
@@ -139,12 +139,12 @@ function validarFormulario() {
   }
 
   // Validar apellido materno
-  const apellidoMaterno = document.getElementById("apellidos_materno").value.trim()
+  const apellidoMaterno = document.getElementById("apellido_materno").value.trim()
   if (!apellidoMaterno) {
-    mostrarError("apellidos_materno", "El apellido materno es obligatorio")
+    mostrarError("apellido_materno", "El apellido materno es obligatorio")
     esValido = false
   } else if (apellidoMaterno.length < 2) {
-    mostrarError("apellidos_materno", "El apellido materno debe tener al menos 2 caracteres")
+    mostrarError("apellido_materno", "El apellido materno debe tener al menos 2 caracteres")
     esValido = false
   }
 
@@ -249,39 +249,92 @@ document.addEventListener("DOMContentLoaded", () => {
   // Formatear RUT
   document.getElementById("rut").addEventListener("input", function () {
     this.value = formatearRUT(this.value)
-  })
+  });
 
   // Formatear celular
   document.getElementById("celular").addEventListener("input", function () {
-    let valor = this.value.replace(/[^\d]/g, "")
+    let valor = this.value.replace(/[^\d]/g, "");
     if (valor.length > 0) {
-      if (valor.startsWith("56")) {
-        valor = valor.substring(2)
-      }
+      if (valor.startsWith("56")) valor = valor.substring(2);
       if (valor.length >= 1) {
-        valor =
-          "+56 " +
-          valor.substring(0, 1) +
-          " " +
-          valor.substring(1, 5) +
-          " " +
-          valor.substring(5, 9)
+        valor = "+56 " + valor.substring(0, 1) + " " + valor.substring(1, 5) + " " + valor.substring(5, 9);
       }
     }
-    this.value = valor.trim()
-  })
+    this.value = valor.trim();
+  });
 
-  // Envío del formulario
-  const form = document.getElementById("createUserForm")
-  form.addEventListener("submit", (e) => {
-    if (validarFormulario()) {
-      console.log("Formulario válido, creando usuario...")
-      mostrarMensajeExito()
-    }
-  })
+  const form = document.getElementById("createUserForm");
+
+  const loadingOverlay = document.getElementById("loadingOverlay");
+
+  form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!validarFormulario()) return;
+
+      // Mostrar overlay de carga
+      loadingOverlay.classList.add("show");
+
+      const data = {
+          nombre: document.getElementById("nombre").value.trim(),
+          segundo_nombre: document.getElementById("Segundo_nombre").value.trim(),
+          apellido_paterno: document.getElementById("apellido_paterno").value.trim(),
+          apellido_materno: document.getElementById("apellido_materno").value.trim(),
+          rut: document.getElementById("rut").value.trim(),
+          celular: document.getElementById("celular").value.trim(),
+          direccion: document.getElementById("direccion").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          cargo: document.getElementById("cargo").value,
+          password: document.getElementById("password").value,
+          rol: document.getElementById("rol").value,
+          pin: document.getElementById("pin").value.trim()
+      };
+
+      async function enviar() {
+          try {
+              const response = await fetch("/crear_usuario_funcion", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                  },
+                  body: JSON.stringify(data)
+              });
+
+              const result = await response.json();
+
+              // Ocultar overlay
+              loadingOverlay.classList.remove("show");
+
+              if (result.status === "success") {
+                  mostrarMensajeExito();
+              } else {
+                  alert(result.message || "Error al crear usuario");
+              }
+          } catch (error) {
+              console.error(error);
+              loadingOverlay.classList.remove("show");
+              alert("Error al enviar los datos");
+          }
+      }
+
+      // Convertir imagen a Base64 si existe
+      const imagenInput = document.getElementById("imagen");
+      if (imagenInput.files.length > 0) {
+          const file = imagenInput.files[0];
+          const reader = new FileReader();
+          reader.onload = async () => {
+              data.imagen = reader.result; // Base64
+              await enviar();
+          };
+          reader.readAsDataURL(file);
+      } else {
+          await enviar();
+      }
+  });
 
   // Botón cancelar
   document.getElementById("cancelBtn").addEventListener("click", () => {
-    window.location.href = redirectUrl
-  })
-})
+    window.location.href = redirectUrl;
+  });
+});
