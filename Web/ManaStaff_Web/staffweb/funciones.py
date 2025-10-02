@@ -557,7 +557,10 @@ def crear_solicitud_funcion(request):
     })
     return JsonResponse({"status": "success", "message": "Solicitud creada con éxito."})
 
-
+#PARA CANCELAR SOLICITUD SE ELIMINARA DE LA BASE DE DATOS JUNTO CON SUS RESPECTIVOS ARCHIVOS
+def cancelar_solicitud_funcion(request, id_solicitud):
+    #OBTENEMOS EL ID_SOLICITUD DE ESTA
+    pass
  
     
 
