@@ -16,24 +16,64 @@
             </svg>
             Volver
         </button>
+
         <div class="document-info">
-            <h1 id="documentTitle">Cargando documento...</h1>
+            <h1 id="documentTitle">{{ documento.title|default:"Documento no encontrado" }}</h1>
             <div class="document-meta" id="documentMeta">
-                <!-- Se cargará dinámicamente -->
+                {% if documento %}
+                    <span class="meta-item"><strong>Formato:</strong> {{ documento.format }}</span>
+                    <span class="meta-item"><strong>Tamaño:</strong> {{ documento.size }}</span>
+                    <span class="meta-item"><strong>Fecha:</strong> {{ documento.date }}</span>
+                {% else %}
+                    <span class="meta-item error"><strong>Estado:</strong> No disponible</span>
+                {% endif %}
             </div>
         </div>
+
         <div class="document-actions">
-            <button class="action-btn download-btn" id="downloadBtn">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
-                </svg>
-                Descargar
-            </button>
+            {% if documento and documento.downloadPath %}
+                <a class="action-btn download-btn" id="downloadBtn"
+                   href="{{ documento.downloadPath }}"
+                   download="{{ documento.title }}.{{ documento.format|lower }}">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </a>
+            {% else %}
+                <button class="action-btn download-btn" id="downloadBtn" disabled style="opacity:.5;cursor:not-allowed;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
+                </button>
+            {% endif %}
         </div>
     </div>
     
     <div class="document-content" id="documentContent">
-        <!-- El contenido del documento se cargará aquí -->
+        {% if documento and documento.filePath %}
+            <div class="pdf-viewer">
+                <iframe src="{{ documento.filePath }}" width="100%" height="600px" frameborder="0">
+                    <p>Tu navegador no soporta la visualización integrada.
+                        <a href="{{ documento.downloadPath|default:documento.filePath }}">Descargar</a>.
+                    </p>
+                </iframe>
+            </div>
+        {% else %}
+            <div class="document-not-found">
+                <div class="not-found-icon">
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5A1.5,1.5 0 0,1 10.5,9A1.5,1.5 0 0,1 12,7.5A1.5,1.5 0 0,1 13.5,9A1.5,1.5 0 0,1 12,10.5Z"/>
+                    </svg>
+                </div>
+                <h3>Documento no encontrado</h3>
+                <p>El documento solicitado no está disponible o no se pudo encontrar.</p>
+                <button class="back-to-documents" onclick="window.location.href='/inicio_documentos'">
+                    Volver a Mis Documentos
+                </button>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock principal %}

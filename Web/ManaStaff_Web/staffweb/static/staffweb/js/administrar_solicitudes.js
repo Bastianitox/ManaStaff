@@ -117,13 +117,13 @@ function renderRequests(requestsToRender) {
         if (request.estado_asignacion === "pendiente") {
             if (request.id_aprobador === "null") {
                 buttons = `
-                    <button class="view-details-btn requests-buttons btn-asignacion" onclick="assignRequest(${request.id_solicitud})">
+                    <button class="view-details-btn requests-buttons btn-asignacion" onclick="assignRequest('${request.id_solicitud}')">
                         Asignarme solicitud
                     </button>
                 `;
             } else if (request.id_aprobador === currentUser.rut) {
                 buttons = `
-                    <button class="view-details-btn requests-buttons btn-detalles" onclick="viewDetails(${request.id_solicitud})">
+                    <button class="view-details-btn requests-buttons btn-detalles" onclick="viewDetails('${request.id_solicitud}')">
                         Ver detalles
                     </button>
                 `;
@@ -255,19 +255,78 @@ statusTabs.forEach(tab => {
     });
 });
 
-// Render inicial
-filterRequests(filteredRequests);
 
 
-// Funciones auxiliares (simples)
-function assignRequest(id) {
-    const solicitud = requests.find(r => r.id_solicitud === id);
-    if (solicitud) {
-        solicitud.asignado_a = currentUser.rut;
-        solicitud.estado_asignacion = "asignada";
-        filterRequests();
-    }
+
+
+
+function assignRequest(id_solicitud) {
+    const solicitud = requests.find(r => r.id_solicitud === id_solicitud);
+    if (!solicitud) return;
+
+    const modal = document.getElementById('assignModal');
+    const message = document.getElementById('assignModalMessage');
+    const confirmBtn = document.getElementById('assignConfirmBtn');
+    const cancelBtn = document.getElementById('assignCancelBtn');
+
+    // Mensaje modal
+    message.textContent = `¿Quieres asignarte la solicitud "${solicitud.asunto}"?`;
+    modal.style.display = 'flex';
+
+    confirmBtn.onclick = async () => {
+        showLoader("Asignando solicitud...");
+
+        try {
+            const response = await fetch("asignarme_solicitud/"+id_solicitud)
+            if (!response.ok) throw new Error("Error HTTP " + response.status)
+
+            console.log(response)
+
+            const data = await response.json();
+
+            if (data.status === "success") {
+                // 🔹 Actualizar solicitud local para reflejar el cambio
+                solicitud.id_aprobador = currentUser.rut;
+                solicitud.fecha_inicio = new Date().toISOString().slice(0, 19).replace("T", " ");
+                solicitud.estado_asignacion = "asignada";
+
+                modal.style.display = "none";
+                filterRequests();
+
+                // Mensaje bonito de éxito
+                showSuccessMessage(data.mensaje || "Solicitud asignada correctamente.");
+            } else {
+                alert("⚠️ " + (data.mensaje || "Error desconocido al asignar la solicitud."));
+            }
+        } catch (error) {
+            console.error("Error asignando solicitud:", error);
+            alert("Error de conexión al asignar la solicitud.");
+        } finally {
+            hideLoader();
+        }
+    };
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('vanish');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('vanish');
+        }, 300);
+    };
 }
+
+
+function showLoader(message = "Procesando solicitud...") {
+    const overlay = document.getElementById("loadingOverlay");
+    const text = overlay.querySelector(".loading-text");
+    text.textContent = message;
+    overlay.classList.add("show");
+}
+
+function hideLoader() {
+    document.getElementById("loadingOverlay").classList.remove("show");
+}
+
 
 /* DETAILES */
 
