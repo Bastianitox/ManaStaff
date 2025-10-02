@@ -466,21 +466,33 @@ def obtener_solicitudes_usuario(request):
     usuario_actual_rut = request.session.get("usuario_id")
 
     # OBTENER LOS USUARIOS DE LA BASE DE DATOS
-    solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(usuario_actual_rut).get().val()
+    solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(usuario_actual_rut).get().val() or {}
 
     solicitudes_lista = []
     for id_solicitud, solicitud in solicitudes.items():
 
+        fecha_solicitud_str = solicitud.get("Fecha_solicitud")
+        created_date = "Sin fecha"
+        sort_date = None
+        if fecha_solicitud_str:
+            try:
+                fecha_solicitud = datetime.fromisoformat(fecha_solicitud_str)
+                created_date = fecha_solicitud.strftime("%d %B, %Y")  # Ej: "15 Enero, 2024"
+                sort_date = fecha_solicitud.date().isoformat()        # Ej: "2024-01-15"
+            except ValueError:
+                created_date = fecha_solicitud_str  # Dejar como viene si no es ISO
+
         solicitudes_lista.append({
             "id_solicitud": id_solicitud,
-            "Asunto": solicitud.get("Asunto"),
-            "Descripcion": solicitud.get("Descripcion"),
-            "Estado": solicitud.get("Estado"),
-            "Fecha_fin": solicitud.get("Fecha_fin"),
-            "Fecha_inicio": solicitud.get("Fecha_inicio"),
-            "Fecha_solicitud": solicitud.get("Fecha_solicitud"),
+            "asunto": solicitud.get("Asunto"),
+            "descripcion": solicitud.get("Descripcion"),
+            "estado": solicitud.get("Estado"),
+            "fecha_fin": solicitud.get("Fecha_fin"),
+            "fecha_inicio": solicitud.get("Fecha_inicio"),
+            "fecha_solicitud": solicitud.get("Fecha_solicitud"),
             "id_aprobador": solicitud.get("id_aprobador"),
-            "tipo_solicitud": solicitud.get("tipo_solicitud")
+            "tipo_solicitud": solicitud.get("tipo_solicitud"),
+            "sortDate": sort_date or created_date
         })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})

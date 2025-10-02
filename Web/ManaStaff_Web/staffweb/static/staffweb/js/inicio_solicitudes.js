@@ -1,61 +1,20 @@
 // Sample data
-const requests = [
-    {
-        id: 1,
-        asunto: "Vacaciones de verano",
-        descripcion: "Solicito mis días de vacaciones desde el 24 de agosto hasta el 6 de octubre.",
-        estado: "rechazada",
-        fecha_solicitud: "8 de agosto, 2025",
-        fecha_inicio: "15 Agosto, 2025",
-        fecha_fin: "20 Agosto, 2025",
-        archivo: null,
-        tipo: "vacaciones"
-    },
-    {
-        id: 2,
-        asunto: "Día administrativo",
-        descripcion: "Saludos, solicito día administrativo el 10 de octubre para realizar un trámite bancario.",
-        estado: "aprobada",
-        fecha_solicitud: "8 de agosto, 2025",
-        fecha_inicio: "15 Agosto, 2025",
-        fecha_fin: "20 Agosto, 2025",
-        archivo: null,
-        tipo: "administrativo"
-    },
-    {
-        id: 3,
-        asunto: "Permiso médico",
-        descripcion: "Solicito permiso médico para cita con especialista el próximo viernes.",
-        estado: "pendiente",
-        fecha_solicitud: "8 de agosto, 2025",
-        fecha_inicio: "15 Agosto, 2025",
-        fecha_fin: null,
-        archivo: 'licencia.pdf',
-        tipo: "salud"
-    },
-    {
-        id: 4,
-        asunto: "Trabajo remoto",
-        descripcion: "Solicito autorización para trabajar desde casa durante la próxima semana.",
-        estado: "pendiente",
-        fecha_solicitud: "8 de agosto, 2025",
-        fecha_inicio: null,
-        fecha_fin: null,
-        archivo: null,
-        tipo: "equipo"
-    },
-    {
-        id: 5,
-        asunto: "Capacitación externa",
-        descripcion: "Solicito permiso para asistir a curso de capacitación en desarrollo web.",
-        estado: "rechazada",
-        fecha_solicitud: "20 de agosto, 2025",
-        fecha_inicio: "22 Agosto, 2025",
-        fecha_fin: "23 Agosto, 2025",
-        archivo: 'capacitacion_plan.pdf',
-        tipo: "equipo"
-    }
-];
+var requests = [];
+
+async function obtener_solicitudes_usuario() {
+  try {
+    const response = await fetch("obtener_solicitudes_usuario")
+    if (!response.ok) throw new Error("Error HTTP " + response.status)
+
+    const data = await response.json()
+    requests = data.solicitudes
+
+    filteredRequests = [...requests].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate))
+    renderRequests(filteredRequests);
+  } catch (error) {
+    console.error("Error al obtener las solicitudes:", error)
+  }
+}
 
 let filteredRequests = [...requests];
 let currentFilter = 'all';
@@ -309,7 +268,7 @@ function createDetailedViewHTML(request) {
 
                     <div class="detail-section">
                         <h3>Tipo de Solicitud</h3>
-                        <span class="type-badge">${request.tipo}</span>
+                        <span class="type-badge">${request.tipo_solicitud}</span>
                     </div>
 
                     ${request.archivo ? `
@@ -401,11 +360,11 @@ function goBackToList() {
 
 
 
-// Initial render
-renderRequests(filteredRequests);
 
 // Add some interactive animations
 document.addEventListener('DOMContentLoaded', () => {
+    // Initial render
+    obtener_solicitudes_usuario()
     // Animate cards on load
     const cards = document.querySelectorAll('.request-card');
     cards.forEach((card, index) => {
