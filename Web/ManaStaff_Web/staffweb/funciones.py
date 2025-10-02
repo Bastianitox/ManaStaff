@@ -4,7 +4,9 @@ from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
 from django.http import JsonResponse
+import json
 import re
+import base64
 from urllib.parse import unquote_plus
 
 from .firebase import authP, auth, database, storage, db
@@ -176,80 +178,91 @@ def obtener_usuario(request):
 
 @require_POST
 def crear_usuario_funcion(request):
-    nombre = request.POST.get('nombre', None)
-    segundo_nombre = request.POST.get('Segundo_nombre', None)
-    apellido_paterno = request.POST.get('apellido_paterno', None)
-    apellido_materno = request.POST.get('apellido_materno', None)
-    rut = request.POST.get('rut', None)
-    celular = request.POST.get('celular', None)
-    direccion = request.POST.get('direccion', None)
-    email = request.POST.get('email', None)
-    cargo = request.POST.get('cargo', None)
-    imagen = request.FILES.get('imagen', None)
-    rol = request.POST.get('rol', None)
-    pin = request.POST.get('pin', None)
-    password = request.POST.get('password', None)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "false", "message": "JSON inválido."})
+
+    # Obtener campos desde JSON
+    nombre = data.get("nombre")
+    segundo_nombre = data.get("segundo_nombre")
+    apellido_paterno = data.get("apellido_paterno")
+    apellido_materno = data.get("apellido_materno")
+    rut = data.get("rut")
+    celular = data.get("celular")
+    direccion = data.get("direccion")
+    email = data.get("email")
+    cargo = data.get("cargo")
+    rol = data.get("rol")
+    pin = data.get("pin")
+    password = data.get("password")
+    imagen_base64 = data.get("imagen") 
 
     # VALIDAR CAMPOS VACIOS
-    if not all([nombre, segundo_nombre,apellido_paterno, apellido_materno, rut,celular, direccion,cargo,rol, imagen, pin, email, password]):
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": "Los campos no pueden estar vacíos."})
+    if not all([nombre, segundo_nombre,apellido_paterno, apellido_materno, rut,celular, direccion,cargo,rol, imagen_base64, pin, email, password]):
+        return JsonResponse({"status": "false", "message": "Los campos no pueden estar vacíos."})
 
     # Validación de RUT (simple)
     import re
     patron_rut = r"^\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]$"
     if not re.match(patron_rut, rut):
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El RUT ingresado no es válido."})
-    
+        return JsonResponse({"status": "false", "message": "El RUT ingresado no es válido."})
+
+
+
     # Validación de correo
     patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if not re.match(patron_email, email):
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El correo electrónico no es válido."})
+        return JsonResponse({"status": "false", "message": "El correo electrónico no es válido."})
     
     if correo_ya_existe(email):
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El correo electrónico ya existe."})
+        return JsonResponse({"status": "false", "message": "El correo electrónico ya existe."})
 
 
     # Validación de contraseña (mínimo 6 caracteres para Firebase)
     if len(password) < 6:
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": "La contraseña debe tener al menos 6 caracteres."})
+        return JsonResponse({"status": "false", "message": "La contraseña debe tener al menos 6 caracteres."})
 
     #VALIDAR TELEFENO EN FORMATO CHILENO (+56 9 1234 5678)
     if celular and not re.match(r'^\+56 9 \d{4} \d{4}$', celular):
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El número de celular debe tener el formato: +56 9 1234 5678"})
+        return JsonResponse({"status": "false", "message": "El número de celular debe tener el formato: +56 9 1234 5678"})
 
     
     #OBTENER EL RUT LIMPIO DEL USUARIO
     rut_limpio = rut.replace(".", "").replace("-", "")
 
+    # VALIDAR QUE EL RUT NO EXISTA
+    usuario_ref = database.child("Usuario").child(rut_limpio).get()
+    if usuario_ref.val() is not None:
+        return JsonResponse({"status": "false", "message": "El RUT ya existe."})
 
     #CACHE CONTROL
     cache_control_header = "public, max-age=3600, s-maxage=86400"
     #VALIDACION DE IMAGEN
-    if imagen:
-        ext_permitidas = ["jpg", "jpeg", "png", "gif"]
-        ext = imagen.name.split(".")[-1].lower()
-        if ext not in ext_permitidas:
-            return render(request, "staffweb/crear_usuario.html", {"mensaje": "Formato de imagen no permitido. Usa JPG, PNG o GIF."})
-
-        # SUBIR IMAGEN A STORAGE
+    try:
+        formato, imgstr = imagen_base64.split(';base64,')
+        ext = formato.split('/')[-1].lower()
+        if ext not in ["jpg", "jpeg", "png", "gif"]:
+            return JsonResponse({"status": "false", "message": "Formato de imagen no permitido."})
+        
         bucket = storage.bucket()
-        blob = bucket.blob(f"{rut_limpio}/Imagen/{imagen.name}")
-        blob.upload_from_file(imagen, content_type=imagen.content_type)
+        blob = bucket.blob(f"{rut_limpio}/Imagen/imagen.{ext}")
+        blob.upload_from_string(base64.b64decode(imgstr), content_type=f"image/{ext}")
         blob.cache_control = "public, max-age=3600, s-maxage=86400"
         blob.patch()
-
+        
         urlImagen = blob.generate_signed_url(
             expiration=timedelta(weeks=150),
             method="GET"
         )
-    else:
-        urlImagen = "/static/default.png"
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al procesar la imagen: {e}"})
 
     # CREAR USUARIO EN AUTHENTICATION
     try:
         userFIREBASE = auth.create_user(email=email, password=password)
     except Exception as e:
-        return render(request, "staffweb/crear_usuario.html", {"mensaje": f"Error al crear usuario en Firebase: {e}"})
+        return JsonResponse({"status": "false", "message": f"Error al crear usuario en Base de Datos: {e}"})
 
     #CREAR USUARIO DENTRO DE LA BASE DE DATOS
     ref = database.child(f"Usuario/{rut_limpio}")
@@ -268,7 +281,7 @@ def crear_usuario_funcion(request):
         "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
     })
 
-    return redirect("administrar_usuarios")
+    return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
 
 @require_POST
 def eliminar_usuario(request, rut):
