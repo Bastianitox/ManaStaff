@@ -1,150 +1,27 @@
 // Usuario actual
-const currentUser = "Juan Pérez"; // <- aquí va el administrador logueado
+var currentUser = "None";
 
-const requests = [
-    { 
-        id: 1, 
-        asunto: "Revisión de contrato de proveedor", 
-        descripcion: "Solicito revisión y validación del contrato de suministro firmado el 15/09.", 
-        fecha_solicitud: "2025-09-21", 
-        estado: "pendiente", 
-        asignado_a: null, 
-        usuario_solicitud: "Jose Lopez", 
-        estado_asignacion: "pendiente",
-        fecha_inicio: null,
-        fecha_fin: null,
-        archivo: "contrato_proveedor_0925.pdf",
-        tipo: "Documentos"
-    },
-    { 
-        id: 2, 
-        asunto: "Actualización de software interno", 
-        descripcion: "Se requiere instalar la última versión del sistema interno en todos los equipos de la oficina.", 
-        fecha_solicitud: "2025-09-20", 
-        estado: "pendiente", 
-        asignado_a: "Juan Pérez", 
-        usuario_solicitud: "Jose Lopez", 
-        estado_asignacion: "asignada",
-        fecha_inicio: "2025-09-21",
-        fecha_fin: "2025-09-25",
-        archivo: "instrucciones_instalacion.docx",
-        tipo: "TI"
-    },
-    { 
-        id: 3, 
-        asunto: "Solicitud de acceso a base de datos", 
-        descripcion: "Necesito acceso a la base de datos de ventas para generar informes trimestrales.", 
-        fecha_solicitud: "2025-09-19", 
-        estado: "pendiente", 
-        asignado_a: "María López", 
-        usuario_solicitud: "Dayna Castillo", 
-        estado_asignacion: "asignada",
-        fecha_inicio: "2025-09-20",
-        fecha_fin: "2025-09-22",
-        archivo: "formulario_acceso_db.pdf",
-        tipo: "TI"
-    },
-    { 
-        id: 4, 
-        asunto: "Mantenimiento de impresoras", 
-        descripcion: "Solicito revisión de impresoras del área administrativa, varias presentan errores de impresión.", 
-        fecha_solicitud: "2025-09-22", 
-        estado: "pendiente", 
-        asignado_a: "Eduardo Guzman", 
-        usuario_solicitud: "Anais Maturana", 
-        estado_asignacion: "asignada",
-        fecha_inicio: null,
-        fecha_fin: null,
-        archivo: null,
-        tipo: "Mantenimiento"
-    },
-    { 
-        id: 5, 
-        asunto: "Reembolso de gastos de viaje", 
-        descripcion: "Se solicita reembolso de pasajes y hospedaje del viaje a Santiago el 10/09.", 
-        fecha_solicitud: "2025-09-23", 
-        estado: "rechazada", 
-        asignado_a: "Juan Pérez", 
-        usuario_solicitud: "Luciano Torrejon", 
-        estado_asignacion: "cerrada",
-        fecha_inicio: "2025-09-24",
-        fecha_fin: "2025-09-25",
-        archivo: "comprobantes_viaje.pdf",
-        tipo: "Finanzas"
-    },
-    { 
-        id: 6, 
-        asunto: "Cambio de mobiliario oficina", 
-        descripcion: "Se solicita reemplazo de sillas y escritorios dañados en el área de contabilidad.", 
-        fecha_solicitud: "2025-10-18", 
-        estado: "rechazada", 
-        asignado_a: "Juan Pérez", 
-        usuario_solicitud: "Anais Maturana", 
-        estado_asignacion: "cerrada",
-        fecha_inicio: "2025-10-19",
-        fecha_fin: "2025-10-21",
-        archivo: "catalogo_muebles.pdf",
-        tipo: "Mantenimiento"
-    },
-    { 
-        id: 7, 
-        asunto: "Solicitud de capacitación", 
-        descripcion: "Solicito inscripción al curso de actualización en ciberseguridad para el equipo TI.", 
-        fecha_solicitud: "2025-11-10", 
-        estado: "pendiente", 
-        asignado_a: null, 
-        usuario_solicitud: "Alejandro Castro", 
-        estado_asignacion: "pendiente",
-        fecha_inicio: null,
-        fecha_fin: null,
-        archivo: "programa_curso_ciberseguridad.pdf",
-        tipo: "Capacitación"
-    },
-    { 
-        id: 8, 
-        asunto: "Solicitud de vacaciones", 
-        descripcion: "Solicito vacaciones del 01/06 al 15/06. Favor validar disponibilidad de reemplazo.", 
-        fecha_solicitud: "2025-05-18", 
-        estado: "pendiente", 
-        asignado_a: null, 
-        usuario_solicitud: "Luciano Torrejon", 
-        estado_asignacion: "pendiente",
-        fecha_inicio: null,
-        fecha_fin: null,
-        archivo: "formulario_vacaciones.pdf",
-        tipo: "Recursos Humanos"
-    },
-    { 
-        id: 9, 
-        asunto: "Informe de auditoría interna", 
-        descripcion: "Se solicita revisión y entrega de informe de auditoría del mes de septiembre.", 
-        fecha_solicitud: "2025-10-18", 
-        estado: "pendiente", 
-        asignado_a: "Juan Pérez", 
-        usuario_solicitud: "Anais Maturana", 
-        estado_asignacion: "asignada",
-        fecha_inicio: "2025-10-19",
-        fecha_fin: "2025-10-22",
-        archivo: "informe_auditoria_sep.pdf",
-        tipo: "Auditoría"
-    },
-    { 
-        id: 10, 
-        asunto: "Actualización de manual de procedimientos", 
-        descripcion: "Se requiere actualizar el manual de procedimientos internos del área administrativa.", 
-        fecha_solicitud: "2025-10-18", 
-        estado: "aprobada", 
-        asignado_a: "Juan Pérez", 
-        usuario_solicitud: "Anais Maturana", 
-        estado_asignacion: "cerrada",
-        fecha_inicio: "2025-10-19",
-        fecha_fin: "2025-10-25",
-        archivo: "manual_procedimientos.docx",
-        tipo: "Documentos"
-    }
-];
+async function obtener_usuario_actual(){
+    
+}
 
+// Sample data
+var requests = [];
 
+async function obtener_solicitudes_administrar() {
+  try {
+    const response = await fetch("obtener_solicitudes_administrar")
+    if (!response.ok) throw new Error("Error HTTP " + response.status)
+
+    const data = await response.json()
+    requests = data.solicitudes
+
+    filteredRequests = [...requests].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate))
+    renderRequests(filteredRequests);
+  } catch (error) {
+    console.error("Error al obtener las solicitudes:", error)
+  }
+}
 
 let filteredRequests = [...requests];
 let currentFilter = 'pendiente';

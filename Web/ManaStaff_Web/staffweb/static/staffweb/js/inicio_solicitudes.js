@@ -370,7 +370,7 @@ function createDetailedViewHTML(request) {
 
                     <div class="detail-section">
                         <h3>Tipo de Solicitud</h3>
-                        <span class="type-badge">${request.tipo_solicitud}</span>
+                        <span class="type-badge">${request.tipo_solicitud_nombre}</span>
                     </div>
 
                     ${request.archivo ? `

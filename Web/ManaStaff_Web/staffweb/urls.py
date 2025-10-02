@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import administrar_noticiasyeventos,administrar_logs,modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
-from .funciones import cancelar_solicitud_funcion,crear_solicitud_funcion,obtener_solicitudes_usuario,modificar_usuario_funcion,obtener_usuario,eliminar_usuario,crear_usuario_funcion,iniciarSesion, cerrarSesion, ejemplo_crear, ejemplo_modificar, ejemplo_eliminar, obtener_usuarios
+from .funciones import obtener_solicitudes_administrar,obtener_usuario_actual,cancelar_solicitud_funcion,crear_solicitud_funcion,obtener_solicitudes_usuario,modificar_usuario_funcion,obtener_usuario,eliminar_usuario,crear_usuario_funcion,iniciarSesion, cerrarSesion, ejemplo_crear, ejemplo_modificar, ejemplo_eliminar, obtener_usuarios
 from .funciones_dos import funcion_dos
 from .funciones_tres import funcion_tres
 
@@ -42,6 +42,8 @@ urlpatterns = [
     path('obtener_solicitudes_usuario',obtener_solicitudes_usuario,name="obtener_solicitudes_usuario"),
     path('crear_solicitud_funcion',crear_solicitud_funcion,name="crear_solicitud_funcion"),
     path('cancelar_solicitud_funcion/<str:id_solicitud>',cancelar_solicitud_funcion,name="cancelar_solicitud_funcion"),
+    path('obtener_usuario_actual',obtener_usuario_actual,name="obtener_usuario_actual"),
+    path('obtener_solicitudes_administrar',obtener_solicitudes_administrar,name="obtener_solicitudes_administrar"),
 
     #EJEMPLOS
     path('ejemplo_crear',ejemplo_crear,name="ejemplo_crear"),

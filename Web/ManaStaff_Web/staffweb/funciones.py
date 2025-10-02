@@ -176,6 +176,25 @@ def obtener_usuario(request):
 
     return JsonResponse({"status": "success", "usuario": usuario_json})
 
+def obtener_usuario_actual(request):
+    rut = request.session.get("usuario_id")
+    if not rut:
+        return JsonResponse({"status": "error", "message": "Usuario no autenticado"}, status=401)
+
+    usuario_data = database.child(f"Usuario/{rut}").get().val()
+    if not usuario_data:
+        return JsonResponse({"status": "error", "message": "Usuario no encontrado"}, status=404)
+
+    return JsonResponse({
+        "status": "success",
+        "usuario": {
+            "rut": rut,
+            "Nombre": usuario_data.get("Nombre", ""),
+            "correo": usuario_data.get("correo", ""),
+            "rol": usuario_data.get("rol", "")
+        }
+    })
+
 @require_POST
 def crear_usuario_funcion(request):
     try:
@@ -481,6 +500,10 @@ def obtener_solicitudes_usuario(request):
                 sort_date = fecha_solicitud.date().isoformat()        # Ej: "2024-01-15"
             except ValueError:
                 created_date = fecha_solicitud_str  # Dejar como viene si no es ISO
+        
+        tipo_solicitud_id = solicitud.get("tipo_solicitud")
+        tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
+        tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
 
         solicitudes_lista.append({
             "id_solicitud": id_solicitud,
@@ -494,7 +517,8 @@ def obtener_solicitudes_usuario(request):
             "tipo_solicitud": solicitud.get("tipo_solicitud"),
             "sortDate": sort_date or created_date,
             "archivo": solicitud.get("archivo"),
-            "archivo_name": solicitud.get("archivo_name")
+            "archivo_name": solicitud.get("archivo_name"),
+            "tipo_solicitud_nombre": tipo_solicitud_nombre
         })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
@@ -607,7 +631,65 @@ def cancelar_solicitud_funcion(request, id_solicitud):
     
     return JsonResponse({"status": "success", "message": "Solicitud cancelada (eliminada)."})
 
+def obtener_solicitudes_administrar(request):
+    #OBTENER USUARIO ACTUAL
+    usuario_actual_rut = request.session.get("usuario_id")
 
+    # OBTENER LOS USUARIOS DE LA BASE DE DATOS
+    solicitudes = database.child("Solicitudes").get().val() or {}
+
+    solicitudes_lista = []
+    for id_solicitud, solicitud in solicitudes.items():
+        fecha_inicio = solicitud.get("Fecha_inicio")
+        fecha_fin = solicitud.get("Fecha_fin")
+        id_aprobador = solicitud.get("id_aprobador")
+
+        # FILTRO SEGÚN LA CONDICIÓN
+        if fecha_inicio == "null" or (fecha_fin == "null" and id_aprobador == usuario_actual_rut):
+
+            # FORMATEAR FECHA DE SOLICITUD
+            fecha_solicitud_str = solicitud.get("Fecha_solicitud")
+            created_date = "Sin fecha"
+            sort_date = None
+            if fecha_solicitud_str:
+                try:
+                    fecha_solicitud = datetime.fromisoformat(fecha_solicitud_str)
+                    created_date = fecha_solicitud.strftime("%d %B, %Y")
+                    sort_date = fecha_solicitud.date().isoformat()
+                except ValueError:
+                    created_date = fecha_solicitud_str
+
+            # OBTENER NOMBRE DEL TIPO SOLICITUD
+            tipo_solicitud_id = solicitud.get("tipo_solicitud")
+            tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
+            tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
+
+            # DETERMINAR ESTADO ASIGNACIÓN
+            estado_asignacion = "pendiente"
+            if fecha_inicio != "null":
+                estado_asignacion = "asignada"
+            if fecha_fin != "null":
+                estado_asignacion = "cerrada"
+
+            solicitudes_lista.append({
+                "id_solicitud": id_solicitud,
+                "asunto": solicitud.get("Asunto"),
+                "id_rut": solicitud.get("id_rut"),
+                "descripcion": solicitud.get("Descripcion"),
+                "estado": solicitud.get("Estado"),
+                "fecha_fin": fecha_fin,
+                "fecha_inicio": fecha_inicio,
+                "fecha_solicitud": solicitud.get("Fecha_solicitud"),
+                "id_aprobador": id_aprobador,
+                "tipo_solicitud": solicitud.get("tipo_solicitud"),
+                "sortDate": sort_date or created_date,
+                "archivo": solicitud.get("archivo"),
+                "archivo_name": solicitud.get("archivo_name"),
+                "tipo_solicitud_nombre": tipo_solicitud_nombre,
+                "estado_asignacion": estado_asignacion
+            })
+
+    return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
  
     
 
