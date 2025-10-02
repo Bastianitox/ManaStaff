@@ -11,7 +11,59 @@
     <h1>Administrar noticias y eventos</h1>
     <p>Aquí puedes modificar, crear, eliminar noticias y eventos</p>
 </div>
+
+<!-- Search and Filter -->
+<div class="search-filter-section">
+    <div class="search-container">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Buscar noticias o avisos..." id="searchNoticias">
+    </div>
+
+    <div class="sort-container">
+        <select id="sortNoticias">
+            <option value="recientes">Más recientes</option>
+            <option value="antiguas">Más antiguas</option>
+        </select>
+    </div>
+</div>
+
+
+<!-- Tabs -->
+<div class="status-tabs">
+    <button class="status-tab active" data-type="noticias">Noticias</button>
+    <button class="status-tab" data-type="avisos">Avisos</button>
+</div>
+
+<!-- Noticias / Avisos Grid -->
+<div class="noticias-section">
+    <h2>Últimas publicaciones</h2>
+    <div id="noticiasGrid" class="noticias-grid">
+        <!-- Ejemplo de tarjeta -->
+        <div class="noticia-card">
+            <h3>Nuevo beneficio para empleados</h3>
+            <p class="fecha">Publicado el 01/10/2025</p>
+            <p class="autor">Por: Administración</p>
+            <p class="contenido">Desde este mes, los empleados tendrán acceso a un nuevo programa de salud y bienestar...</p>
+            <a href="#" class="btn-vermas">Ver más</a>
+        </div>
+
+        <div class="noticia-card">
+            <h3>Aviso: Corte de luz programado</h3>
+            <p class="fecha">Publicado el 30/09/2025</p>
+            <p class="autor">Por: Infraestructura</p>
+            <p class="contenido">Se informa que el día 02 de octubre habrá un corte de luz programado en las oficinas centrales...</p>
+            <a href="#" class="btn-vermas">Ver más</a>
+        </div>
+    </div>
+    <p id="noResults" class="no-results">No hay publicaciones disponibles</p>
+</div>
+
 {% endblock principal %}
 
 {% block js %}
+<script src="{% static 'staffweb/js/administrar_noticiasyeventos.js' %}"></script>
 {% endblock js %}
+
