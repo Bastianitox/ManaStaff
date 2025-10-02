@@ -78,7 +78,7 @@ function renderRequests(requestsToRender) {
         const buttons = request.estado === 'pendiente' 
             ? `
                 <div style="display: flex; gap: 10px; margin-top: 16px;">
-                    <button class="cancel-btn requests-buttons">
+                    <button class="cancel-btn requests-buttons" onclick="cancelRequest('${request.id_solicitud}')">
                         Cancelar
                     </button>
                     <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
@@ -170,7 +170,69 @@ statusTabs.forEach(tab => {
 
 
 
+/* CANCELAR SOLICITUD */
 
+// VARIABLE PARA GUARDAR EL ID DEL USUARIO (RUT)
+let requestToDelete = null;
+
+function cancelRequest(requestId) {
+  requestToDelete = requestId;
+  document.getElementById("confirmModal").classList.remove("hidden");
+}
+
+// Cancelar eliminación
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  requestToDelete = null;
+  document.getElementById("confirmModal").classList.add("hidden");
+});
+
+// Confirmar eliminación
+document.getElementById("confirmBtn").addEventListener("click", () => {
+  if (!requestToDelete) return;
+
+  // Mostrar spinner de carga
+  document.getElementById("loadingSpinner").classList.remove("hidden");
+
+  fetch(`/cancelar_solicitud_funcion/${requestToDelete}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        alert("Solicitud cancelada con éxito");
+        obtener_solicitudes_usuario();
+      } else {
+        alert("Error: " + data.message);
+      }
+    })
+    .catch((error) => console.error("Error:", error))
+    .finally(() => {
+      requestToDelete = null;
+      document.getElementById("confirmModal").classList.add("hidden");
+      // Ocultar spinner
+      document.getElementById("loadingSpinner").classList.add("hidden");
+    });
+});
+
+
+// Helper para CSRF
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 
 /* DETAILES */
@@ -204,68 +266,68 @@ function createDetailedViewHTML(request) {
     let timelinePhases = [];
     
     // Phase 1: Always present
-timelinePhases.push({
-    title: "Solicitud Enviada",
-    date: request.fecha_solicitud,
-    description: "Tu solicitud ha sido enviada y está en cola para revisión.",
-    status: "completed",
-    icon: "📤"
-});
+    timelinePhases.push({
+        title: "Solicitud Enviada",
+        date: request.fecha_solicitud,
+        description: "Tu solicitud ha sido enviada y está en cola para revisión.",
+        status: "completed",
+        icon: "📤"
+    });
 
-// Validar si fecha_inicio y fecha_fin son "null" (string o null real)
-const inicioValido = request.fecha_inicio && request.fecha_inicio !== "null";
-const finValido = request.fecha_fin && request.fecha_fin !== "null";
+    // Validar si fecha_inicio y fecha_fin son "null" (string o null real)
+    const inicioValido = request.fecha_inicio && request.fecha_inicio !== "null";
+    const finValido = request.fecha_fin && request.fecha_fin !== "null";
 
-// Si ambas fechas son "null", no agregamos más fases → solo se ve "Solicitud Enviada"
-if (!(inicioValido === false && finValido === false)) {
-    // Phase 2: Based on status
-    if (request.estado === 'pendiente') {
-        timelinePhases.push({
-            title: "Solicitud en Revisión",
-            date: request.fecha_vista || "En proceso",
-            description: "Tu solicitud está siendo revisada por el equipo de recursos humanos.",
-            status: "current",
-            icon: "👀"
-        });
-        timelinePhases.push({
-            title: "Decisión Pendiente",
-            date: "Por determinar",
-            description: "Esperando decisión final sobre tu solicitud.",
-            status: "pending",
-            icon: "⏳"
-        });
-    } else if (request.estado === 'aprobada') {
-        timelinePhases.push({
-            title: "Solicitud Revisada",
-            date: request.fecha_vista || request.fecha_solicitud,
-            description: "Tu solicitud ha sido revisada completamente.",
-            status: "completed",
-            icon: "👀"
-        });
-        timelinePhases.push({
-            title: "Solicitud Aprobada",
-            date: request.fecha_inicio,
-            description: "¡Felicidades! Tu solicitud ha sido aprobada.",
-            status: "completed",
-            icon: "✅"
-        });
-    } else if (request.estado === 'rechazada') {
-        timelinePhases.push({
-            title: "Solicitud Revisada",
-            date: request.fecha_vista || request.fecha_solicitud,
-            description: "Tu solicitud ha sido revisada completamente.",
-            status: "completed",
-            icon: "👀"
-        });
-        timelinePhases.push({
-            title: "Solicitud Rechazada",
-            date: request.fecha_inicio,
-            description: "Tu solicitud no pudo ser aprobada en esta ocasión.",
-            status: "rejected",
-            icon: "❌"
-        });
+    // Si ambas fechas son "null", no agregamos más fases → solo se ve "Solicitud Enviada"
+    if (!(inicioValido === false && finValido === false)) {
+        // Phase 2: Based on status
+        if (request.estado === 'pendiente') {
+            timelinePhases.push({
+                title: "Solicitud en Revisión",
+                date: request.fecha_vista || "En proceso",
+                description: "Tu solicitud está siendo revisada por el equipo de recursos humanos.",
+                status: "current",
+                icon: "👀"
+            });
+            timelinePhases.push({
+                title: "Decisión Pendiente",
+                date: "Por determinar",
+                description: "Esperando decisión final sobre tu solicitud.",
+                status: "pending",
+                icon: "⏳"
+            });
+        } else if (request.estado === 'aprobada') {
+            timelinePhases.push({
+                title: "Solicitud Revisada",
+                date: request.fecha_vista || request.fecha_solicitud,
+                description: "Tu solicitud ha sido revisada completamente.",
+                status: "completed",
+                icon: "👀"
+            });
+            timelinePhases.push({
+                title: "Solicitud Aprobada",
+                date: request.fecha_inicio,
+                description: "¡Felicidades! Tu solicitud ha sido aprobada.",
+                status: "completed",
+                icon: "✅"
+            });
+        } else if (request.estado === 'rechazada') {
+            timelinePhases.push({
+                title: "Solicitud Revisada",
+                date: request.fecha_vista || request.fecha_solicitud,
+                description: "Tu solicitud ha sido revisada completamente.",
+                status: "completed",
+                icon: "👀"
+            });
+            timelinePhases.push({
+                title: "Solicitud Rechazada",
+                date: request.fecha_inicio,
+                description: "Tu solicitud no pudo ser aprobada en esta ocasión.",
+                status: "rejected",
+                icon: "❌"
+            });
+        }
     }
-}
 
     return `
         <div class="detail-main-content">

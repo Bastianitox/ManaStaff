@@ -63,6 +63,22 @@
         <p>Intenta ajustar tus filtros de búsqueda</p>
     </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Confirmar eliminación</h3>
+    <p>¿Estás seguro de que quieres eliminar esta solicitud?</p>
+    <div class="modal-actions">
+      <button id="cancelBtn">Cancelar</button>
+      <button id="confirmBtn" class="delete-btn">Eliminar</button>
+    </div>
+  </div>
+        <!-- Spinner de carga -->
+    <div id="loadingSpinner" class="hidden">
+        <div class="spinner"></div>
+    </div>
+</div>
 {% endblock principal %}
 
 

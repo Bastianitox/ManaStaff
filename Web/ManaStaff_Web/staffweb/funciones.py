@@ -513,7 +513,11 @@ def crear_solicitud_funcion(request):
     #VALIDAMOS QUE LOS CAMPOS NO ESTEN VACIOS
     if not all([tipo_solicitud, asunto, descripcion]):
         return JsonResponse({"status": "false", "message": "Los campos obligatorios no pueden estar vacíos."})
-    
+
+    #OBTENEMOS EL ID DE LA SOLICITUD
+    ref = db.reference('/Solicitudes').push()  #.push() es para crear una id automatica
+    id_solicitud = ref.key
+
     #VALIDAMOS EXISTENCIA DE UN ARCHIVO (SI NO HAY LO DEJAMOS COMO "None")
     urlArchivo = None
     archivoName = None
@@ -525,7 +529,7 @@ def crear_solicitud_funcion(request):
                 return JsonResponse({"status": "false", "message": "Formato de archivo no permitido."})
             
             bucket = storage.bucket()
-            blob = bucket.blob(f"{rut_usuario_actual}/Documentos/{archivo.name}")
+            blob = bucket.blob(f"{rut_usuario_actual}/Solicitudes/{id_solicitud}/{archivo.name}")
 
             archivoName = archivo.name
 
@@ -541,7 +545,6 @@ def crear_solicitud_funcion(request):
             return JsonResponse({"status": "false", "message": f"Error al procesar el archivo: {e}"})
     
     #AHORA LO CREAMOS EN FIREBASE
-    ref = db.reference('/Solicitudes').push() #.push() es para crear una id automatica
     ref.set({
         "Asunto":asunto,
         "Descripcion":descripcion,
@@ -560,7 +563,51 @@ def crear_solicitud_funcion(request):
 #PARA CANCELAR SOLICITUD SE ELIMINARA DE LA BASE DE DATOS JUNTO CON SUS RESPECTIVOS ARCHIVOS
 def cancelar_solicitud_funcion(request, id_solicitud):
     #OBTENEMOS EL ID_SOLICITUD DE ESTA
-    pass
+
+    #OBTENEMOS EL USUARIO ACTUAL
+    usuario_actual_rut = request.session.get("usuario_id")
+
+    #VALIDAMOS QUE HAYA UN USUARIO LOGEADO
+    if not usuario_actual_rut:
+        return JsonResponse({"status": "false", "message": "No has iniciado sesión."})
+    
+    #OBTENEMOS LA SOLICITUD A ELIMINAR
+    solicitud_a_cancelar = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+
+    #VALIDAMOS QUE LA SOLICITUD EXISTA
+    if solicitud_a_cancelar == {}:
+        return JsonResponse({"status": "false", "message": "No se pudo encontrar la solicitud."})
+
+    #VALIDAMOS QUE LA SOLICITUD PERTENEZCA AL USUARIO
+    rut_usuario_solicitud = solicitud_a_cancelar.get("id_rut")
+
+    if usuario_actual_rut != rut_usuario_solicitud:
+        return JsonResponse({"status": "false", "message": "Esa no es su solicitud."})
+    
+    #VALIDAMOS QUE EXISTA UN ARCHIVO EN LA SOLICITUD (PARA ELIMINARLO DE STORAGE)
+    archivo_solicitud_a_cancelar = solicitud_a_cancelar.get("archivo")
+
+    if archivo_solicitud_a_cancelar:
+        try:
+            #SI EXISTE LO ELIMINAMOS
+            bucket = storage.bucket()
+
+            #OBTENEMOS EL NOMBREL DEL ARCHIVO A ELIMINAR
+            nombre_archivo = archivo_solicitud_a_cancelar.split("/")[-1]
+            nombre_archivo = str(nombre_archivo.split("?")[0])
+            nombre_archivo = unquote_plus(nombre_archivo)
+            blob = bucket.blob(f"{usuario_actual_rut}/Solicitudes/{id_solicitud}/{nombre_archivo}")
+
+            blob.delete()
+        except Exception as e:
+            return JsonResponse({"status": "false", "message": f"Error al eliminar el archivo: {e}"})
+
+    #AHORA SE ELIMINA DE FIREBASE
+    db.reference('/Solicitudes/'+id_solicitud).delete()
+    
+    return JsonResponse({"status": "success", "message": "Solicitud cancelada (eliminada)."})
+
+
  
     
 
