@@ -645,7 +645,7 @@ def obtener_solicitudes_administrar(request):
         id_aprobador = solicitud.get("id_aprobador")
 
         # FILTRO SEGÚN LA CONDICIÓN
-        if fecha_inicio == "null" or (fecha_fin == "null" and id_aprobador == usuario_actual_rut):
+        if fecha_inicio == "null" or fecha_fin == "null":
 
             # FORMATEAR FECHA DE SOLICITUD
             fecha_solicitud_str = solicitud.get("Fecha_solicitud")
@@ -722,13 +722,16 @@ def asignarme_solicitud(request, id_solicitud):
 
     if usuario_actual_rol != "Uno":
         return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
-
+    
 
     #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
     solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
     solicitud_fecha_inicio =solicitud.get("Fecha_inicio")
 
-    print(solicitud_fecha_inicio)
+    solicitud_id_rut = solicitud.get("id_rut")
+    #VALIDAR QUE LA SOLICITUD NO SEA PROPIA
+    if solicitud_id_rut == usuario_actual_rut:
+        return JsonResponse({'status': 'false', 'mensaje': 'No puede asignarse su propia solicitud.'})
 
     #OBTENER LA REF DE SOLICITUD A ASIGNAR
     ref = database.child('Solicitudes/'+ id_solicitud)
