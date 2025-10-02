@@ -68,13 +68,13 @@ function renderRequests(requestsToRender) {
                             <button class="cancel-btn requests-buttons">
                                 Cancelar
                             </button>
-                            <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id})">
+                            <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
                                 Ver detalles
                             </button>
                         </div>
                     `
                     : `
-                        <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id})">
+                        <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
                             Ver detalles
                         </button>
                     `;
@@ -144,7 +144,7 @@ statusTabs.forEach(tab => {
 
 // Updated view details function to show detailed view within same page
 function viewDetails(requestId) {
-    const request = requests.find(r => r.id === requestId);
+    const request = requests.find(r => r.id_solicitud === requestId);
     if (!request) return;
     
     showDetailedView(request);
@@ -279,7 +279,7 @@ function createDetailedViewHTML(request) {
                                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
                             </svg>
                             <div class="file-info">
-                                <div class="file-name">${request.archivo}</div>
+                                <a href="${request.archivo}" target="_blank" class="file-name">${request.archivo_name}</a>
                             </div>
                         </div>
                     </div>

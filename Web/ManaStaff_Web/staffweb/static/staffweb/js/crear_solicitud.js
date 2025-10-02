@@ -85,11 +85,12 @@ function formatFileSize(bytes) {
 
 // Form Submission
 requestForm.addEventListener('submit', handleSubmit);
+const loadingOverlay = document.getElementById("loadingOverlay");
 
-function handleSubmit(e) {
-    e.preventDefault();
+async function handleSubmit(e) {
     
-    const formData = {
+    e.preventDefault()
+    var formData = {
         type: document.getElementById('requestType').value,
         title: document.getElementById('requestTitle').value,
         description: document.getElementById('requestDescription').value,
@@ -102,23 +103,54 @@ function handleSubmit(e) {
         return;
     }
 
-    // Simulate form submission
+    // Mostrar overlay y deshabilitar botón
+    loadingOverlay.classList.remove("hidden");
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando...';
 
-    setTimeout(() => {
-        // Simulate successful submission
-        showSuccess();
-        resetForm();
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Enviar Solicitud';
-        
-        // Redirect after 2 seconds
-        setTimeout(() => {
-            window.location.href = '/inicio_solicitudes';
-        }, 2000);
-    }, 1500);
+    // Forzar redraw para asegurar que la animación se muestre
+    await new Promise(requestAnimationFrame);
+
+    const url = `/crear_solicitud_funcion`;
+    formData = new FormData(requestForm);
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+      });
+
+      const result = await response.json();
+
+      // Ocultar overlay y habilitar botón
+      loadingOverlay.classList.add("hidden");
+      submitBtn.disabled = false;
+
+      if (result.status === "success") {
+        mostrarMensajeExito();
+      } else {
+        alert(result.message || "Error al crear solicitud");
+      }
+    } catch (error) {
+      loadingOverlay.classList.add("hidden");
+      submitBtn.disabled = false;
+      console.error(error);
+      alert("Error al enviar el formulario");
+    }
 }
+
+function mostrarMensajeExito() {
+  const mensaje = document.getElementById("successMessage")
+  mensaje.classList.add("show")
+  setTimeout(() => {
+    setTimeout(() => {
+      window.location.href = "/inicio_solicitudes"
+    }, 150)
+  }, 300)
+}
+
 
 function resetForm() {
     requestForm.reset();

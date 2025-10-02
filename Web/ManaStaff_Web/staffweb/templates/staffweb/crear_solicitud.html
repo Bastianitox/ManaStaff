@@ -29,7 +29,8 @@
         <strong>Error:</strong> <span id="errorText">Por favor completa todos los campos requeridos.</span>
     </div>
 
-    <form id="requestForm">
+    <form id="requestForm" action="{% url 'crear_solicitud_funcion' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
         <!-- Request Type Section -->
         <div class="form-section">
             <h2>
@@ -42,7 +43,7 @@
                 <label for="requestType" class="form-label">
                     Selecciona el tipo de solicitud <span class="required">*</span>
                 </label>
-                <select id="requestType" class="form-select" required>
+                <select id="requestType" class="form-select" name="tipos_solicitud" required>
                     <option value="">Seleccionar tipo...</option>
                     {% for tipo in tipos_solicitud %} <!-- EL MISMO NOMBRE DE LA VARIABLE DENTRO DE CONTEXTO -->
                         <option value="{{tipo.id_tipo}}">{{tipo.nombre}}</option>
@@ -64,13 +65,13 @@
                 <label for="requestTitle" class="form-label">
                     Título de la solicitud <span class="required">*</span>
                 </label>
-                <input type="text" id="requestTitle" class="form-input" placeholder="Ej: Vacaciones de verano" required>
+                <input type="text" id="requestTitle" class="form-input" name="asunto" placeholder="Ej: Vacaciones de verano" required>
             </div>
             <div class="form-group">
                 <label for="requestDescription" class="form-label">
                     Descripción <span class="required">*</span>
                 </label>
-                <textarea id="requestDescription" class="form-textarea" placeholder="Describe detalladamente tu solicitud..." required></textarea>
+                <textarea id="requestDescription" name="descripcion" class="form-textarea" placeholder="Describe detalladamente tu solicitud..." required></textarea>
             </div>
         </div>
 
@@ -90,7 +91,7 @@
                     <div class="upload-text">Arrastra y suelta tu archivo aquí</div>
                     <div class="upload-subtext">o haz clic para seleccionar (PDF, DOC, DOCX, JPG, PNG - Máx. 10MB)</div>
                 </div>
-                <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <input type="file" id="fileInput" class="file-input" name="archivo" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                 <div id="uploadedFile" class="uploaded-file" style="display: none;">
                     <svg class="file-icon" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
@@ -116,6 +117,17 @@
     </form>
 </div>
 </div>
+
+<!-- Animación de carga -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="spinner"></div>
+</div>
+
+<!-- Mensaje de éxito -->
+<div id="successMessage" class="success-message">
+    Solicitud creada con éxito
+</div>
+
 {% endblock principal %}
 
 

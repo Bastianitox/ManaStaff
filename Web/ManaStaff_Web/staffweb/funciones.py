@@ -492,14 +492,74 @@ def obtener_solicitudes_usuario(request):
             "fecha_solicitud": solicitud.get("Fecha_solicitud"),
             "id_aprobador": solicitud.get("id_aprobador"),
             "tipo_solicitud": solicitud.get("tipo_solicitud"),
-            "sortDate": sort_date or created_date
+            "sortDate": sort_date or created_date,
+            "archivo": solicitud.get("archivo"),
+            "archivo_name": solicitud.get("archivo_name")
         })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
 
 @require_POST #SIGNIFICA QUE REQUIRE SER ENVIADO POR FORMULARIO EN METODO POST
 def crear_solicitud_funcion(request):
-    pass
+    #OBTENEMOS LAS VARIABLES DEL FORM
+    tipo_solicitud = request.POST.get("tipos_solicitud", None)
+    asunto = request.POST.get("asunto", None)
+    descripcion = request.POST.get("descripcion", None)
+    archivo = request.FILES.get("archivo", None) #ARCHIVOS SON DE TIPO FILES PARA EL FORMULARIO
+
+    #OBTENEMOS LA INFORMACION DEL USUARIO ACTUAL (QUE HAYA INICIADO SESION)
+    rut_usuario_actual = request.session.get("usuario_id")
+
+    #VALIDAMOS QUE LOS CAMPOS NO ESTEN VACIOS
+    if not all([tipo_solicitud, asunto, descripcion]):
+        return JsonResponse({"status": "false", "message": "Los campos obligatorios no pueden estar vacíos."})
+    
+    #VALIDAMOS EXISTENCIA DE UN ARCHIVO (SI NO HAY LO DEJAMOS COMO "None")
+    urlArchivo = None
+    archivoName = None
+    if archivo:
+        #SI ES QUE HAY ARCHIVO SE SUBE A STORAGE
+        try:
+            ext = archivo.name.split(".")[-1].lower()
+            if ext not in ["jpg", "jpeg", "png", "pdf", "doc", "docx"]:
+                return JsonResponse({"status": "false", "message": "Formato de archivo no permitido."})
+            
+            bucket = storage.bucket()
+            blob = bucket.blob(f"{rut_usuario_actual}/Documentos/{archivo.name}")
+
+            archivoName = archivo.name
+
+            blob.upload_from_file(archivo, content_type=archivo.content_type)
+            blob.cache_control = "public, max-age=3600, s-maxage=86400"
+            blob.patch()
+            
+            urlArchivo = blob.generate_signed_url(
+                expiration=timedelta(weeks=150),
+                method="GET"
+            )
+        except Exception as e:
+            return JsonResponse({"status": "false", "message": f"Error al procesar el archivo: {e}"})
+    
+    #AHORA LO CREAMOS EN FIREBASE
+    ref = db.reference('/Solicitudes').push() #.push() es para crear una id automatica
+    ref.set({
+        "Asunto":asunto,
+        "Descripcion":descripcion,
+        "Estado":"pendiente",
+        "Fecha_fin": "null",
+        "Fecha_inicio": "null",
+        "Fecha_solicitud": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "id_aprobador": "null",
+        "id_rut": rut_usuario_actual,
+        "tipo_solicitud": tipo_solicitud,
+        "archivo": urlArchivo,
+        "archivo_name": archivoName
+    })
+    return JsonResponse({"status": "success", "message": "Solicitud creada con éxito."})
+
+
+ 
+    
 
 
 #FUNCIONES DE AYUDA
