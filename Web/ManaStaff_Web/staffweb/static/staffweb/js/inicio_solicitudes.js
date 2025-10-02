@@ -33,6 +33,14 @@ const statusLabels = {
     rechazada: 'Rechazada'
 };
 
+
+const sortSelect = document.getElementById('sortSelect');
+
+// Escuchar cambio en el select
+sortSelect.addEventListener('change', () => {
+    filterRequests(); // vuelve a filtrar y renderizar
+});
+
 // Render requests
 function renderRequests(requestsToRender) {
     if (requestsToRender.length === 0) {
@@ -48,14 +56,19 @@ function renderRequests(requestsToRender) {
         // Create date range display
         let dateRange;
 
-        if (!request.fecha_inicio && !request.fecha_fin) {
+        let inicioValido = request.fecha_inicio && request.fecha_inicio !== "null";
+        let finValido = request.fecha_fin && request.fecha_fin !== "null";
+
+        if (!inicioValido && !finValido) {
             dateRange = "En revisión";
-        } else if (request.fecha_inicio && !request.fecha_fin) {
+        } else if (inicioValido && !finValido) {
             dateRange = `${request.fecha_inicio} - Decisión pendiente`;
-        } else if (request.fecha_inicio === request.fecha_fin) {
+        } else if (inicioValido && finValido && request.fecha_inicio === request.fecha_fin) {
             dateRange = request.fecha_inicio;
-        } else {
+        } else if (inicioValido && finValido) {
             dateRange = `${request.fecha_inicio} - ${request.fecha_fin}`;
+        } else {
+            dateRange = "En revisión"; // fallback
         }
 
 
@@ -130,7 +143,15 @@ function filterRequests() {
         
         return matchesSearch && matchesStatus;
     });
+    // Orden según filtro
+    const sortOrder = sortSelect.value; // 'asc' o 'desc'
+    filteredRequests.sort((a, b) => {
+        const dateA = new Date(a.fecha_solicitud);
+        const dateB = new Date(b.fecha_solicitud);
 
+        if (sortOrder === 'asc') return dateA - dateB;
+        else return dateB - dateA;
+    });
     renderRequests(filteredRequests);
 }
 
