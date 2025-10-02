@@ -237,11 +237,10 @@ function mostrarMensajeExito() {
   const mensaje = document.getElementById("successMessage")
   mensaje.classList.add("show")
   setTimeout(() => {
-    mensaje.classList.remove("show")
     setTimeout(() => {
       window.location.href = "/administrar_usuarios"
-    }, 300)
-  }, 1000)
+    }, 150)
+  }, 300)
 }
 
 // Función para cargar datos del usuario
@@ -303,47 +302,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // Cambiar imagen al cambiar el archivo
-const imagenForm = document.getElementById("imagen");
-const imagenPreview = document.getElementById("imagenPreview");
+  const imagenForm = document.getElementById("imagen");
+  const imagenPreview = document.getElementById("imagenPreview");
 
-imagenForm.addEventListener("change", function () {
-  const file = this.files[0];
+  imagenForm.addEventListener("change", function () {
+    const file = this.files[0];
 
-  if (!file) {
-    // No hay archivo seleccionado
-    imagenPreview.src = "";
-    imagenPreview.classList.add("hidden");
-    return;
-  }
+    if (!file) {
+      // No hay archivo seleccionado
+      imagenPreview.src = "";
+      imagenPreview.classList.add("hidden");
+      return;
+    }
 
-  // Validar tipo de archivo
-  const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
-  const maxSize = 2 * 1024 * 1024; // 2MB
+    // Validar tipo de archivo
+    const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
+    const maxSize = 2 * 1024 * 1024; // 2MB
 
-  if (!validTypes.includes(file.type)) {
-    alert("El archivo debe ser una imagen (JPG, PNG, GIF)");
-    this.value = ""; // limpiar input
-    imagenPreview.src = "";
-    imagenPreview.classList.add("hidden");
-    return;
-  }
+    if (!validTypes.includes(file.type)) {
+      alert("El archivo debe ser una imagen (JPG, PNG, GIF)");
+      this.value = ""; // limpiar input
+      imagenPreview.src = "";
+      imagenPreview.classList.add("hidden");
+      return;
+    }
 
-  if (file.size > maxSize) {
-    alert("La imagen no debe superar los 2MB");
-    this.value = ""; // limpiar input
-    imagenPreview.src = "";
-    imagenPreview.classList.add("hidden");
-    return;
-  }
+    if (file.size > maxSize) {
+      alert("La imagen no debe superar los 2MB");
+      this.value = ""; // limpiar input
+      imagenPreview.src = "";
+      imagenPreview.classList.add("hidden");
+      return;
+    }
 
-  // Si pasa la validación, mostrar preview
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    imagenPreview.src = e.target.result;
-    imagenPreview.classList.remove("hidden");
-  };
-  reader.readAsDataURL(file);
-});
+    // Si pasa la validación, mostrar preview
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      imagenPreview.src = e.target.result;
+      imagenPreview.classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
+  });
 
   // Formatear RUT
   document.getElementById("rut").addEventListener("input", function () {
@@ -362,28 +361,55 @@ imagenForm.addEventListener("change", function () {
     this.value = valor.trim()
   })
 
-  // Formulario
-  const form = document.getElementById("editUserForm")
-  form.addEventListener("submit", (e) => {
-    e.preventDefault()
-    if (validarFormulario()) {
-      console.log("Usuario modificado:", {
-        nombre: document.getElementById("nombre").value,
-        segundo_nombre: document.getElementById("Segundo_nombre").value,
-        apellido_paterno: document.getElementById("apellido_paterno").value,
-        apellido_materno: document.getElementById("apellido_materno").value,
-        rut: document.getElementById("rut").value,
-        celular: document.getElementById("celular").value,
-        direccion: document.getElementById("direccion").value,
-        email: document.getElementById("email").value,
-        cargo: document.getElementById("cargo").value,
-        rol: document.getElementById("rol").value,
-        pin: document.getElementById("pin").value,
-        password: document.getElementById("password").value || "sin cambios"
-      })
-      mostrarMensajeExito()
+  //FORMULARIO
+  const form = document.getElementById("editUserForm");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!validarFormulario()) return;
+
+    // Mostrar overlay y deshabilitar botón
+    loadingOverlay.classList.remove("hidden");
+    submitBtn.disabled = true;
+
+    // Forzar redraw para asegurar que la animación se muestre
+    await new Promise(requestAnimationFrame);
+
+    const rut = document.getElementById("rut").value.replace(/\./g, "").replace("-", "");
+    const url = `/modificar_usuario_funcion/${rut}`;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+      });
+
+      const result = await response.json();
+
+      // Ocultar overlay y habilitar botón
+      loadingOverlay.classList.add("hidden");
+      submitBtn.disabled = false;
+
+      if (result.status === "success") {
+        mostrarMensajeExito();
+      } else {
+        alert(result.message || "Error al modificar usuario");
+      }
+    } catch (error) {
+      loadingOverlay.classList.add("hidden");
+      submitBtn.disabled = false;
+      console.error(error);
+      alert("Error al enviar el formulario");
     }
-  })
+  });
+
 
   // Botón cancelar
   document.getElementById("cancelBtn").addEventListener("click", () => {

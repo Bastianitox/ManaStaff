@@ -5,6 +5,7 @@ from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 import re
+from urllib.parse import unquote_plus
 
 from .firebase import authP, auth, database, storage, db
 
@@ -199,6 +200,10 @@ def crear_usuario_funcion(request):
     if not re.match(patron_email, email):
         return render(request, "staffweb/crear_usuario.html", {"mensaje": "El correo electrónico no es válido."})
     
+    if correo_ya_existe(email):
+        return render(request, "staffweb/crear_usuario.html", {"mensaje": "El correo electrónico ya existe."})
+
+
     # Validación de contraseña (mínimo 6 caracteres para Firebase)
     if len(password) < 6:
         return render(request, "staffweb/crear_usuario.html", {"mensaje": "La contraseña debe tener al menos 6 caracteres."})
@@ -311,7 +316,121 @@ def eliminar_archivos_usuario(rut):
 
 @require_POST
 def modificar_usuario_funcion(request, rut):
-    pass
+    #OBTENER CAMPOS MENOS EL RUT (RUT NO SE DEBE EDITAR YA QUE ES UNICO)
+    nombre = request.POST.get('nombre', None)
+    segundo_nombre = request.POST.get('Segundo_nombre', None)
+    apellido_paterno = request.POST.get('apellido_paterno', None)
+    apellido_materno = request.POST.get('apellido_materno', None)
+    celular = request.POST.get('celular', None)
+    direccion = request.POST.get('direccion', None)
+    email = request.POST.get('email', None)
+    cargo = request.POST.get('cargo', None)
+    imagen = request.FILES.get('imagen', None)
+    rol = request.POST.get('rol', None)
+    pin = request.POST.get('pin', None)
+    password = request.POST.get('password', None)
+
+    #OBTENER VALORES DEL USUARIO ACTUAL
+    usuario_a_modificar = database.child(f"Usuario/{rut}").get().val()
+    correo_actual = usuario_a_modificar.get("correo")
+    usuarioAUTH = auth.get_user_by_email(correo_actual)
+    uid = usuarioAUTH.uid
+
+    #VALIDACIONES
+
+    # VALIDAR CAMPOS VACIOS
+    if not all([nombre, segundo_nombre,apellido_paterno, apellido_materno,celular, direccion, cargo, rol, email]):
+        return JsonResponse({"status": "false", "message": "Los campos obligatorios no pueden estar vacíos."})
+    
+    # Validación de correo
+    patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(patron_email, email):
+        return JsonResponse({"status": "false", "message": "El correo electrónico no es válido."})
+
+    #VALIDAR TELEFENO EN FORMATO CHILENO (+56 9 1234 5678)
+    if celular and not re.match(r'^\+56 9 \d{4} \d{4}$', celular):
+        return JsonResponse({"status": "false", "message": "El número de celular debe tener el formato: +56 9 1234 5678"})
+
+    # Validación de contraseña (mínimo 6 caracteres para Firebase)
+    if password:
+        if len(password) < 6:
+            return JsonResponse({"status": "false", "message": "La contraseña debe tener al menos 6 caracteres."})
+        #SI LA CONTRASEÑA FUE CAMBIADA Y ES VALIDADA SE CAMBIA EN EL AUTHENTICATION
+        else:
+            auth.update_user(uid = uid, password = password)
+
+    # Validación de PIN (mínimo 4 caracteres para Firebase)
+    pin_actual = usuario_a_modificar.get("PIN")
+    if pin:
+        if len(pin) == 4:
+            pin_actual = pin
+        else:
+            return JsonResponse({"status": "false", "message": "El pin debe ser de 4 digitos."})
+
+    #VALIDACION DE IMAGEN
+    urlImagen = usuario_a_modificar.get("imagen")
+    if imagen:
+
+
+        ext_permitidas = ["jpg", "jpeg", "png", "gif"]
+        ext = imagen.name.split(".")[-1].lower()
+        if ext not in ext_permitidas:
+            return JsonResponse({"status": "false", "message": "Formato de imagen no permitido. Usa JPG, PNG o GIF."})
+
+        #ELIMINAR IMAGEN ACTUAL DE STORAGE
+
+        bucket = storage.bucket()
+
+        nombre_archivo = urlImagen.split("/")[-1]
+        nombre_archivo = str(nombre_archivo.split("?")[0])
+        nombre_archivo = unquote_plus(nombre_archivo)
+
+        blob = bucket.blob(f"{rut}/Imagen/{nombre_archivo}")
+        try:
+            blob.delete()
+        except:
+            print('Error al eliminar imagen de Database')
+
+
+        # SUBIR NUEVA IMAGEN A STORAGE
+        bucket = storage.bucket()
+        blob = bucket.blob(f"{rut}/Imagen/{imagen.name}")
+        blob.upload_from_file(imagen, content_type=imagen.content_type)
+        blob.cache_control = "public, max-age=3600, s-maxage=86400"
+        blob.patch()
+
+        urlImagen = blob.generate_signed_url(
+            expiration=timedelta(weeks=150),
+            method="GET"
+        )
+    
+    #CAMBIAR CORREO SI ES QUE ES DISTINTO AL ACTUAL EN EL AUTHENTICATOR
+    if correo_actual!=email:
+        #VALIDAR QUE EL NUEVO CORREO NO EXISTA
+        if correo_ya_existe(email):
+            return JsonResponse({"status": "false", "message": "El correo electrónico ya existe."})
+        #SI NO EXISTE CAMBIAR EL CORREO ACTUAL POR EL NUEVO CORREO
+        correo_actual = email
+        auth.update_user(uid = uid, email = correo_actual)
+
+    #CAMBIAR LOS NUEVOS VALORES AL USUARIO
+    ref = db.reference('/Usuario/'+rut)
+    ref.update({
+        "Nombre":nombre,
+        "Segundo_nombre":segundo_nombre,
+        "ApellidoPaterno":apellido_paterno,
+        "ApellidoMaterno":apellido_materno,
+        "Telefono":celular,
+        "Direccion":direccion,
+        "correo":email,
+        "Cargo":cargo,
+        "imagen":urlImagen,
+        "rol":rol,
+        "PIN":pin_actual,
+    })
+
+    return JsonResponse({"status": "success", "message": "Usuario modificado correctamente."})
+
 
 
 
@@ -334,7 +453,12 @@ def formatear_rut(rut_limpio):
 
     return f"{rut_con_puntos}-{dv}"
 
-
+def correo_ya_existe(email):
+    try:
+        auth.get_user_by_email(email)
+        return True 
+    except auth.UserNotFoundError:
+        return False
 
 #EJEMPLOS
 
