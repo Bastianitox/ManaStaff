@@ -664,6 +664,18 @@ def obtener_solicitudes_administrar(request):
             tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
             tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
 
+            # OBTENER NOMBRE DEL CREADOR DE SOLICITUD
+            rut_usuario_solicitud = solicitud.get("id_rut")
+            rut_usuario_solicitud_nombre = database.child("Usuario").child(rut_usuario_solicitud).get().val() or {}
+            rut_usuario_solicitud_nombre = rut_usuario_solicitud_nombre.get("Nombre") + " " + rut_usuario_solicitud_nombre.get("ApellidoPaterno")
+
+            # OBTENER NOMBRE DEL APROBADOR DE SOLICITUD
+            rut_usuario_aprobador = solicitud.get("id_aprobador")
+            rut_usuario_aprobador_nombre = None
+            if rut_usuario_aprobador != "null":
+                rut_usuario_aprobador_nombre = database.child("Usuario").child(rut_usuario_aprobador).get().val() or {}
+                rut_usuario_aprobador_nombre = rut_usuario_aprobador_nombre.get("Nombre") + " " + rut_usuario_aprobador_nombre.get("ApellidoPaterno")
+
             # DETERMINAR ESTADO ASIGNACIÓN
             estado_asignacion = "pendiente"
             if fecha_inicio != "null":
@@ -686,7 +698,9 @@ def obtener_solicitudes_administrar(request):
                 "archivo": solicitud.get("archivo"),
                 "archivo_name": solicitud.get("archivo_name"),
                 "tipo_solicitud_nombre": tipo_solicitud_nombre,
-                "estado_asignacion": estado_asignacion
+                "estado_asignacion": estado_asignacion,
+                "rut_usuario_solicitud_nombre": rut_usuario_solicitud_nombre,
+                "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre
             })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
