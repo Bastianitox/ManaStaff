@@ -717,8 +717,6 @@ def asignarme_solicitud(request, id_solicitud):
     usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
     usuario_actual_rol = usuario_actual.get("rol")
 
-    print(usuario_actual_rol)
-
     if not usuario_actual_rol:
         return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
 
@@ -726,11 +724,16 @@ def asignarme_solicitud(request, id_solicitud):
         return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
 
 
-    #OBTENER LA REF DE SOLICITUD A ASIGNAR
-    ref = database.child('/Solicitudes/'+ id_solicitud)
+    #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
+    solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    solicitud_fecha_inicio =solicitud.get("Fecha_inicio")
 
+    print(solicitud_fecha_inicio)
+
+    #OBTENER LA REF DE SOLICITUD A ASIGNAR
+    ref = database.child('Solicitudes/'+ id_solicitud)
     #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
-    if ref.get("Fecha_inicio") != "null":
+    if solicitud_fecha_inicio != "null":
         return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya asignada.'})
 
     ref.update({
@@ -804,6 +807,4 @@ def ejemplo_eliminar(request):
     ref.delete()
 
     return redirect("inicio_documentos")
-
-
 

@@ -221,7 +221,7 @@ function filterRequests() {
         if (currentFilter === 'pendiente') {
             matchesFilter = request.estado_asignacion === 'pendiente' || request.estado_asignacion === 'asignada';
         } else if (currentFilter === 'asignada') {
-            matchesFilter = request.asignado_a === currentUser.rut && request.estado_asignacion === 'asignada';
+            matchesFilter = request.id_aprobador === currentUser.rut && request.estado_asignacion === 'asignada';
         } else if (currentFilter === 'cerrada') {
             matchesFilter = request.estado_asignacion === 'cerrada';
         }
@@ -259,15 +259,16 @@ statusTabs.forEach(tab => {
 
 
 
+const modal = document.getElementById('assignModal');
+const message = document.getElementById('assignModalMessage');
+const confirmBtn = document.getElementById('assignConfirmBtn');
+const cancelBtn = document.getElementById('assignCancelBtn');
 
 function assignRequest(id_solicitud) {
     const solicitud = requests.find(r => r.id_solicitud === id_solicitud);
     if (!solicitud) return;
 
-    const modal = document.getElementById('assignModal');
-    const message = document.getElementById('assignModalMessage');
-    const confirmBtn = document.getElementById('assignConfirmBtn');
-    const cancelBtn = document.getElementById('assignCancelBtn');
+    
 
     // Mensaje modal
     message.textContent = `¿Quieres asignarte la solicitud "${solicitud.asunto}"?`;
@@ -280,7 +281,7 @@ function assignRequest(id_solicitud) {
             const response = await fetch("asignarme_solicitud/"+id_solicitud)
             if (!response.ok) throw new Error("Error HTTP " + response.status)
 
-            console.log(response)
+            
 
             const data = await response.json();
 
@@ -292,9 +293,6 @@ function assignRequest(id_solicitud) {
 
                 modal.style.display = "none";
                 filterRequests();
-
-                // Mensaje bonito de éxito
-                showSuccessMessage(data.mensaje || "Solicitud asignada correctamente.");
             } else {
                 alert("⚠️ " + (data.mensaje || "Error desconocido al asignar la solicitud."));
             }
@@ -317,10 +315,16 @@ function assignRequest(id_solicitud) {
 
 
 function showLoader(message = "Procesando solicitud...") {
-    const overlay = document.getElementById("loadingOverlay");
-    const text = overlay.querySelector(".loading-text");
-    text.textContent = message;
-    overlay.classList.add("show");
+    modal.classList.add('vanish');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('vanish');
+        const overlay = document.getElementById("loadingOverlay");
+        const text = overlay.querySelector(".loading-text");
+        text.textContent = message;
+        overlay.classList.add("show");
+    }, 150);
+    
 }
 
 function hideLoader() {
