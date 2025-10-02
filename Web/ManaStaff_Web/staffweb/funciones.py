@@ -635,7 +635,7 @@ def obtener_solicitudes_administrar(request):
     #OBTENER USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
 
-    # OBTENER LOS USUARIOS DE LA BASE DE DATOS
+    # OBTENER LAS SOLICITUDES DE LA BASE DE DATOS
     solicitudes = database.child("Solicitudes").get().val() or {}
 
     solicitudes_lista = []
@@ -664,6 +664,18 @@ def obtener_solicitudes_administrar(request):
             tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
             tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
 
+            # OBTENER NOMBRE DEL CREADOR DE SOLICITUD
+            rut_usuario_solicitud = solicitud.get("id_rut")
+            rut_usuario_solicitud_nombre = database.child("Usuario").child(rut_usuario_solicitud).get().val() or {}
+            rut_usuario_solicitud_nombre = rut_usuario_solicitud_nombre.get("Nombre") + " " + rut_usuario_solicitud_nombre.get("ApellidoPaterno")
+
+            # OBTENER NOMBRE DEL APROBADOR DE SOLICITUD
+            rut_usuario_aprobador = solicitud.get("id_aprobador")
+            rut_usuario_aprobador_nombre = None
+            if rut_usuario_aprobador != "null":
+                rut_usuario_aprobador_nombre = database.child("Usuario").child(rut_usuario_aprobador).get().val() or {}
+                rut_usuario_aprobador_nombre = rut_usuario_aprobador_nombre.get("Nombre") + " " + rut_usuario_aprobador_nombre.get("ApellidoPaterno")
+
             # DETERMINAR ESTADO ASIGNACIÓN
             estado_asignacion = "pendiente"
             if fecha_inicio != "null":
@@ -686,12 +698,47 @@ def obtener_solicitudes_administrar(request):
                 "archivo": solicitud.get("archivo"),
                 "archivo_name": solicitud.get("archivo_name"),
                 "tipo_solicitud_nombre": tipo_solicitud_nombre,
-                "estado_asignacion": estado_asignacion
+                "estado_asignacion": estado_asignacion,
+                "rut_usuario_solicitud_nombre": rut_usuario_solicitud_nombre,
+                "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre
             })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
- 
-    
+
+def asignarme_solicitud(request, id_solicitud):
+    #OBTENER EL USUARIO ACTUAL
+    usuario_actual_rut = request.session.get("usuario_id")
+
+    #VALIDAR USUARIO ACTUAL
+    if not usuario_actual_rut:
+        return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
+
+    #VALIDAR QUE USUARIO SEA ADMIN (RECURSOS HUMANOS)
+    usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
+    usuario_actual_rol = usuario_actual.get("rol")
+
+    print(usuario_actual_rol)
+
+    if not usuario_actual_rol:
+        return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
+
+    if usuario_actual_rol != "Uno":
+        return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
+
+
+    #OBTENER LA REF DE SOLICITUD A ASIGNAR
+    ref = database.child('/Solicitudes/'+ id_solicitud)
+
+    #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
+    if ref.get("Fecha_inicio") != "null":
+        return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya asignada.'})
+
+    ref.update({
+        "Fecha_inicio": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "id_aprobador": usuario_actual_rut
+    })
+
+    return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
 
 
 #FUNCIONES DE AYUDA

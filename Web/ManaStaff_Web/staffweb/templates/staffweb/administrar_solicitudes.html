@@ -41,7 +41,30 @@
 <div class="requests-section">
     <h2>Solicitudes</h2>
     <div id="requestsGrid" class="requests-grid"></div>
+    <div id="loader" class="loader-container">
+        <div class="spinner"></div>
+        <p>Cargando solicitudes...</p>
+    </div>
+
     <p id="noResults" class="no-results">No hay solicitudes disponibles</p>
+</div>
+
+
+<!-- Modal para asignación -->
+<div id="assignModal" class="confirm-modal" style="display:none;">
+    <div class="modal-content">
+        <p id="assignModalMessage">¿Deseas asignarte esta solicitud?</p>
+        <div class="modal-buttons">
+            <button id="assignConfirmBtn" class="confirm-button">Confirmar</button>
+            <button id="assignCancelBtn" class="cancel-button">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay de carga -->
+<div id="loadingOverlay">
+  <div class="spinnerGlobal"></div>
+  <p class="loading-text">Procesando solicitud...</p>
 </div>
 
 

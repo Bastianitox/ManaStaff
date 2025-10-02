@@ -1,27 +1,56 @@
 // Usuario actual
-var currentUser = "None";
+var currentUser = null;
 
-async function obtener_usuario_actual(){
-    
+async function obtener_usuario_actual() {
+  try {
+    const response = await fetch("/obtener_usuario_actual");
+    const data = await response.json();
+    if (data.status === "success") {
+        currentUser = data.usuario
+    } else {
+        console.error(data.message);
+        return null;
+    }
+  } catch (error) {
+    console.error("Error al obtener usuario actual:", error);
+    return null;
+  }
 }
+
+
 
 // Sample data
 var requests = [];
 
 async function obtener_solicitudes_administrar() {
+  const loader = document.getElementById("loader");
+  const requestsGrid = document.getElementById("requestsGrid");
+  const noResults = document.getElementById("noResults");
+
   try {
-    const response = await fetch("obtener_solicitudes_administrar")
-    if (!response.ok) throw new Error("Error HTTP " + response.status)
+    // Mostrar loader y ocultar grid
+    loader.style.display = "block";
+    requestsGrid.style.display = "none";
+    noResults.style.display = "none";
 
-    const data = await response.json()
-    requests = data.solicitudes
+    const response = await fetch("obtener_solicitudes_administrar");
+    if (!response.ok) throw new Error("Error HTTP " + response.status);
 
-    filteredRequests = [...requests].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate))
+    const data = await response.json();
+    requests = data.solicitudes;
+
+    filteredRequests = [...requests].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
+
     renderRequests(filteredRequests);
+
   } catch (error) {
-    console.error("Error al obtener las solicitudes:", error)
+    console.error("Error al obtener las solicitudes:", error);
+  } finally {
+    // Ocultar loader al terminar
+    loader.style.display = "none";
   }
 }
+
 
 let filteredRequests = [...requests];
 let currentFilter = 'pendiente';
@@ -55,49 +84,55 @@ function renderRequests(requestsToRender) {
     noResults.style.display = 'none';
 
     requestsGrid.innerHTML = requestsToRender.map(request => {
-        // Rango de fechas
+        // Create date range display
         let dateRange;
-        if (!request.fecha_inicio && !request.fecha_fin) {
+
+        let inicioValido = request.fecha_inicio && request.fecha_inicio !== "null";
+        let finValido = request.fecha_fin && request.fecha_fin !== "null";
+
+        if (!inicioValido && !finValido) {
             dateRange = "En revisión";
-        } else if (request.fecha_inicio && !request.fecha_fin) {
+        } else if (inicioValido && !finValido) {
             dateRange = `${request.fecha_inicio} - Decisión pendiente`;
-        } else if (request.fecha_inicio === request.fecha_fin) {
+        } else if (inicioValido && finValido && request.fecha_inicio === request.fecha_fin) {
             dateRange = request.fecha_inicio;
-        } else {
+        } else if (inicioValido && finValido) {
             dateRange = `${request.fecha_inicio} - ${request.fecha_fin}`;
+        } else {
+            dateRange = "En revisión"; // fallback
         }
 
         // Información de asignación
         let asignacionInfo = "";
-        if (request.estado === "pendiente" && request.asignado_a) {
-            if (request.asignado_a === currentUser) {
+        if (request.estado === "pendiente" && request.id_aprobador != "null") {
+            if (request.id_aprobador === currentUser.rut) {
                 asignacionInfo = `<span class="status-badge asignada_a_mi">👤 Asignada a mí</span>`;
             } else {
-                asignacionInfo = `<span class="status-badge asignada">👤 Asignada a ${request.asignado_a}</span>`;
+                asignacionInfo = `<span class="status-badge asignada">👤 Asignada a ${request.rut_usuario_aprobador_nombre}</span>`;
             }
         }
 
         // Botones según asignación
         let buttons = "";
         if (request.estado_asignacion === "pendiente") {
-            if (!request.asignado_a) {
+            if (request.id_aprobador === "null") {
                 buttons = `
-                    <button class="view-details-btn requests-buttons btn-asignacion" onclick="assignRequest(${request.id})">
+                    <button class="view-details-btn requests-buttons btn-asignacion" onclick="assignRequest('${request.id_solicitud}')">
                         Asignarme solicitud
                     </button>
                 `;
-            } else if (request.asignado_a === currentUser) {
+            } else if (request.id_aprobador === currentUser.rut) {
                 buttons = `
-                    <button class="view-details-btn requests-buttons btn-detalles" onclick="viewDetails(${request.id})">
+                    <button class="view-details-btn requests-buttons btn-detalles" onclick="viewDetails('${request.id_solicitud}')">
                         Ver detalles
                     </button>
                 `;
             } else {
                 buttons = ""; // asignada a otro → sin botones
             }
-        } else if (request.estado_asignacion !== "pendiente" && request.asignado_a === currentUser) {
+        } else if (request.estado_asignacion !== "pendiente" && request.id_aprobador === currentUser.rut) {
             buttons = `
-                <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id})">
+                <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id_solicitud})">
                     Ver detalles
                 </button>
             `;
@@ -106,12 +141,12 @@ function renderRequests(requestsToRender) {
         let badgeClass, badgeText;
 
         if (request.estado_asignacion === 'asignada') {
-            if (request.asignado_a === currentUser) {
+            if (request.id_aprobador === currentUser.rut) {
                 badgeClass = 'asignada_a_mi';
                 badgeText = '🕛 Asignada a mí';
             } else {
                 badgeClass = 'asignada';
-                badgeText = `✗ Asignada a ${request.asignado_a}`;
+                badgeText = `✗ Asignada a ${request.rut_usuario_aprobador_nombre}`;
             }
         } else if (request.estado_asignacion === 'cerrada') {
             badgeClass = 'cerrada';
@@ -133,7 +168,7 @@ function renderRequests(requestsToRender) {
                     <div class="request-info">
                         <h3 class="request-title">${request.asunto}</h3>
                         <p class="request-description">${request.descripcion}</p>
-                        <span class="usuario_solicitud">${request.usuario_solicitud}</span>
+                        <span class="usuario_solicitud">${request.rut_usuario_solicitud_nombre}</span>
                         <div class="request-meta">
                             <span>Enviado: ${request.fecha_solicitud}</span>
                             <span>📅 ${dateRange}</span>
@@ -150,10 +185,20 @@ function renderRequests(requestsToRender) {
             </div>
         `;
     }).join('');
+
+    // Animacion despues de aparecer
+    const cards = document.querySelectorAll('.request-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
 }
 
-// Render inicial
-renderRequests(requests);
 
 
 
@@ -176,7 +221,7 @@ function filterRequests() {
         if (currentFilter === 'pendiente') {
             matchesFilter = request.estado_asignacion === 'pendiente' || request.estado_asignacion === 'asignada';
         } else if (currentFilter === 'asignada') {
-            matchesFilter = request.asignado_a === currentUser && request.estado_asignacion === 'asignada';
+            matchesFilter = request.asignado_a === currentUser.rut && request.estado_asignacion === 'asignada';
         } else if (currentFilter === 'cerrada') {
             matchesFilter = request.estado_asignacion === 'cerrada';
         }
@@ -210,25 +255,84 @@ statusTabs.forEach(tab => {
     });
 });
 
-// Render inicial
-filterRequests(filteredRequests);
 
 
-// Funciones auxiliares (simples)
-function assignRequest(id) {
-    const solicitud = requests.find(r => r.id === id);
-    if (solicitud) {
-        solicitud.asignado_a = currentUser;
-        solicitud.estado_asignacion = "asignada";
-        filterRequests();
-    }
+
+
+
+function assignRequest(id_solicitud) {
+    const solicitud = requests.find(r => r.id_solicitud === id_solicitud);
+    if (!solicitud) return;
+
+    const modal = document.getElementById('assignModal');
+    const message = document.getElementById('assignModalMessage');
+    const confirmBtn = document.getElementById('assignConfirmBtn');
+    const cancelBtn = document.getElementById('assignCancelBtn');
+
+    // Mensaje modal
+    message.textContent = `¿Quieres asignarte la solicitud "${solicitud.asunto}"?`;
+    modal.style.display = 'flex';
+
+    confirmBtn.onclick = async () => {
+        showLoader("Asignando solicitud...");
+
+        try {
+            const response = await fetch("asignarme_solicitud/"+id_solicitud)
+            if (!response.ok) throw new Error("Error HTTP " + response.status)
+
+            console.log(response)
+
+            const data = await response.json();
+
+            if (data.status === "success") {
+                // 🔹 Actualizar solicitud local para reflejar el cambio
+                solicitud.id_aprobador = currentUser.rut;
+                solicitud.fecha_inicio = new Date().toISOString().slice(0, 19).replace("T", " ");
+                solicitud.estado_asignacion = "asignada";
+
+                modal.style.display = "none";
+                filterRequests();
+
+                // Mensaje bonito de éxito
+                showSuccessMessage(data.mensaje || "Solicitud asignada correctamente.");
+            } else {
+                alert("⚠️ " + (data.mensaje || "Error desconocido al asignar la solicitud."));
+            }
+        } catch (error) {
+            console.error("Error asignando solicitud:", error);
+            alert("Error de conexión al asignar la solicitud.");
+        } finally {
+            hideLoader();
+        }
+    };
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('vanish');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('vanish');
+        }, 300);
+    };
 }
+
+
+function showLoader(message = "Procesando solicitud...") {
+    const overlay = document.getElementById("loadingOverlay");
+    const text = overlay.querySelector(".loading-text");
+    text.textContent = message;
+    overlay.classList.add("show");
+}
+
+function hideLoader() {
+    document.getElementById("loadingOverlay").classList.remove("show");
+}
+
 
 /* DETAILES */
 
 // Updated view details function to show detailed view within same page
 function viewDetails(requestId) {
-    const request = requests.find(r => r.id === requestId);
+    const request = requests.find(r => r.id_solicitud === requestId);
     if (!request) return;
     
     showDetailedView(request);
@@ -368,7 +472,7 @@ function createDetailedViewHTML(request) {
                                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
                             </svg>
                             <div class="file-info">
-                                <a href="/media/Contrato.pdf" target="_blank" class="file-name">${request.archivo}</a>
+                                <a href="/media/Contrato.pdf" target="${request.archivo}" class="file-name">${request.archivo_name}</a>
                             </div>
                         </div>
                     </div>
@@ -403,8 +507,8 @@ function createDetailedViewHTML(request) {
 
                     ${request.estado === 'pendiente' ? `
                     <div class="detail-actions" style="margin-top: 16px;">
-                        <button class="approve-btn" onclick="openConfirmModal('aprobada', ${request.id})">Aprobar</button>
-                        <button class="reject-btn" onclick="openConfirmModal('rechazada', ${request.id})">Rechazar</button>
+                        <button class="approve-btn" onclick="openConfirmModal('aprobada', ${request.id_solicitud})">Aprobar</button>
+                        <button class="reject-btn" onclick="openConfirmModal('rechazada', ${request.id_solicitud})">Rechazar</button>
                     </div>
 
                     <!-- Modal de confirmación -->
@@ -457,7 +561,7 @@ function goBackToList() {
 
 
 function confirmAction(action, requestId) {
-    const request = requests.find(r => r.id === requestId);
+    const request = requests.find(r => r.id_solicitud === requestId);
     if (!request) return;
 
     // Primera confirmación
@@ -490,7 +594,7 @@ function openConfirmModal(action, requestId) {
     
     modal.classList.remove('vanish');
 
-    const request = requests.find(r => r.id === requestId);
+    const request = requests.find(r => r.id_solicitud === requestId);
     if (!request) return;
 
     message.textContent = `¿Deseas ${action === 'aprobada' ? 'aprobar' : 'rechazar'} la solicitud "${request.asunto}"?`;
@@ -524,6 +628,12 @@ function openConfirmModal(action, requestId) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    obtener_usuario_actual()
+    // Initial render
+    obtener_solicitudes_administrar()
+
+
     const cards = document.querySelectorAll('.request-card');
     cards.forEach((card, index) => {
         card.style.opacity = '0';
