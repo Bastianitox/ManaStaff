@@ -294,12 +294,18 @@
 /* Spinner */
 .spinner {
   border: 6px solid #f3f3f3;
-  border-top: 6px solid var(--primary-blue);
+  border-top: 6px solid #3b82f6;
   border-radius: 50%;
   width: 50px;
   height: 50px;
   animation: spin 1s linear infinite;
 }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 
 /* Mensaje de éxito */
 .success-message {
@@ -307,8 +313,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--green-500);
-  color: var(--white);
+  background: #10b981;
+  color: #ffffff;
   padding: 1rem 2rem;
   border-radius: 8px;
   font-weight: 600;

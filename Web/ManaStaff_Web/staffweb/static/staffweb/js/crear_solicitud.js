@@ -103,8 +103,8 @@ async function handleSubmit(e) {
         return;
     }
 
-    // Mostrar overlay y deshabilitar botón
-    loadingOverlay.classList.remove("hidden");
+    // Mostrar overlay de carga
+    loadingOverlay.classList.add("show");
     submitBtn.disabled = true;
 
     // Forzar redraw para asegurar que la animación se muestre
@@ -114,30 +114,32 @@ async function handleSubmit(e) {
     formData = new FormData(requestForm);
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-      });
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData,
+            headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      // Ocultar overlay y habilitar botón
-      loadingOverlay.classList.add("hidden");
-      submitBtn.disabled = false;
+        // Ocultar overlay y habilitar botón
 
-      if (result.status === "success") {
-        mostrarMensajeExito();
-      } else {
-        alert(result.message || "Error al crear solicitud");
-      }
+        // Ocultar overlay
+        loadingOverlay.classList.remove("show");
+        submitBtn.disabled = false;
+        if (result.status === "success") {
+            mostrarMensajeExito();
+        } else {
+            alert(result.message || "Error al crear solicitud");
+        }
     } catch (error) {
-      loadingOverlay.classList.add("hidden");
-      submitBtn.disabled = false;
-      console.error(error);
-      alert("Error al enviar el formulario");
+        // Ocultar overlay
+        loadingOverlay.classList.remove("show");
+        submitBtn.disabled = false;
+        console.error(error);
+        alert("Error al enviar el formulario");
     }
 }
 
@@ -156,11 +158,6 @@ function resetForm() {
     requestForm.reset();
     removeFile();
     hideMessages();
-}
-
-function showSuccess() {
-    hideMessages();
-    successMessage.classList.add('show');
 }
 
 function showError(message) {

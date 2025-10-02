@@ -46,65 +46,77 @@ function renderRequests(requestsToRender) {
 
     requestsGrid.innerHTML = requestsToRender.map(request => {
         // Create date range display
-                let dateRange;
+        let dateRange;
 
-                if (!request.fecha_inicio && !request.fecha_fin) {
-                    dateRange = "En revisión";
-                } else if (request.fecha_inicio && !request.fecha_fin) {
-                    dateRange = `${request.fecha_inicio} - Decisión pendiente`;
-                } else if (request.fecha_inicio === request.fecha_fin) {
-                    dateRange = request.fecha_inicio;
-                } else {
-                    dateRange = `${request.fecha_inicio} - ${request.fecha_fin}`;
-                }
-
-
+        if (!request.fecha_inicio && !request.fecha_fin) {
+            dateRange = "En revisión";
+        } else if (request.fecha_inicio && !request.fecha_fin) {
+            dateRange = `${request.fecha_inicio} - Decisión pendiente`;
+        } else if (request.fecha_inicio === request.fecha_fin) {
+            dateRange = request.fecha_inicio;
+        } else {
+            dateRange = `${request.fecha_inicio} - ${request.fecha_fin}`;
+        }
 
 
-                // Create buttons based on status
-                const buttons = request.estado === 'pendiente' 
-                    ? `
-                        <div style="display: flex; gap: 10px; margin-top: 16px;">
-                            <button class="cancel-btn requests-buttons">
-                                Cancelar
-                            </button>
-                            <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
-                                Ver detalles
-                            </button>
-                        </div>
-                    `
-                    : `
-                        <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
-                            Ver detalles
-                        </button>
-                    `;
 
-                return `
-                    <div class="request-card ${request.estado}">
-                        <div class="request-header">
-                            <div class="request-icon">
-                                <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
-                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z"/>
-                                </svg>
-                            </div>
-                            <div class="request-info">
-                                <h3 class="request-title">${request.asunto}</h3>
-                                <p class="request-description">${request.descripcion}</p>
-                                <div class="request-meta">
-                                    <span>Enviado: ${request.fecha_solicitud}</span>
-                                    <span>📅 ${dateRange}</span>
-                                </div>
-                            </div>
-                            <div class="status-badge ${request.estado}">
-                                ${request.estado === 'aprobada' ? '✓' : request.estado === 'pendiente' ? '⏳' : '✗'}
-                                ${statusLabels[request.estado]}
-                            </div>
-                        </div>
-                        ${buttons}
+
+        // Create buttons based on status
+        const buttons = request.estado === 'pendiente' 
+            ? `
+                <div style="display: flex; gap: 10px; margin-top: 16px;">
+                    <button class="cancel-btn requests-buttons">
+                        Cancelar
+                    </button>
+                    <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
+                        Ver detalles
+                    </button>
+                </div>
+            `
+            : `
+                <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
+                    Ver detalles
+                </button>
+            `;
+
+        return `
+            <div class="request-card ${request.estado}">
+                <div class="request-header">
+                    <div class="request-icon">
+                        <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z"/>
+                        </svg>
                     </div>
-                `;
-            }).join('');
+                    <div class="request-info">
+                        <h3 class="request-title">${request.asunto}</h3>
+                        <p class="request-description">${request.descripcion}</p>
+                        <div class="request-meta">
+                            <span>Enviado: ${request.fecha_solicitud}</span>
+                            <span>📅 ${dateRange}</span>
+                        </div>
+                    </div>
+                    <div class="status-badge ${request.estado}">
+                        ${request.estado === 'aprobada' ? '✓' : request.estado === 'pendiente' ? '⏳' : '✗'}
+                        ${statusLabels[request.estado]}
+                    </div>
+                </div>
+                ${buttons}
+            </div>
+        `;
+    }).join('');
+    // Animacion despues de aparecer
+    const cards = document.querySelectorAll('.request-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
 }
 
 // Filter requests
@@ -171,14 +183,20 @@ function createDetailedViewHTML(request) {
     let timelinePhases = [];
     
     // Phase 1: Always present
-    timelinePhases.push({
-        title: "Solicitud Enviada",
-        date: request.fecha_solicitud,
-        description: "Tu solicitud ha sido enviada y está en cola para revisión.",
-        status: "completed",
-        icon: "📤"
-    });
-    
+timelinePhases.push({
+    title: "Solicitud Enviada",
+    date: request.fecha_solicitud,
+    description: "Tu solicitud ha sido enviada y está en cola para revisión.",
+    status: "completed",
+    icon: "📤"
+});
+
+// Validar si fecha_inicio y fecha_fin son "null" (string o null real)
+const inicioValido = request.fecha_inicio && request.fecha_inicio !== "null";
+const finValido = request.fecha_fin && request.fecha_fin !== "null";
+
+// Si ambas fechas son "null", no agregamos más fases → solo se ve "Solicitud Enviada"
+if (!(inicioValido === false && finValido === false)) {
     // Phase 2: Based on status
     if (request.estado === 'pendiente') {
         timelinePhases.push({
@@ -226,6 +244,7 @@ function createDetailedViewHTML(request) {
             icon: "❌"
         });
     }
+}
 
     return `
         <div class="detail-main-content">
@@ -295,7 +314,7 @@ function createDetailedViewHTML(request) {
                                 <div class="date-label">Fecha de Solicitud</div>
                                 <div class="date-value">${request.fecha_solicitud}</div>
                             </div>
-                            ${request.fecha_vista ? `
+                            ${request.fecha_vista && request.fecha_vista !== "null" ? `
                                 <div class="date-item">
                                     <div class="date-label">Fecha de Revisión</div>
                                     <div class="date-value">${request.fecha_vista}</div>
@@ -303,11 +322,11 @@ function createDetailedViewHTML(request) {
                             ` : ''}
                             <div class="date-item">
                                 <div class="date-label">Fecha de Inicio</div>
-                                <div class="date-value">${request.fecha_inicio}</div>
+                                <div class="date-value">${request.fecha_inicio && request.fecha_inicio !== "null" ? request.fecha_inicio : "En espera"}</div>
                             </div>
                             <div class="date-item">
                                 <div class="date-label">Fecha de Fin</div>
-                                <div class="date-value">${request.fecha_fin}</div>
+                                <div class="date-value">${request.fecha_fin && request.fecha_fin !== "null" ? request.fecha_fin : "En espera"}</div>
                             </div>
                         </div>
                     </div>
