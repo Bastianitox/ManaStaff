@@ -22,7 +22,7 @@ def iniciarSesion(request):
     # VALIDAR CAMPOS VACIOS
     if not email or not password:
         return render(request, 'staffweb/index.html', {"mensaje": "Los campos correo y/o contraseña están vacíos."})
-
+    email = str(email).lower()
     # VALIDAR FORMATO DE CORREO
     patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if not re.match(patron_correo, email):
@@ -214,7 +214,7 @@ def crear_usuario_funcion(request):
     patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if not re.match(patron_email, email):
         return JsonResponse({"status": "false", "message": "El correo electrónico no es válido."})
-    
+    email = str(email).lower()
     if correo_ya_existe(email):
         return JsonResponse({"status": "false", "message": "El correo electrónico ya existe."})
 

@@ -52,7 +52,7 @@ const requests = [
         estado: "pendiente", 
         asignado_a: "Eduardo Guzman", 
         usuario_solicitud: "Anais Maturana", 
-        estado_asignacion: "pendiente",
+        estado_asignacion: "asignada",
         fecha_inicio: null,
         fecha_fin: null,
         archivo: null,
@@ -226,6 +226,24 @@ function renderRequests(requestsToRender) {
             `;
         }
 
+        let badgeClass, badgeText;
+
+        if (request.estado_asignacion === 'asignada') {
+            if (request.asignado_a === currentUser) {
+                badgeClass = 'asignada_a_mi';
+                badgeText = '🕛 Asignada a mí';
+            } else {
+                badgeClass = 'asignada';
+                badgeText = `✗ Asignada a ${request.asignado_a}`;
+            }
+        } else if (request.estado_asignacion === 'cerrada') {
+            badgeClass = 'cerrada';
+            badgeText = '🔒 Cerrada';
+        } else {
+            badgeClass = 'pendiente';
+            badgeText = '⏳ Pendiente';
+        }
+
         return `
             <div class="request-card ${request.estado}">
                 <div class="request-header">
@@ -245,21 +263,8 @@ function renderRequests(requestsToRender) {
                         </div>
                         ${asignacionInfo}
                     </div>
-                    <div class="status-badge ${request.asignado_a === currentUser && request.estado_asignacion === 'asignada'
-                            ? 'asignada_a_mi' 
-                            : request.asignado_a != currentUser && request.estado_asignacion == 'asignada'
-                                ? 'asignada' 
-                                : request.asignado_a === currentUser && request.estado_asignacion != 'asignada' 
-                                ? 'cerrada'
-                            : 'pendiente'}">
-                        ${request.asignado_a === currentUser && request.estado_asignacion === 'asignada'
-                            ? '🕛 Asignada a mí' 
-                            : request.asignado_a != currentUser && request.estado_asignacion == 'asignada'
-                                ? '✗ Asignada' 
-                                : request.asignado_a === currentUser && request.estado_asignacion != 'asignada' 
-                                ? '🔒 Cerrada'
-                            : '⏳ Pendiente'}
-                    </div>
+                    <div class="status-badge ${badgeClass}">${badgeText}</div>
+
 
                 </div>
                 <div class="buttons-list">
