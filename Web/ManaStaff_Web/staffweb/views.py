@@ -299,3 +299,31 @@ def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=
         )
     except Exception:
         return None
+    
+
+# def crear_publicacion(request, id_solicitud):
+#     if request.method == "POST":
+#         data = {
+#             "titulo": request.POST.get("titulo"),
+#             "contenido": request.POST.get("contenido"),
+#             "autor": request.session.get("nombre_usu", "Admin"),
+#             "tipo": request.POST.get("tipo", "noticia"),
+#         }
+#         funciones.crear_publicacion(id_solicitud, data)
+#         return redirect("administrar_noticiasyeventos")
+#     return render(request, "staffweb/crear_publicacion.html")
+
+# def editar_publicacion(request, id_solicitud):
+#     if request.method == "POST":
+#         data = {
+#             "titulo": request.POST.get("titulo"),
+#             "contenido": request.POST.get("contenido"),
+#             "tipo": request.POST.get("tipo", "noticia"),
+#         }
+#         funciones.editar_publicacion(id_solicitud, data)
+#         return redirect("administrar_noticiasyeventos")
+#     return render(request, "staffweb/editar_publicacion.html")
+
+# def eliminar_publicacion(request, id_solicitud):
+#     funciones.eliminar_publicacion(id_solicitud)
+#     return redirect("administrar_noticiasyeventos")

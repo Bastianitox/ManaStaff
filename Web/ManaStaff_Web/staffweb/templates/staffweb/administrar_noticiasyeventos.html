@@ -12,7 +12,7 @@
     <p>Aquí puedes modificar, crear, eliminar noticias y eventos</p>
 </div>
 
-<!-- Search and Filter -->
+
 <div class="search-filter-section">
     <div class="search-container">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,24 +41,23 @@
 <div class="noticias-section">
     <h2>Últimas publicaciones</h2>
     <div id="noticiasGrid" class="noticias-grid">
-        <!-- Ejemplo de tarjeta -->
+       
+        {% for pub_id, pub in publicaciones.items %}
         <div class="noticia-card">
-            <h3>Nuevo beneficio para empleados</h3>
-            <p class="fecha">Publicado el 01/10/2025</p>
-            <p class="autor">Por: Administración</p>
-            <p class="contenido">Desde este mes, los empleados tendrán acceso a un nuevo programa de salud y bienestar...</p>
-            <a href="#" class="btn-vermas">Ver más</a>
+            <h3>{{ pub.titulo }}</h3>
+            <p class="fecha">Publicado el {{ pub.fecha }}</p>
+            <p class="autor">Por: {{ pub.autor }}</p>
+            <p class="contenido">{{ pub.contenido }}</p>
+            
+            <div class="acciones-card">
+                <a href="{% url 'editar_publicacion' pub_id %}" class="btn editar">✏️ Editar</a>
+                <a href="{% url 'eliminar_publicacion' pub_id %}" class="btn eliminar">🗑️ Eliminar</a>
+            </div>
         </div>
-
-        <div class="noticia-card">
-            <h3>Aviso: Corte de luz programado</h3>
-            <p class="fecha">Publicado el 30/09/2025</p>
-            <p class="autor">Por: Infraestructura</p>
-            <p class="contenido">Se informa que el día 02 de octubre habrá un corte de luz programado en las oficinas centrales...</p>
-            <a href="#" class="btn-vermas">Ver más</a>
-        </div>
+        {% empty %}
+        <p>No hay publicaciones disponibles</p>
+        {% endfor %}
     </div>
-    <p id="noResults" class="no-results">No hay publicaciones disponibles</p>
 </div>
 
 {% endblock principal %}

@@ -45,6 +45,13 @@ urlpatterns = [
     path('obtener_usuario_actual',obtener_usuario_actual,name="obtener_usuario_actual"),
     path('obtener_solicitudes_administrar',obtener_solicitudes_administrar,name="obtener_solicitudes_administrar"),
     path('asignarme_solicitud/<str:id_solicitud>',asignarme_solicitud,name="asignarme_solicitud"),
+    # path('crear_publicacion/<str:id_solicitud>',crear_publicacion,name="crear_publicacion"),
+    # path('editar_publicacion/<str:id_solicitud>',editar_publicacion,name="editar_publicacion"),
+    # path('eliminar_publicacion/<str:id_solicitud>',eliminar_publicacion,name="eliminar_publicacion"),
+
+
+
+
 
     #EJEMPLOS
     path('ejemplo_crear',ejemplo_crear,name="ejemplo_crear"),
