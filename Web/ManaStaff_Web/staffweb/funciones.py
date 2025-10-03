@@ -3,11 +3,12 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
 import re
 import base64
 from urllib.parse import unquote_plus
+import requests
 
 from .firebase import authP, auth, database, storage, db
 
@@ -814,8 +815,28 @@ def cerrar_solicitud(request, id_solicitud, estado):
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud cerrada.'})
 
 #DOCUMENTOS
-def descargar_documento(request):
-    pass
+def descargar_documento(request, doc_id):
+    # Aquí obtienes la info del documento desde Firebase Realtime Database
+    documentos_ref = db.reference("Documentos").get() or {}
+    doc_data = documentos_ref.get(doc_id)
+    
+    if not doc_data:
+        return HttpResponse("Documento no encontrado", status=404)
+
+    # Construir URL de descarga de Storage
+    # Asumiendo que guardaste la ruta relativa o el token
+    url = doc_data.get("url")  # Por ejemplo, la URL completa con ?alt=media&token=...
+    nombre_archivo = doc_data.get("nombre", "documento.pdf")
+    
+    # Descargar archivo desde Firebase Storage
+    response = requests.get(url, stream=True)
+    if response.status_code != 200:
+        return HttpResponse("No se pudo descargar el documento", status=500)
+
+    # Devolver como descarga
+    resp = HttpResponse(response.content, content_type=response.headers.get('Content-Type', 'application/octet-stream'))
+    resp['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+    return resp
 
 #FUNCIONES DE AYUDA
 def formatear_rut(rut_limpio):

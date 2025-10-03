@@ -48,7 +48,7 @@ urlpatterns = [
     path('asignarme_solicitud/<str:id_solicitud>',asignarme_solicitud,name="asignarme_solicitud"),
     path('cerrar_solicitud/<str:id_solicitud>/<str:estado>',cerrar_solicitud,name="cerrar_solicitud"),
     path('recuperar_contrasena_funcion',recuperar_contrasena_funcion,name="recuperar_contrasena_funcion"),
-    path('descargar_documento',descargar_documento,name="descargar_documento"),
+    path('descargar_documento/<str:doc_id>',descargar_documento,name="descargar_documento"),
 
     # path('crear_publicacion/<str:id_solicitud>',crear_publicacion,name="crear_publicacion"),
     # path('editar_publicacion/<str:id_solicitud>',editar_publicacion,name="editar_publicacion"),
