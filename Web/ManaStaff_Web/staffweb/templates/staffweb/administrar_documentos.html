@@ -33,13 +33,13 @@
 <div class="documents-section">
   <div class="section-header">
     <h2>Documentos por Usuario</h2>
-    <a href="" class="btn-create-document" style="text-decoration: none;">
+    <a href="{% url 'crear_documento' %}" class="btn-create-document" style="text-decoration: none;">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke="currentColor" width="20" height="20">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 4v16m8-8H4"/>
         </svg>
-    Crear Documento
+        Crear Documento
     </a>
   </div>
   <div id="usersContainer"></div>
@@ -47,6 +47,22 @@
 
 <script id="users-docs-data" type="application/json">
   {{ users_docs_json|default:"[]"|safe }}
+</script>
+
+
+<script>
+  window.ROUTES = {
+    documentosUsuarios: "{% url 'documentos_usuarios' %}",
+    crearDocumento: "{% url 'crear_documento' %}"
+  };
+</script>
+
+<script>
+
+  const goDocsUsuario = (rut) => {
+    const limpio = String(rut).replace(/[^\dkK]/g, "");
+    window.location.href = `${window.ROUTES.documentosUsuarios}?rut=${encodeURIComponent(limpio)}`;
+  };
 </script>
 {% endblock principal %}
 

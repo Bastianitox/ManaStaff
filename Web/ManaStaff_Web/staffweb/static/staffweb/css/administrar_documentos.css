@@ -412,3 +412,7 @@
   }
 }
 
+.btn-ver-mas {
+  text-decoration: none;      
+  display: inline-block;       
+}
