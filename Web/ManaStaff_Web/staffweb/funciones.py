@@ -791,6 +791,10 @@ def cerrar_solicitud(request, id_solicitud, estado):
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud cerrada.'})
 
+@require_POST
+def recuperar_contrasena_funcion(request):
+    pass
+
 #FUNCIONES DE AYUDA
 def formatear_rut(rut_limpio):
     """

@@ -25,7 +25,7 @@ def validar_pin(request):
     rut = (request.session.get("usuario_rut") or "").strip()
     if not rut:
         return JsonResponse({"ok": False, "error": "Sesión no válida."}, status=401)
-
+    
     #normalizar solo dígitos
     rut = "".join(ch for ch in rut if ch.isdigit())
 
