@@ -180,8 +180,114 @@ body {
 }
 
 
+/* Overlay de carga */
+#loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255,255,255,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+/* Mostrar overlay */
+#loadingOverlay.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Spinner */
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3b82f6;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* Mensaje de éxito */
+.success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #10b981;
+  color: #ffffff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 2001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.success-message.show {
+  opacity: 1;
+  visibility: visible;
+}
+
 @media (max-width: 768px) {
   .recover-right{
     display: none;
   }
+}
+
+
+/* Modal de error */
+.error-modal {
+  position: fixed;
+  z-index: 3000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.error-modal.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.error-content {
+  margin: 15px;
+  background-color: #ef4444; /* rojo */
+  color: white;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+  max-width: 400px;
+  width: 90%;
+}
+
+.error-content .close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
