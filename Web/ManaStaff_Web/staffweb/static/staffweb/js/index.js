@@ -52,7 +52,7 @@ function mostrarMensajeExito() {
     mensaje.classList.remove("show")
     loadingOverlay.classList.remove("show");
     setTimeout(() => {
-      window.location.href = "/inicio_documentos"
+      window.location.href = "/inicio_noticias_eventos"
     }, 300)
   }, 1000)
 }
