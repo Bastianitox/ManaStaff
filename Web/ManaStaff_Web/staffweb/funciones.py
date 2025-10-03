@@ -645,7 +645,7 @@ def obtener_solicitudes_administrar(request):
         id_aprobador = solicitud.get("id_aprobador")
 
         # FILTRO SEGÚN LA CONDICIÓN
-        if fecha_inicio == "null" or fecha_fin == "null":
+        if fecha_inicio == "null" or fecha_fin == "null" or (fecha_fin != "null" and id_aprobador == usuario_actual_rut):
 
             # FORMATEAR FECHA DE SOLICITUD
             fecha_solicitud_str = solicitud.get("Fecha_solicitud")
@@ -682,6 +682,7 @@ def obtener_solicitudes_administrar(request):
                 estado_asignacion = "asignada"
             if fecha_fin != "null":
                 estado_asignacion = "cerrada"
+                print(estado_asignacion)
 
             solicitudes_lista.append({
                 "id_solicitud": id_solicitud,
@@ -750,6 +751,8 @@ def cerrar_solicitud(request, id_solicitud, estado):
     #OBTENER EL USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
 
+    print(id_solicitud)
+    print(estado)
     #VALIDAR USUARIO ACTUAL
     if not usuario_actual_rut:
         return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
@@ -775,7 +778,7 @@ def cerrar_solicitud(request, id_solicitud, estado):
         return JsonResponse({'status': 'false', 'mensaje': 'No puede cerrar su propia solicitud.'})
     
     #VALIDAR ESTADO
-    if estado!="aprobada" or estado!="rechazada":
+    if estado != "aprobada" and estado != "rechazada":
         return JsonResponse({'status': 'false', 'mensaje': 'Solo puede aprobar o rechazar la solicitud.'})
 
     #OBTENER LA REF DE SOLICITUD A ASIGNAR

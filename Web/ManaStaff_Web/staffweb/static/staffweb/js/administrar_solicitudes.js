@@ -40,8 +40,7 @@ async function obtener_solicitudes_administrar() {
     requests = data.solicitudes;
 
     filteredRequests = [...requests].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
-
-    renderRequests(filteredRequests);
+    filterRequests()
 
   } catch (error) {
     console.error("Error al obtener las solicitudes:", error);
@@ -221,7 +220,7 @@ function filterRequests() {
         if (currentFilter === 'pendiente') {
             matchesFilter = request.estado_asignacion === 'pendiente' || request.estado_asignacion === 'asignada';
         } else if (currentFilter === 'asignada') {
-            matchesFilter = request.asignado_a === currentUser.rut && request.estado_asignacion === 'asignada';
+            matchesFilter = request.id_aprobador === currentUser.rut && request.estado_asignacion === 'asignada';
         } else if (currentFilter === 'cerrada') {
             matchesFilter = request.estado_asignacion === 'cerrada';
         }
@@ -274,13 +273,13 @@ function assignRequest(id_solicitud) {
     modal.style.display = 'flex';
 
     confirmBtn.onclick = async () => {
+        modal.style.display = "none";
         showLoader("Asignando solicitud...");
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
         try {
             const response = await fetch("asignarme_solicitud/"+id_solicitud)
             if (!response.ok) throw new Error("Error HTTP " + response.status)
-
-            console.log(response)
 
             const data = await response.json();
 
@@ -292,11 +291,9 @@ function assignRequest(id_solicitud) {
 
                 modal.style.display = "none";
                 filterRequests();
-
-                // Mensaje bonito de éxito
-                showSuccessMessage(data.mensaje || "Solicitud asignada correctamente.");
             } else {
                 alert("⚠️ " + (data.mensaje || "Error desconocido al asignar la solicitud."));
+                modal.style.display = "none";
             }
         } catch (error) {
             console.error("Error asignando solicitud:", error);
@@ -321,12 +318,12 @@ function showLoader(message = "Procesando solicitud...") {
     const text = overlay.querySelector(".loading-text");
     text.textContent = message;
     overlay.classList.add("show");
+    console.log("PRUEBA")
 }
 
 function hideLoader() {
     document.getElementById("loadingOverlay").classList.remove("show");
 }
-
 
 /* DETAILES */
 
@@ -350,7 +347,6 @@ function showDetailedView(request) {
     // Add to container
     main_content_div.insertAdjacentElement('afterend',detailView);
     main_content_div.style.display = 'none';
-    
 }
 
 // Added function to create detailed view HTML
@@ -456,12 +452,12 @@ function createDetailedViewHTML(request) {
 
                     <div class="detail-section">
                         <h3>Usuario que solicita</h3>
-                        <span class="type-badge">${request.usuario_solicitud}</span>
+                        <span class="type-badge">${request.rut_usuario_solicitud_nombre}</span>
                     </div>
 
                     <div class="detail-section">
                         <h3>Tipo de Solicitud</h3>
-                        <span class="type-badge">${request.tipo}</span>
+                        <span class="type-badge">${request.tipo_solicitud_nombre}</span>
                     </div>
 
                     ${request.archivo ? `
@@ -521,6 +517,7 @@ function createDetailedViewHTML(request) {
                             </div>
                         </div>
                     </div>
+                    
                 ` : ''}
 
                 </div>
@@ -547,6 +544,11 @@ function createDetailedViewHTML(request) {
                 </div>
             </div>
         </div>
+        <!-- Overlay de carga -->
+        <div id="loadingOverlayCerrar" class="loadingOverlay">
+            <div class="spinnerGlobal"></div>
+            <p class="loading-text">Procesando solicitud...</p>
+        </div>
     `;
 }
 
@@ -560,31 +562,18 @@ function goBackToList() {
 }
 
 
-function confirmAction(action, requestId) {
-    const request = requests.find(r => r.id_solicitud === requestId);
-    if (!request) return;
 
-    // Primera confirmación
-    if (confirm(`¿Estás seguro de que quieres ${action === 'aprobada' ? 'aprobar' : 'rechazar'} la solicitud "${request.asunto}"?`)) {
-        // Segunda confirmación
-        if (confirm('Esta acción es irreversible. ¿Deseas continuar?')) {
-            // Actualizamos el estado
-            request.estado = action;
-            request.estado_asignacion = 'cerrada';
-            request.fecha_inicio = new Date().toISOString().split('T')[0]; // ejemplo de fecha de inicio
-            request.fecha_fin = new Date().toISOString().split('T')[0];   // ejemplo de fecha de fin
 
-            alert(`Solicitud "${request.asunto}" ${action === 'aprobada' ? 'aprobada' : 'rechazada'} correctamente.`);
-            
-            // Volver a la lista o refrescar vista
-            goBackToList();
-        }
-    }
+function showLoaderCerrar(message = "Procesando solicitud...") {
+    const overlay = document.getElementById("loadingOverlayCerrar");
+    const text = overlay.querySelector(".loading-text");
+    text.textContent = message;
+    overlay.classList.add("show");
 }
 
-
-
-
+function hideLoaderCerrar() {
+    document.getElementById("loadingOverlayCerrar").classList.remove("show");
+}
 
 function openConfirmModal(action, requestId) {
     const modal = document.getElementById('confirmModal');
@@ -601,29 +590,44 @@ function openConfirmModal(action, requestId) {
 
     modal.style.display = 'flex';
 
-    confirmBtn.onclick = () => {
-        // Actualizamos el estado
-        request.estado = action;
-        request.estado_asignacion = 'cerrada';
-        request.fecha_inicio = new Date().toISOString().split('T')[0];
-        request.fecha_fin = new Date().toISOString().split('T')[0];
+    confirmBtn.onclick = async () => {
+        modal.style.display = "none";
+        showLoaderCerrar("Cerrando solicitud...");
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        try{
+            const response = await fetch(`/cerrar_solicitud/${requestId}/${action}`);
+            if (!response.ok) throw new Error("Error HTTP " + response.status)
 
-        modal.style.display = 'none';
-        filterRequests(filteredRequests);
+            const data = await response.json();
 
-        goBackToList();
+            if (data.status === "success") {
+                request.estado = action;
+                request.estado_asignacion = 'cerrada';
+                request.fecha_inicio = new Date().toISOString().split('T')[0];
+                request.fecha_fin = new Date().toISOString().split('T')[0];
+
+                modal.style.display = "none";
+                filterRequests(filteredRequests);
+                goBackToList();
+            }else{
+                alert("⚠️ " + (data.mensaje || "Error desconocido al cerrar la solicitud."));
+                modal.style.display = "none";
+            }
+        }catch(error){
+            console.error("Error cerrando solicitud:", error);
+            alert("Error de conexión al cerrar la solicitud.");
+        }finally{
+            hideLoaderCerrar();
+        }
+
     };
 
     cancelBtn.onclick = () => {
         modal.classList.add('vanish');
         setTimeout(() => modal.style.display = 'none', 300);
     };
-    
+
 }
-
-
-
-
 
 
 
@@ -632,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
     obtener_usuario_actual()
     // Initial render
     obtener_solicitudes_administrar()
-
 
     const cards = document.querySelectorAll('.request-card');
     cards.forEach((card, index) => {
@@ -645,4 +648,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }, index * 100);
     });
 });
-

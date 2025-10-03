@@ -438,7 +438,7 @@
 
 /* LOADER */
 /* Overlay de carga */
-#loadingOverlay {
+.loadingOverlay{
   position: fixed;
   top: 0;
   left: 0;
@@ -456,7 +456,7 @@
 }
 
 /* Mostrar overlay */
-#loadingOverlay.show {
+.loadingOverlay.show{
   visibility: visible;
   opacity: 1;
 }
@@ -483,3 +483,5 @@
   font-weight: 600;
   color: #1f2937;
 }
+
+
