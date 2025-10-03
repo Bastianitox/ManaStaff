@@ -180,10 +180,9 @@
   border-color: #2563eb;
 }
 
-/* SECCIÓN DE DOCUMENTOS */
-.documents-section {
-  margin-top: 20px;
-}
+/* Hacemos a la sección un contenedor de stacking/contexto local */
+.documents-section { position: relative; }
+
 
 .documents-grid {
   display: grid;
@@ -386,6 +385,97 @@
     font-size: 16px !important;
   }
 }
+
+/* ----------------------------------------- PIN --------------------------------------------- */
+
+/* Ajustes de contenedor (para centrado y sombras)*/
+.documents-section {
+  position: relative;
+  overflow: visible;   
+  min-height: 420px;    
+}
+
+/* Overlay solo dentro de la sección */
+.pin-modal-overlay {
+  position: absolute;
+  inset: 0;                      
+  display: flex;
+  align-items: center;           
+  justify-content: center;       
+  z-index: 10;
+  background: transparent;       
+  animation: fadeIn 0.2s ease;
+}
+
+.pin-modal-overlay::before,
+.pin-modal-overlay::after,
+.documents-section.is-locked::before,
+.documents-section.is-locked::after { content: none !important; }
+
+/* Atenuación al contenido detrás del modal */
+.documents-section.is-locked > *:not(#pinModalOverlay) {
+  filter: blur(2px) brightness(0.96);   /* discreto, sin “mancha” */
+  transition: filter 160ms ease;
+}
+
+/* Tarjeta del PIN  */
+.pin-modal{
+  background:#fff;
+  border-radius:16px;
+  padding:40px 32px;
+  width:90%; max-width:420px;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.25);
+  animation: slideUp .3s ease;
+}
+
+.pin-modal-header{ text-align:center; margin-bottom:32px; }
+.pin-lock-icon{ color:#3b82f6; margin-bottom:16px; animation:lockPulse 2s ease-in-out infinite; }
+.pin-modal-title{ font-size:24px; font-weight:700; color:#1f2937; margin:0 0 8px; letter-spacing:-.5px; }
+.pin-modal-subtitle{ font-size:14px; color:#6b7280; margin:0; }
+
+/* Inputs del PIN */
+.pin-inputs-container{ display:flex; gap:12px; justify-content:center; margin-bottom:24px; }
+.pin-input{
+  width:64px; height:64px; border:2px solid #e5e7eb; border-radius:12px;
+  font-size:28px; font-weight:600; text-align:center; color:#1f2937;
+  background:#f9fafb; transition:all .3s ease; caret-color:#3b82f6;
+}
+.pin-input:focus{
+  outline:none; border-color:#3b82f6; background:#fff;
+  box-shadow:0 0 0 4px rgba(59,130,246,.1); transform:scale(1.05);
+}
+.pin-input.error{ border-color:#ef4444; background:#fef2f2; animation:shake .5s ease; }
+
+/* Error */
+.pin-error-message{
+  display:none; align-items:center; gap:8px; padding:12px 16px;
+  background:#fef2f2; border:1px solid #fecaca; border-radius:8px;
+  color:#dc2626; font-size:13px; font-weight:500; margin-bottom:20px;
+  animation: slideDown .2s ease;
+}
+.pin-error-message.show{ display:flex; }
+
+/* Botón */
+.pin-submit-btn{
+  width:100%; padding:14px 24px;
+  background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);
+  border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all .2s ease; box-shadow:0 4px 12px rgba(59,130,246,.3);
+}
+.pin-submit-btn:hover{ background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%); box-shadow:0 6px 16px rgba(59,130,246,.4); transform:translateY(-2px); }
+
+/* Oculto cuando el PIN ya fue verificado */
+.pin-modal-overlay.hidden{ display:none; }
+
+/* Animaciones */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(22px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes lockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------- */
 
 @media (max-width: 480px) {
   .document-details {

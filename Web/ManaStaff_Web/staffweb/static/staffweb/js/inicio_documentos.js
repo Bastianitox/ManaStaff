@@ -1,3 +1,139 @@
+// ------------------------PIN---------------------
+const CORRECT_PIN = "1234"
+
+document.addEventListener("DOMContentLoaded", () => {
+  initPinModal()
+  initDocumentsApp()
+})
+
+function initPinModal() {
+  const section = document.getElementById('documentsSection') || document.querySelector('.documents-section')
+  if (!section) return
+
+  const pinInputs    = section.querySelectorAll('.pin-input')
+  const submitBtn    = section.querySelector('#pinSubmitBtn')
+  const errorMessage = section.querySelector('#pinErrorMessage')
+  const modalOverlay = section.querySelector('#pinModalOverlay')
+
+  if (!pinInputs.length || !submitBtn || !modalOverlay) return
+
+  // Bloqueo visual solo de la sección + enfoque al primer input
+  section.classList.add('is-locked')
+  section.style.overflow = 'hidden'
+  pinInputs[0].focus()
+
+  // --- Manejo de entrada en los inputs auto-avance ---
+  pinInputs.forEach((input, index) => {
+    input.addEventListener("input", (e) => {
+      const value = e.target.value
+
+      // Aceptar solo dígitos
+      if (!/^\d*$/.test(value)) {
+        e.target.value = value.replace(/\D/g, "")
+        return
+      }
+
+      // Avanza al siguiente input cuando hay 1 dígito
+      if (e.target.value.length === 1) {
+        if (index < pinInputs.length - 1) {
+          pinInputs[index + 1].focus()
+        } else {
+          input.blur()
+        }
+      }
+
+      // Limpia estados de error al tipear
+      input.classList.remove("error")
+      if (errorMessage) errorMessage.classList.remove("show")
+    })
+
+    input.addEventListener("keydown", (e) => {
+      // vuelve y borra el anterior si está vacío
+      if (e.key === "Backspace" && input.value === "" && index > 0) {
+        pinInputs[index - 1].focus()
+        pinInputs[index - 1].value = ""
+      }
+      // Navegación con flechas
+      if (e.key === "ArrowLeft" && index > 0) {
+        e.preventDefault(); pinInputs[index - 1].focus()
+      }
+      if (e.key === "ArrowRight" && index < pinInputs.length - 1) {
+        e.preventDefault(); pinInputs[index + 1].focus()
+      }
+      // Enter envía
+      if (e.key === "Enter") {
+        e.preventDefault()
+        submitBtn.click()
+      }
+    })
+
+    // Seleccionar el dígito al enfocar
+    input.addEventListener("focus", (e) => e.target.select())
+
+    // Pegar: reparte los dígitos
+    input.addEventListener("paste", (e) => {
+      e.preventDefault()
+      const numbers = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4)
+      if (!numbers) return
+      numbers.split("").forEach((num, i) => {
+        if (index + i < pinInputs.length) pinInputs[index + i].value = num
+      })
+      const nextIndex = Math.min(index + numbers.length, pinInputs.length - 1)
+      pinInputs[nextIndex].focus()
+    })
+  })
+
+  // --- Verificar PIN ---
+  submitBtn.addEventListener('click', () => {
+    const enteredPin = Array.from(pinInputs).map(i => i.value).join('')
+    if (enteredPin.length !== 4) {
+      showPinError('Por favor, completa los 4 dígitos')
+      return
+    }
+
+    if (enteredPin === CORRECT_PIN) {
+      modalOverlay.style.animation = 'fadeOut 0.2s ease'
+      setTimeout(() => {
+        modalOverlay.classList.add('hidden')
+        section.classList.remove('is-locked')
+        section.style.overflow = 'auto'
+      }, 200)
+    } else {
+      showPinError('Código PIN incorrecto. Intenta nuevamente.')
+      pinInputs.forEach(i => (i.value = ''))
+      pinInputs[0].focus()
+    }
+  })
+
+  function showPinError(msg) {
+    if (!errorMessage) return
+    const span = errorMessage.querySelector('span') || errorMessage
+    span.textContent = msg
+    errorMessage.classList.add('show')
+    setTimeout(() => errorMessage.classList.remove('show'), 2500)
+  }
+
+  section.style.overflow = 'hidden'
+}
+
+// ------------------------------------------------------------------------------------
+
+
+
+// Animación de fadeOut para el modal
+const style = document.createElement("style")
+style.textContent = `
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+`
+document.head.appendChild(style)
+
 // Tabla usada para interpretar meses en español cuando ordenamos por fecha
 const SPANISH_MONTHS = {
   enero: 0,

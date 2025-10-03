@@ -16,76 +16,112 @@
     <p>Ve y descarga tus documentos</p>  
 </div>
 
-<!-- Buscador y filtro -->
-<div class="search-filter-section">
-    <div class="search-container">
-        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" class="search-input" placeholder="Busca tus archivos..." id="searchInput">
-    </div>
-    <button class="filter-btn" id="filterBtn">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
-        </svg>
-        Filtrar
-    </button>
-</div>
-
-<!-- Modal de filtros -->
-<div class="filter-modal" id="filterModal">
-    <div class="filter-content">
-        <div class="filter-header">
-            <h3>Filtrar documentos</h3>
-            <button class="close-filter" id="closeFilter">
-                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+ <!-- PIN -->
+<div class="documents-section" id="documentsSection">
+    <div class="pin-modal-overlay" id="pinModalOverlay">
+        <div class="pin-modal">
+            <div class="pin-modal-header">
+                <svg class="pin-lock-icon" width="48" height="48" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
                 </svg>
+                <h2 class="pin-modal-title">Verificación de Acceso</h2>
+                <p class="pin-modal-subtitle">Ingresa tu código PIN de 4 dígitos</p>
+            </div>
+
+            <div class="pin-inputs-container">
+                <input type="text" class="pin-input" maxlength="1" inputmode="numeric" autocomplete="off">
+                <input type="text" class="pin-input" maxlength="1" inputmode="numeric" autocomplete="off">
+                <input type="text" class="pin-input" maxlength="1" inputmode="numeric" autocomplete="off">
+                <input type="text" class="pin-input" maxlength="1" inputmode="numeric" autocomplete="off">
+            </div>
+
+            <div class="pin-error-message" id="pinErrorMessage">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                </svg>
+                <span>Código PIN incorrecto. Intenta nuevamente.</span>
+            </div>
+
+            <button class="pin-submit-btn" id="pinSubmitBtn">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                </svg>
+                Verificar Código
             </button>
         </div>
-        <div class="filter-options">
-            <div class="filter-group">
-                <label>Tipo de archivo:</label>
-                <select id="formatFilter">
-                    <option value="">Todos los formatos</option>
-                    <option value="PDF">PDF</option>
-                    <option value="DOC">DOC</option>
-                    <option value="DOCX">DOCX</option>
-                    <option value="XLS">XLS</option>
-                    <option value="XLSX">XLSX</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Ordenar por:</label>
-                <select id="sortFilter">
-                    <option value="date-desc">Fecha (m&aacute;s reciente)</option>
-                    <option value="date-asc">Fecha (m&aacute;s antiguo)</option>
-                    <option value="name-asc">Nombre (A-Z)</option>
-                    <option value="name-desc">Nombre (Z-A)</option>
-                    <option value="size-desc">Tama&ntilde;o (mayor)</option>
-                    <option value="size-asc">Tama&ntilde;o (menor)</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Tama&ntilde;o del archivo:</label>
-                <select id="sizeFilter">
-                    <option value="">Todos los tama&ntilde;os</option>
-                    <option value="small">Menos de 1MB</option>
-                    <option value="medium">1MB - 3MB</option>
-                    <option value="large">M&aacute;s de 3MB</option>
-                </select>
-            </div>
+    </div>
+
+    <!-- Buscador y filtro -->
+    <div class="search-filter-section">
+        <div class="search-container">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" class="search-input" placeholder="Busca tus archivos..." id="searchInput">
         </div>
-        <div class="filter-actions">
-            <button class="clear-filters" id="clearFilters">Limpiar filtros</button>
-            <button class="apply-filters" id="applyFilters">Aplicar filtros</button>
+        <button class="filter-btn" id="filterBtn">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
+            </svg>
+            Filtrar
+        </button>
+    </div>
+
+    <!-- Modal de filtros -->
+    <div class="filter-modal" id="filterModal">
+        <div class="filter-content">
+            <div class="filter-header">
+                <h3>Filtrar documentos</h3>
+                <button class="close-filter" id="closeFilter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="filter-options">
+                <div class="filter-group">
+                    <label>Tipo de archivo:</label>
+                    <select id="formatFilter">
+                        <option value="">Todos los formatos</option>
+                        <option value="PDF">PDF</option>
+                        <option value="DOC">DOC</option>
+                        <option value="DOCX">DOCX</option>
+                        <option value="XLS">XLS</option>
+                        <option value="XLSX">XLSX</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Ordenar por:</label>
+                    <select id="sortFilter">
+                        <option value="date-desc">Fecha (m&aacute;s reciente)</option>
+                        <option value="date-asc">Fecha (m&aacute;s antiguo)</option>
+                        <option value="name-asc">Nombre (A-Z)</option>
+                        <option value="name-desc">Nombre (Z-A)</option>
+                        <option value="size-desc">Tama&ntilde;o (mayor)</option>
+                        <option value="size-asc">Tama&ntilde;o (menor)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Tama&ntilde;o del archivo:</label>
+                    <select id="sizeFilter">
+                        <option value="">Todos los tama&ntilde;os</option>
+                        <option value="small">Menos de 1MB</option>
+                        <option value="medium">1MB - 3MB</option>
+                        <option value="large">M&aacute;s de 3MB</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="clear-filters" id="clearFilters">Limpiar filtros</button>
+                <button class="apply-filters" id="applyFilters">Aplicar filtros</button>
+            </div>
         </div>
     </div>
-</div>
 
 
-<div class="documents-section">
-    <div class="documents-grid" id="documentsGrid">
+    <div class="documents-section">
+        <div class="documents-grid" id="documentsGrid">
+        </div>
     </div>
 </div>
 {% endblock principal %}
