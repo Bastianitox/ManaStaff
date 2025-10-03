@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block head %}
+<!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/crear_documento.css' %}">
-<script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
 <title>Crear Documento</title>
 {% endblock head %}
 
@@ -13,7 +13,7 @@
     <p>Complete el formulario para crear un nuevo documento</p>
 </div>
 
-
+<!-- Creado correctamente mensaje -->
 <div id="successMessage" class="success-message">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -22,11 +22,11 @@
     <span>Documento creado correctamente</span>
 </div>
 
-
+<!-- estructura formulario -->
 <div class="form-container">
     <form id="createDocumentForm" class="document-form">
         
-
+<!-- FNombre de documento -->
         <div class="form-group">
             <label for="documentName" class="form-label">
                 Nombre del Documento
@@ -43,7 +43,7 @@
             <span class="error-message" id="documentNameError"></span>
         </div>
 
-
+<!-- Subir el archivo -->
         <div class="form-group">
             <label for="documentFile" class="form-label">
                 Archivo
@@ -71,7 +71,7 @@
             <span class="error-message" id="documentFileError"></span>
         </div>
 
-
+<!-- Buscar por usuario o rut -->
         <div class="form-group">
             <label for="userSearch" class="form-label">
                 Usuario Asignado
@@ -91,9 +91,9 @@
                     <path d="m21 21-4.35-4.35"></path>
                 </svg>
                 
-
+<!-- Dropdown tabla con los usuarios -->
                 <div id="userDropdown" class="user-dropdown">
-
+                     Los resultados se cargarán dinámicamente aquí 
                 </div>
             </div>
             <input type="hidden" id="selectedUserId" name="selectedUserId">
@@ -101,7 +101,7 @@
             <span class="error-message" id="userSearchError"></span>
         </div>
 
-
+<!-- Fecha de vencimiento opcional -->
         <div class="form-group">
             <label for="expirationDate" class="form-label">
                 Fecha de Vencimiento
@@ -116,7 +116,7 @@
             <span class="file-info">Si el documento tiene fecha de vencimiento, especifíquela aquí</span>
         </div>
 
-
+<!-- Botonos de Crear documento y cancelar -->        
         <div class="form-actions">
             <button type="button" class="btn-cancel" >
                 Cancelar
@@ -134,5 +134,5 @@
     </form>
 </div>
 
-
+<script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
 {% endblock %}

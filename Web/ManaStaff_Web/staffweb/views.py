@@ -2,7 +2,7 @@
 import re
 import json
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 import os, re
 from django.conf import settings
@@ -441,7 +441,7 @@ def administrar_documentos(request):
         usuarios_raw = {}
 
     #  Documentos
-    docs_ref = db.reference('Documentos')  # usas firebase_admin.db en otras vistas
+    docs_ref = db.reference('Documentos') 
     documentos_raw = docs_ref.get() or {}
     if not isinstance(documentos_raw, dict):
         documentos_raw = {}
@@ -508,8 +508,77 @@ def crear_documento(request):
     return render(request, "staffweb/crear_documento.html")
 
 def documentos_usuarios(request):
-    return render(request, "staffweb/documentos_usuarios.html")
 
+    def normalize_rut(value: str) -> str:
+        return ''.join(ch for ch in str(value or '') if ch.isdigit())
+
+    def formatear_rut(rut_limpio: str) -> str:
+        if not rut_limpio:
+            return ""
+        rut_sin_dv, dv = rut_limpio[:-1], rut_limpio[-1]
+        partes = []
+        while len(rut_sin_dv) > 3:
+            partes.insert(0, rut_sin_dv[-3:])
+            rut_sin_dv = rut_sin_dv[:-3]
+        partes.insert(0, rut_sin_dv)
+        return f"{'.'.join(partes)}-{dv}"
+
+    def calcular_estado_y_fecha(fecha_str: str, url: str):
+        fecha_str = (fecha_str or "").strip()
+        estado = 'pendiente' if not url else 'activo'
+        fecha_show = fecha_str
+        if url and fecha_str:
+            try:
+                try:
+                    f = datetime.strptime(fecha_str, "%d-%m-%Y")
+                except ValueError:
+                    f = datetime.strptime(fecha_str, "%Y-%m-%d")
+                if f < datetime.now() - timedelta(days=550):
+                    estado = 'caducado'
+                fecha_show = f.strftime("%d/%m/%Y")
+            except Exception:
+                fecha_show = fecha_str
+        return estado, fecha_show
+
+    rut_qs = normalize_rut(request.GET.get("rut", ""))
+    if not rut_qs:
+        return redirect("administrar_documentos")
+
+    # Usuario 
+    usuario_raw = database.child("Usuario").child(rut_qs).get().val() or {}
+    nombre = f"{usuario_raw.get('Nombre','').strip()} {usuario_raw.get('ApellidoPaterno','').strip()}".strip() or rut_qs
+    usuario = {"nombre": nombre, "rut": formatear_rut(rut_qs)}
+
+    # Documentos del usuario 
+    documentos_raw = db.reference('Documentos').get() or {}
+    documentos = []
+    for doc_id, data in (documentos_raw or {}).items():
+        if not isinstance(data, dict):
+            continue
+        rut_doc = normalize_rut(data.get('id_rut') or data.get('Rut') or data.get('rut'))
+        if rut_doc != rut_qs:
+            continue
+
+        fecha_db = str(data.get('Fecha_emitida') or data.get('fecha_emitida') or '')
+        url = data.get('url') or ''
+        estado, fecha_show = calcular_estado_y_fecha(fecha_db, url)
+
+        documentos.append({
+            "id": doc_id,
+            "nombre": data.get('nombre') or data.get('titulo') or 'Documento',
+            "estado": estado,                       # activo/pendiente/caducado
+            "fecha_subida": fecha_show or "",
+            "url": url,                             # para botón Ver
+            "tipo_documento": (data.get('tipo_documento') or 'PDF').upper(),
+            "tamano_archivo": str(data.get('tamano_archivo') or data.get('size') or ''),
+            "fecha_sort": fecha_db,                 # opcional para ordenar en el front si quieres
+        })
+
+    context = {
+        "user_json": json.dumps(usuario, ensure_ascii=False),
+        "docs_json": json.dumps(documentos, ensure_ascii=False),
+    }
+    return render(request, "staffweb/documentos_usuarios.html", context)
 #---------------------------------------------------------------------------------------------------------------------------------------
 
 def administrar_noticiasyeventos(request):
