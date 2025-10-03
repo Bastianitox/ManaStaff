@@ -246,12 +246,6 @@ def ver_documentos(request):
 
     return render(request, "staffweb/ver_documentos.html", {"documento": documento})
 
-def documentos_usuarios(request):
-    return render(request, "staffweb/documentos_usuarios.html")
-
-def crear_documento(request):
-    return render(request, "staffweb/crear_documento.html")
-
 def cambiar_contrasena(request):
     return render(request, "staffweb/cambiar_contrasena.html")
 
@@ -317,7 +311,78 @@ def administrar_solicitudes(request):
     return render(request, "staffweb/administrar_solicitudes.html")
     
 def administrar_documentos(request):
-    return render(request, "staffweb/administrar_documentos.html")
+
+    def normalize_rut(value):
+        return ''.join(ch for ch in str(value or '') if ch.isdigit())
+
+    #Usuarios
+    usuarios_raw = database.child("Usuario").get().val() or {}
+    if not isinstance(usuarios_raw, dict):
+        usuarios_raw = {}
+
+    #  Documentos
+    docs_ref = db.reference('Documentos')  # usas firebase_admin.db en otras vistas
+    documentos_raw = docs_ref.get() or {}
+    if not isinstance(documentos_raw, dict):
+        documentos_raw = {}
+
+    # Indexar documentos por RUT 
+    docs_por_rut = {}
+    for doc_id, data in documentos_raw.items():
+        if not isinstance(data, dict):
+            continue
+        rut_doc = normalize_rut(data.get('id_rut') or data.get('Rut') or data.get('rut'))
+        if not rut_doc:
+            continue
+
+        fecha_str = str(data.get('Fecha_emitida') or data.get('fecha_emitida') or '').strip()
+        estado = 'activo'
+        if not data.get('url'):
+            estado = 'pendiente'
+        else:
+            try:
+                try:
+                    f = datetime.strptime(fecha_str, "%d-%m-%Y")
+                except ValueError:
+                    f = datetime.strptime(fecha_str, "%Y-%m-%d")
+                if f < datetime.now() - timedelta(days=550):
+                    estado = 'caducado'
+                fecha_show = f.strftime("%d/%m/%Y")
+            except Exception:
+                fecha_show = fecha_str or ""
+        # Objeto documento para el front
+        doc = {
+            "id": doc_id,
+            "titulo": data.get('nombre') or data.get('titulo') or 'Documento',
+            "tipo": (data.get('tipo_documento') or 'PDF').upper(),
+            "fecha": fecha_show if fecha_str else "",
+            "tamano": str(data.get('tamano_archivo') or data.get('size') or ''),
+            "estado": estado,                        
+            "url": data.get('url') or "",               
+        }
+        docs_por_rut.setdefault(rut_doc, []).append(doc)
+
+    #bloques por usuario con el nombre/visual del usuario
+    bloques = []
+    for rut, usu in usuarios_raw.items():
+        if not isinstance(usu, dict):
+            continue
+
+        nombre = f"{usu.get('Nombre','').strip()} {usu.get('ApellidoPaterno','').strip()}".strip() or "Usuario"
+        rut_visible = rut 
+
+        bloque = {
+            "rut": rut,                
+            "rut_visible": rut_visible, 
+            "nombre": nombre,
+            "documentos": docs_por_rut.get(rut, []),
+        }
+        bloques.append(bloque)
+
+    context = {
+        "users_docs_json": json.dumps(bloques, ensure_ascii=False)
+    }
+    return render(request, "staffweb/administrar_documentos.html", context)
 
 def administrar_noticiasyeventos(request):
     return render(request, "staffweb/administrar_noticiasyeventos.html")

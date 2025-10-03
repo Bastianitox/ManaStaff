@@ -1,4 +1,4 @@
-
+// LECTURA DEL JSON DEL TEMPLATE
 function getUsersDocsFromTemplate() {
   const el = document.getElementById('users-docs-data')
   if (!el) return []
@@ -11,28 +11,45 @@ function getUsersDocsFromTemplate() {
   }
 }
 
-
 const BLOQUES = getUsersDocsFromTemplate()
 
-//UTILIDADES 
-function escapeHTML(str) {
-  return String(str || '').replace(/[&<>"']/g, s => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[s]))
-}
-
-function getUsersContainer() {
-  return document.getElementById('usersContainer')
-}
-
 // RENDER DE BLOQUES
+const usersContainer = document.getElementById('usersContainer')
 
+// Renderiza todos los usuarios con su grilla de documentos
+function renderUsersBlocks(blocks) {
+  if (!usersContainer) return
+  usersContainer.innerHTML = blocks.map(b => blockUsuarioHTML(b)).join('')
+}
+
+function blockUsuarioHTML(b) {
+  const docsHTML = (b.documentos || []).map(d => documentCardHTML(d)).join('')
+
+  return `
+    <div class="bloque-usuario" data-user-id="${b.rut}">
+      <div class="user-header">
+        <div class="user-info">
+          <h3 class="usuario-nombre">${escapeHTML(b.nombre || 'Usuario')}</h3>
+          <span class="usuario-rut">RUT: ${escapeHTML(b.rut_visible || b.rut || '')}</span>
+        </div>
+        <button class="btn-ver-mas" onclick="verTodosDocumentos('${b.rut}')">Ver más documentos</button>
+      </div>
+
+      <div class="documents-grid">
+        ${docsHTML || '<!-- sin documentos -->'}
+      </div>
+    </div>
+  `
+}
+
+// Tarjeta de documento con las mismas clases y data-status
 function documentCardHTML(d) {
   const estado = (d.estado || 'activo').toLowerCase() 
-  const fecha  = d.fecha || ''
+  const fecha = d.fecha || ''
   const titulo = d.titulo || 'Documento'
-  const id     = d.id
+  const id = d.id
 
+  // icono de estado 
   const badgeIcon =
     estado === 'activo'
       ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -103,33 +120,14 @@ function documentCardHTML(d) {
   `
 }
 
-// Crea el HTML de un bloque por usuario
-function blockUsuarioHTML(b) {
-  const docsHTML = (b.documentos || []).map(d => documentCardHTML(d)).join('')
-  return `
-    <div class="bloque-usuario" data-user-id="${b.rut}">
-      <div class="user-header">
-        <div class="user-info">
-          <h3 class="usuario-nombre">${escapeHTML(b.nombre || 'Usuario')}</h3>
-          <span class="usuario-rut">RUT: ${escapeHTML(b.rut_visible || b.rut || '')}</span>
-        </div>
-        <button class="btn-ver-mas" onclick="verTodosDocumentos('${b.rut}')">Ver más documentos</button>
-      </div>
-      <div class="documents-grid">
-        ${docsHTML || '<!-- sin documentos -->'}
-      </div>
-    </div>
-  `
+// Escape básico para evitar inyección en texto
+function escapeHTML(str) {
+  return String(str || '').replace(/[&<>"']/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]))
 }
 
-
-function renderUsersBlocks(blocks) {
-  const container = getUsersContainer()
-  if (!container) return
-  container.innerHTML = blocks.map(b => blockUsuarioHTML(b)).join('')
-}
-
-// ACCIONES 
+//  TUS ACCIONES
 function verTodosDocumentos(userId) { window.location.href = `/documentos/usuario/${userId}/todos` }
 function verDocumento(docId)       { console.log("Ver documento:", docId) }
 function subirDocumento(docId)     { console.log("Subir documento:", docId) }
@@ -140,93 +138,45 @@ function eliminarDocumento(docId)  {
 }
 function crearDocumento()          { console.log("Crear nuevo documento") }
 
-// Exponer al global porque se invocan via onclick=""
+
 window.verTodosDocumentos = verTodosDocumentos
-window.verDocumento       = verDocumento
-window.subirDocumento     = subirDocumento
+window.verDocumento = verDocumento
+window.subirDocumento = subirDocumento
 window.modificarDocumento = modificarDocumento
-window.eliminarDocumento  = eliminarDocumento
-window.crearDocumento     = crearDocumento
+window.eliminarDocumento = eliminarDocumento
+window.crearDocumento = crearDocumento
 
-// FILTROS (Todos/Activo/Pendiente/Caducado)
-let currentFilter = "todos"  
-
-function applyFilters() {
-  const searchTerm = (document.getElementById("searchInput")?.value || "")
-    .toLowerCase()
-    .trim()
-
-  // Recorremos cada bloque de usuario
-  document.querySelectorAll(".bloque-usuario").forEach((block) => {
-    // 1) filtro por texto (nombre o RUT)
-    const name = block.querySelector(".usuario-nombre")?.textContent.toLowerCase() || ""
-    const rut  = block.querySelector(".usuario-rut")?.textContent.toLowerCase() || ""
-    const matchesUser = !searchTerm || name.includes(searchTerm) || rut.includes(searchTerm)
-
-    // 2) filtro por estado a nivel de tarjeta
-    const cards = block.querySelectorAll(".document-card")
-    let visibleCardsInBlock = 0
-
-    cards.forEach((card) => {
-      const st = (card.getAttribute("data-status") || "").toLowerCase()
-      const showByStatus = currentFilter === "todos" || st === currentFilter
-      const show = matchesUser && showByStatus
-
-      card.style.display = show ? "block" : "none"
-      if (show) visibleCardsInBlock += 1
-    })
-
-    // 3) ocultamos bloque si no calza el texto o no quedan tarjetas visibles
-    block.style.display = (matchesUser && visibleCardsInBlock > 0) ? "block" : "none"
-  })
-}
-
-function initializeFilters() {
-  const filterButtons = document.querySelectorAll(".status-tab")
-  const btnTodos = Array.from(filterButtons).find(b => b.dataset.status === "todos")
-
-  // Estado inicial: marcar "Todos"
-  filterButtons.forEach((btn) => btn.classList.remove("active"))
-  if (btnTodos) btnTodos.classList.add("active")
-  currentFilter = "todos"
-
-  filterButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const status = this.getAttribute("data-status")
-
-      if (currentFilter === status) {
-
-        currentFilter = "todos"
-        filterButtons.forEach((btn) => btn.classList.remove("active"))
-        if (btnTodos) btnTodos.classList.add("active")
-      } else {
-
-        currentFilter = status
-        filterButtons.forEach((btn) => btn.classList.remove("active"))
-        this.classList.add("active")
-      }
-
-      applyFilters()
-    })
-  })
-}
-
-//  BÚSQUEDA 
-function initializeSearch() {
-  const searchInput = document.getElementById("searchInput")
-  if (!searchInput) return
-  searchInput.addEventListener("input", applyFilters)
-}
-
-//  INICIO 
+//  BUSCADOR Y TABS 
 document.addEventListener("DOMContentLoaded", () => {
-  // Pintar bloques con los datos del backend
   renderUsersBlocks(BLOQUES)
 
+  // Buscador por nombre o RUT 
+  const searchInput = document.getElementById("searchInput")
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase()
+      const blocks = document.querySelectorAll(".bloque-usuario")
+      blocks.forEach((block) => {
+        const name = block.querySelector(".usuario-nombre")?.textContent.toLowerCase() || ""
+        const rut  = block.querySelector(".usuario-rut")?.textContent.toLowerCase() || ""
+        block.style.display = (name.includes(term) || rut.includes(term)) ? "block" : "none"
+      })
+    })
+  }
 
-  initializeSearch()
-  initializeFilters()
+  // Tabs por data-status
+  const statusTabs = document.querySelectorAll(".status-tab")
+  statusTabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      statusTabs.forEach((t) => t.classList.remove("active"))
+      this.classList.add("active")
+      const selected = this.getAttribute("data-status")
 
-
-  applyFilters()
+      // Mostrar/ocultar tarjetas según estado seleccionado
+      document.querySelectorAll(".document-card").forEach((card) => {
+        const st = card.getAttribute("data-status")
+        card.style.display = (st === selected) ? "block" : "none"
+      })
+    })
+  })
 })
