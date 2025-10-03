@@ -132,7 +132,7 @@ function renderRequests(requestsToRender) {
             }
         } else if (request.estado_asignacion !== "pendiente" && request.id_aprobador === currentUser.rut) {
             buttons = `
-                <button class="view-details-btn requests-buttons" onclick="viewDetails(${request.id_solicitud})">
+                <button class="view-details-btn requests-buttons" onclick="viewDetails('${request.id_solicitud}')">
                     Ver detalles
                 </button>
             `;
@@ -488,7 +488,7 @@ function createDetailedViewHTML(request) {
                                 <div class="date-label">Fecha de Solicitud</div>
                                 <div class="date-value">${request.fecha_solicitud}</div>
                             </div>
-                            ${request.fecha_vista ? `
+                            ${request.fecha_vista && request.fecha_vista !== "null" ? `
                                 <div class="date-item">
                                     <div class="date-label">Fecha de Revisión</div>
                                     <div class="date-value">${request.fecha_vista}</div>
@@ -496,19 +496,19 @@ function createDetailedViewHTML(request) {
                             ` : ''}
                             <div class="date-item">
                                 <div class="date-label">Fecha de Inicio</div>
-                                <div class="date-value">${request.fecha_inicio}</div>
+                                <div class="date-value">${request.fecha_inicio && request.fecha_inicio !== "null" ? request.fecha_inicio : "En espera"}</div>
                             </div>
                             <div class="date-item">
                                 <div class="date-label">Fecha de Fin</div>
-                                <div class="date-value">${request.fecha_fin}</div>
+                                <div class="date-value">${request.fecha_fin && request.fecha_fin !== "null" ? request.fecha_fin : "En espera"}</div>
                             </div>
                         </div>
                     </div>
 
                     ${request.estado === 'pendiente' ? `
                     <div class="detail-actions" style="margin-top: 16px;">
-                        <button class="approve-btn" onclick="openConfirmModal('aprobada', ${request.id_solicitud})">Aprobar</button>
-                        <button class="reject-btn" onclick="openConfirmModal('rechazada', ${request.id_solicitud})">Rechazar</button>
+                        <button class="approve-btn" onclick="openConfirmModal('aprobada', '${request.id_solicitud}')">Aprobar</button>
+                        <button class="reject-btn" onclick="openConfirmModal('rechazada', '${request.id_solicitud}')">Rechazar</button>
                     </div>
 
                     <!-- Modal de confirmación -->

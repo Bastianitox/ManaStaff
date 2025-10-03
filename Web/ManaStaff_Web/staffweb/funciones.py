@@ -645,7 +645,7 @@ def obtener_solicitudes_administrar(request):
         id_aprobador = solicitud.get("id_aprobador")
 
         # FILTRO SEGÚN LA CONDICIÓN
-        if fecha_inicio == "null" or (fecha_fin == "null" and id_aprobador == usuario_actual_rut):
+        if fecha_inicio == "null" or fecha_fin == "null":
 
             # FORMATEAR FECHA DE SOLICITUD
             fecha_solicitud_str = solicitud.get("Fecha_solicitud")
@@ -717,20 +717,26 @@ def asignarme_solicitud(request, id_solicitud):
     usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
     usuario_actual_rol = usuario_actual.get("rol")
 
-    print(usuario_actual_rol)
-
     if not usuario_actual_rol:
         return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
 
     if usuario_actual_rol != "Uno":
         return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
+    
 
+    #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
+    solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    solicitud_fecha_inicio =solicitud.get("Fecha_inicio")
+
+    solicitud_id_rut = solicitud.get("id_rut")
+    #VALIDAR QUE LA SOLICITUD NO SEA PROPIA
+    if solicitud_id_rut == usuario_actual_rut:
+        return JsonResponse({'status': 'false', 'mensaje': 'No puede asignarse su propia solicitud.'})
 
     #OBTENER LA REF DE SOLICITUD A ASIGNAR
-    ref = database.child('/Solicitudes/'+ id_solicitud)
-
+    ref = database.child('Solicitudes/'+ id_solicitud)
     #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
-    if ref.get("Fecha_inicio") != "null":
+    if solicitud_fecha_inicio != "null":
         return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya asignada.'})
 
     ref.update({
@@ -740,6 +746,50 @@ def asignarme_solicitud(request, id_solicitud):
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
 
+def cerrar_solicitud(request, id_solicitud, estado):
+    #OBTENER EL USUARIO ACTUAL
+    usuario_actual_rut = request.session.get("usuario_id")
+
+    #VALIDAR USUARIO ACTUAL
+    if not usuario_actual_rut:
+        return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
+
+    #VALIDAR QUE USUARIO SEA ADMIN (RECURSOS HUMANOS)
+    usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
+    usuario_actual_rol = usuario_actual.get("rol")
+
+    if not usuario_actual_rol:
+        return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
+
+    if usuario_actual_rol != "Uno":
+        return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
+    
+
+    #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
+    solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    solicitud_fecha_fin =solicitud.get("Fecha_fin")
+
+    solicitud_id_rut = solicitud.get("id_rut")
+    #VALIDAR QUE LA SOLICITUD NO SEA PROPIA
+    if solicitud_id_rut == usuario_actual_rut:
+        return JsonResponse({'status': 'false', 'mensaje': 'No puede cerrar su propia solicitud.'})
+    
+    #VALIDAR ESTADO
+    if estado!="aprobada" or estado!="rechazada":
+        return JsonResponse({'status': 'false', 'mensaje': 'Solo puede aprobar o rechazar la solicitud.'})
+
+    #OBTENER LA REF DE SOLICITUD A ASIGNAR
+    ref = database.child('Solicitudes/'+ id_solicitud)
+    #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
+    if solicitud_fecha_fin != "null":
+        return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya cerrada.'})
+
+    ref.update({
+        "Fecha_fin": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "Estado": str(estado)
+    })
+
+    return JsonResponse({'status': 'success', 'mensaje': 'Solicitud cerrada.'})
 
 #FUNCIONES DE AYUDA
 def formatear_rut(rut_limpio):
@@ -804,6 +854,4 @@ def ejemplo_eliminar(request):
     ref.delete()
 
     return redirect("inicio_documentos")
-
-
 
