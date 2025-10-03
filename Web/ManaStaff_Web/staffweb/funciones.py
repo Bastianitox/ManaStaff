@@ -11,6 +11,7 @@ from urllib.parse import unquote_plus
 import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
+import locale
 
 MAX_INTENTOS = 5
 TIEMPO_BLOQUEO = timedelta(minutes=15)
@@ -53,11 +54,22 @@ def iniciarSesion(request):
     id_usu, usuario = next(iter(usuario.items()))
 
     #VALIDAR QUE EL USUARIO NO ESTE BLOQUEADO
+
+    #OBTENER FECHA ESPAÑOL
+    try:
+        locale.setlocale(locale.LC_TIME, "es_ES.utf8")  # Linux/Mac
+    except:
+        try:
+            locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")  # Windows
+        except:
+            pass  # fallback si no se puede cambiar
+
     bloqueado_hasta = usuario.get("bloqueado_hasta")
     if bloqueado_hasta:
         bloqueado_dt = datetime.fromisoformat(bloqueado_hasta)
         if bloqueado_dt > datetime.now():
-            return render(request, 'staffweb/index.html', {"mensaje": f"Cuenta bloqueada hasta {bloqueado_hasta}. Reestablece tu contraseña si olvidaste tu clave."})
+            fecha_formateada = bloqueado_dt.strftime("%d de %B del %Y a las %H:%Mhrs")
+            return JsonResponse({"status": "false", "message": f"Cuenta bloqueada hasta el {fecha_formateada}. Demasiados intentos fallidos de inicio de sesión."})
         else:
             # Reiniciar bloqueo si ya pasó el tiempo
             database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
@@ -160,6 +172,10 @@ def recuperar_contrasena_funcion(request):
     correo = data.get("correo")
     if not correo:
         return JsonResponse({'status': 'false', 'mensaje':"El correo no debe estar vacío."})
+
+    usuario = database.child("Usuario").order_by_child("correo").equal_to(correo).get().val()
+    if not usuario:
+        return JsonResponse({'status': 'false', 'mensaje':"Ese correo no está registrado en el sistema."})
 
     try:
         patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
