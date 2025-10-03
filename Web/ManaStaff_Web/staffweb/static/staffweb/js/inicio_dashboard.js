@@ -1,4 +1,5 @@
 // === Solicitudes por estado ===
+/*
 new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
@@ -56,6 +57,7 @@ new Chart(document.getElementById('typeChart'), {
     }
 });
 
+
 // === Tasa aprobación/rechazo en el tiempo ===
 new Chart(document.getElementById('approvalRateChart'), {
     type: 'line',
@@ -77,3 +79,5 @@ new Chart(document.getElementById('approvalRateChart'), {
     ]
     }
 });
+
+*/

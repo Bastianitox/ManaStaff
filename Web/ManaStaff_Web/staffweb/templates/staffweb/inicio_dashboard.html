@@ -15,27 +15,25 @@
     
 </div>
 
-<section class="dashboard-rapido">
-    <!-- Métricas rápidas -->
-  <div class="dashboard-cards">
-    <div class="card">
-      <h3>Solicitudes Totales</h3>
-      <p>150</p>
-    </div>
-    <div class="card">
-      <h3>Documentos Disponibles</h3>
-      <p>320</p>
-    </div>
-    <div class="card">
-      <h3>Usuarios Regulares</h3>
-      <p>58</p>
-    </div>
-    <div class="card">
-      <h3>Tiempo Promedio de Respuesta</h3>
-      <p>3.2 días</p>
-    </div>
+<div class="dashboard-cards">
+  <div class="card">
+    <h3>Solicitudes Totales</h3>
+    <p>{{ total_solicitudes }}</p>
   </div>
-</section>
+  <div class="card">
+    <h3>Documentos Disponibles</h3>
+    <p>{{ documentos_disponibles }}</p>
+  </div>
+  <div class="card">
+    <h3>Usuarios esta Semana</h3>
+    <p>{{ usuarios_regulares_semana_actual }}</p>
+  </div>
+  <div class="card">
+    <h3>Tiempo Promedio de Respuesta</h3>
+    <p>{{ promedio_respuesta }} días</p>
+  </div>
+</div>
+
 <div class="dashboard">
 
       <!-- Solicitudes por estado -->
@@ -73,9 +71,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td>Luciano Torrejón</td><td>15</td></tr>
-            <tr><td>María Pérez</td><td>12</td></tr>
-            <tr><td>Carlos Díaz</td><td>9</td></tr>
+            {% for u in top_usuarios %}
+              <tr><td>{{ u.nombre }}</td><td>{{ u.total }}</td></tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
@@ -94,4 +92,85 @@
 {% block js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'staffweb/js/inicio_dashboard.js' %}"></script>
+<script>
+const solicitudesEstado = {{ solicitudes_estado|safe }};
+const promedioRespuesta = {{ promedio_respuesta }};
+const documentosPorMes = {{ documentos_por_mes|safe }};
+const tiposSolicitudes = {{ tipos_solicitudes|safe }};
+const aprobadasPorMes = {{ aprobadas_por_mes|safe }};
+const rechazadasPorMes = {{ rechazadas_por_mes|safe }};
+
+// === Solicitudes por estado ===
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Pendientes', 'Aprobadas', 'Rechazadas'],
+        datasets: [{
+            data: solicitudesEstado,
+            backgroundColor: ['#f6c23e','#1cc88a','#e74a3b']
+        }]
+    }
+});
+
+// === Tiempo de respuesta ===
+new Chart(document.getElementById('responseTimeChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Promedio'],
+        datasets: [{
+            label: 'Días promedio',
+            data: [promedioRespuesta],
+            backgroundColor: '#36b9cc'
+        }]
+    }
+});
+
+// === Documentos por mes ===
+new Chart(document.getElementById('documentsChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+        datasets: [{
+            label: 'Documentos',
+            data: documentosPorMes,
+            backgroundColor: '#4e73df'
+        }]
+    }
+});
+
+// === Tipos de solicitudes ===
+new Chart(document.getElementById('typeChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(tiposSolicitudes),
+        datasets: [{
+            data: Object.values(tiposSolicitudes),
+            backgroundColor: ['#722fcaff','#27e5dcff','#ebbd34ff','#3477ebff','#277bc1ff']
+        }]
+    },
+    options: { plugins: { legend: { display: false } } }
+});
+
+new Chart(document.getElementById('approvalRateChart'), {
+    type: 'line',
+    data: {
+        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+        datasets: [
+            {
+                label: 'Aprobadas',
+                data: aprobadasPorMes,
+                borderColor: '#1cc88a',
+                fill: false
+            },
+            {
+                label: 'Rechazadas',
+                data: rechazadasPorMes,
+                borderColor: '#e74a3b',
+                fill: false
+            }
+        ]
+    }
+});
+
+</script>
 {% endblock js %}

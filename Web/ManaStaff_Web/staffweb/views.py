@@ -8,7 +8,7 @@ import os, re
 from django.conf import settings
 from django.shortcuts import render
 from urllib.parse import urlparse, unquote
-
+from collections import Counter, defaultdict
 
 
 #IMPORTS DE FIREBASE
@@ -187,7 +187,125 @@ def inicio_noticias_eventos(request):
 #---------------------------------------------------------------------------    
 
 def inicio_dashboard(request):
-    return render(request, 'staffweb/inicio_dashboard.html')
+    solicitudes_ref = db.reference("Solicitudes").get() or {}
+    documentos_ref = db.reference("Documentos").get() or {}
+    usuarios_ref = db.reference("Usuario").get() or {}
+
+    # === Solicitudes por estado ===
+    pendientes = aprobadas = rechazadas = 0
+    total_solicitudes = len(solicitudes_ref)
+    for _, data in solicitudes_ref.items():
+        estado = data.get("Estado")
+        if estado == "pendiente":
+            pendientes += 1
+        elif estado == "aprobada":
+            aprobadas += 1
+        elif estado == "rechazada":
+            rechazadas += 1
+
+    # === Tiempo de respuesta promedio (en días decimales) ===
+    total_dias, count = 0, 0
+    for _, data in solicitudes_ref.items():
+        inicio = data.get("Fecha_solicitud")
+        fin = data.get("Fecha_fin")
+        try:
+            if inicio and fin:
+                inicio_dt = datetime.fromisoformat(inicio)
+                fin_dt = datetime.fromisoformat(fin)
+                diff_days = (fin_dt - inicio_dt).total_seconds() / 86400
+                total_dias += diff_days
+                count += 1
+        except Exception:
+            pass
+    promedio_respuesta = round(total_dias / count, 1) if count > 0 else 0
+
+    # === Documentos por mes ===
+    documentos_por_mes = [0] * 12
+    for _, data in documentos_ref.items():
+        fecha = data.get("Fecha_emitida")
+        try:
+            if fecha:
+                fecha_dt = datetime.fromisoformat(fecha)
+                documentos_por_mes[fecha_dt.month - 1] += 1
+        except Exception:
+            pass
+
+    # === Tipo de solicitudes (nombre en vez de ID) ===
+    tipos_ref = db.reference("TiposSolicitud").get() or {}
+    mapa_tipos = {tid: tdata.get("nombre", tid) for tid, tdata in tipos_ref.items()}
+    tipos = {}
+    for _, data in solicitudes_ref.items():
+        tipo_id = data.get("tipo_solicitud")
+        if tipo_id:
+            nombre_tipo = mapa_tipos.get(tipo_id, f"Desconocido ({tipo_id})")
+            tipos[nombre_tipo] = tipos.get(nombre_tipo, 0) + 1
+
+    # Obtener fecha y semana actual
+    hoy = datetime.now()
+    anio_actual, semana_actual, _ = hoy.isocalendar()
+
+    usuarios_regulares_semana_actual = 0
+
+    for _, udata in usuarios_ref.items():
+        rol = udata.get("rol")
+        ultimo_login = udata.get("Ultimo_login")
+        
+        # Solo contar usuarios regulares
+        if rol and rol != "admin" and ultimo_login:
+            try:
+                fecha_dt = datetime.fromisoformat(ultimo_login)
+                anio, semana, _ = fecha_dt.isocalendar()
+                if anio == anio_actual and semana == semana_actual:
+                    usuarios_regulares_semana_actual += 1
+            except Exception:
+                pass
+
+    # === Usuarios con más solicitudes ===
+    contador_usuarios = Counter()
+    for _, data in solicitudes_ref.items():
+        usuario_id = data.get("id_rut")  # o "id_usuario" según guardes
+        if usuario_id:
+            contador_usuarios[usuario_id] += 1
+
+    # Mapear IDs de usuario a nombres
+    top_usuarios = []
+    for uid, total in contador_usuarios.most_common(5):
+        udata = usuarios_ref.get(uid, {})
+        nombre = f"{udata.get('Nombre','')} {udata.get('ApellidoPaterno','')}".strip()
+        top_usuarios.append({"nombre": nombre or uid, "total": total})
+
+    # === Tasa aprobación / rechazo en el tiempo (mensual) ===
+    aprobadas_por_mes = [0] * 12
+    rechazadas_por_mes = [0] * 12
+
+    for _, data in solicitudes_ref.items():
+        estado = data.get("Estado")
+        fecha = data.get("Fecha_fin") or data.get("Fecha_solicitud")
+        try:
+            if estado and fecha:
+                fecha_dt = datetime.fromisoformat(fecha)
+                mes_idx = fecha_dt.month - 1
+                if estado == "aprobada":
+                    aprobadas_por_mes[mes_idx] += 1
+                elif estado == "rechazada":
+                    rechazadas_por_mes[mes_idx] += 1
+        except Exception:
+            pass
+
+    context = {
+        "solicitudes_estado": [pendientes, aprobadas, rechazadas],
+        "promedio_respuesta": promedio_respuesta,
+        "documentos_por_mes": documentos_por_mes,
+        "tipos_solicitudes": tipos,
+
+        "total_solicitudes": total_solicitudes,
+        "documentos_disponibles": len(documentos_ref),
+        "usuarios_regulares_semana_actual": usuarios_regulares_semana_actual,
+        "top_usuarios": top_usuarios,
+        "aprobadas_por_mes": aprobadas_por_mes,
+        "rechazadas_por_mes": rechazadas_por_mes,
+    }
+    return render(request, "staffweb/inicio_dashboard.html", context)
     
 
 def crear_solicitud(request):
