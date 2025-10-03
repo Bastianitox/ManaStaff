@@ -13,8 +13,6 @@ import mimetypes
 from .firebase import authP, auth, database, storage, db
 import locale
 
-MAX_INTENTOS = 5
-TIEMPO_BLOQUEO = timedelta(minutes=15)
 #INICIO DE SESION
 @require_POST
 def iniciarSesion(request):
@@ -53,35 +51,9 @@ def iniciarSesion(request):
 
     id_usu, usuario = next(iter(usuario.items()))
 
-    #VALIDAR QUE EL USUARIO NO ESTE BLOQUEADO
-
-    #OBTENER FECHA ESPAÑOL
-    try:
-        locale.setlocale(locale.LC_TIME, "es_ES.utf8")  # Linux/Mac
-    except:
-        try:
-            locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")  # Windows
-        except:
-            pass  # fallback si no se puede cambiar
-
-    bloqueado_hasta = usuario.get("bloqueado_hasta")
-    if bloqueado_hasta:
-        bloqueado_dt = datetime.fromisoformat(bloqueado_hasta)
-        if bloqueado_dt > datetime.now():
-            fecha_formateada = bloqueado_dt.strftime("%d de %B del %Y a las %H:%Mhrs")
-            return JsonResponse({"status": "false", "message": f"Cuenta bloqueada hasta el {fecha_formateada}. Demasiados intentos fallidos de inicio de sesión."})
-        else:
-            # Reiniciar bloqueo si ya pasó el tiempo
-            database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
-
-
-
     # INICIAR SESION USANDO PYREBASE
     try:
         user = authP.sign_in_with_email_and_password(email, password)
-        
-        # Login correcto: resetear intentos
-        database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
 
         id_token = user['idToken']
         refresh_token = user['refreshToken']
@@ -104,17 +76,7 @@ def iniciarSesion(request):
             error_message = str(e)
 
         if error_message in ["INVALID_PASSWORD", "EMAIL_NOT_FOUND", "INVALID_LOGIN_CREDENTIALS"]:
-            intentos = usuario.get("intentos_fallidos", 0) + 1
-            data_actualizar = {"intentos_fallidos": intentos}
-            if intentos >= MAX_INTENTOS:
-                # Bloquear cuenta
-                data_actualizar["bloqueado_hasta"] = (datetime.now() + TIEMPO_BLOQUEO).isoformat()
-            database.child("Usuario").child(id_usu).update(data_actualizar)
-
-            if intentos >= MAX_INTENTOS:
-                mensaje = f"Cuenta bloqueada tras {MAX_INTENTOS} intentos fallidos. Reestablece tu contraseña."
-            else:
-                mensaje = f"Correo o contraseña incorrectos. Intentos restantes: {MAX_INTENTOS - intentos}"
+            mensaje = "Correo o contraseña incorrectos."
         elif error_message == "TOO_MANY_ATTEMPTS_TRY_LATER":
             mensaje = "Demasiados intentos de inicio de sesión, intente más tarde o reinicie su contraseña."
         else:
@@ -381,9 +343,7 @@ def crear_usuario_funcion(request):
         "imagen":urlImagen,
         "rol":rol,
         "PIN":pin,
-        "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "intentos_fallidos": 0,
-        "bloqueado_hasta": None
+        "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     })
 
     return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
