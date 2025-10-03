@@ -16,26 +16,38 @@ from .firebase import authP, auth, database, storage, db
 #INICIO DE SESION
 @require_POST
 def iniciarSesion(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "false", "message": "JSON inválido."})
+
+    # Obtener campos desde JSON
+    email = data.get("email")
+    password = data.get("password")
+
+    
+    # VALIDAR CAMPOS VACIOS
+    if not all([email, password]):
+        return JsonResponse({"status": "false", "message": "Los campos correo y/o contraseña están vacíos."})
+
+    # Validación de correo
+    patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(patron_email, email):
+        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+    email = str(email).lower()
+    if not correo_ya_existe(email):
+        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+
+    #CERRAR SESION
     request.session.flush()
 
-    email = request.POST.get('email', None)
-    password = request.POST.get('password', None)
-
-    # VALIDAR CAMPOS VACIOS
-    if not email or not password:
-        return render(request, 'staffweb/index.html', {"mensaje": "Los campos correo y/o contraseña están vacíos."})
-    email = str(email).lower()
-    # VALIDAR FORMATO DE CORREO
-    patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    if not re.match(patron_correo, email):
-        return render(request, 'staffweb/index.html', {"mensaje": "El correo es inválido."})
 
     # VERIFICAR QUE EL CORREO EXISTA EN REALTIME DATABASE
     usuario = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
 
     usuarioDATABASE = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
     if not usuarioDATABASE:
-        return render(request, 'staffweb/index.html', {"mensaje": "El correo no está registrado."})
+        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
 
     # INICIAR SESION USANDO PYREBASE
     try:
@@ -53,20 +65,24 @@ def iniciarSesion(request):
 
     except HTTPError as e:
         #VALIDAR QUE EL USUARIO Y CONTRASEÑA SEAN CORRECTOS
-        error_json = e.args[1]
-        error_message = error_json['error']['message']
+        try:
+            error_json = json.loads(e.args[1])
+            error_message = error_json['error']['message']
+        except Exception:
+            # fallback si no se puede parsear
+            error_message = str(e)
 
-        if error_message in ["INVALID_PASSWORD", "EMAIL_NOT_FOUND"]:
+        if error_message in ["INVALID_PASSWORD", "EMAIL_NOT_FOUND", "INVALID_LOGIN_CREDENTIALS"]:
             mensaje = "Correo o contraseña incorrectos."
         elif error_message == "TOO_MANY_ATTEMPTS_TRY_LATER":
             mensaje = "Demasiados intentos de inicio de sesión, intente más tarde o reinicie su contraseña."
         else:
             mensaje = "Error de autenticación: " + error_message
 
-        return render(request, 'staffweb/index.html', {"mensaje": mensaje})
+        return JsonResponse({"status": "false", "message": mensaje})
 
     except Exception:
-        return render(request, 'staffweb/index.html', {"mensaje": "Error de autenticación con Firebase."})
+        return JsonResponse({"status": "false", "message": "Error de autenticación con Firebase."})
 
     # inicio correcto → guardar datos del usuario
     for id_usu, usuario in usuarioDATABASE.items():
@@ -98,7 +114,7 @@ def iniciarSesion(request):
         request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
         request.session['rol_usu'] = usuario.get('Rol', '')
 
-        return redirect("inicio_documentos")
+        return JsonResponse({"status": "success", "message": "Inicio de sesión correcto."})
 
 @require_GET
 def cerrarSesion(request):

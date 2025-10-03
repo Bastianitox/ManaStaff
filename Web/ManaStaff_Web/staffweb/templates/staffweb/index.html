@@ -9,8 +9,6 @@
   <!-- STATIC CSS -->
   <link rel="stylesheet" href="{% static 'staffweb/css/index.css' %}">
 
-  <!-- STATIC JS -->
-  <script src="{% static 'staffweb/js/index.js' %}" defer></script>
 
   <title>Login - ManaStaff</title>
 </head>
@@ -24,7 +22,7 @@
         <h2>MANA STAFF</h2>
         <p>Para iniciar sesión introduce tu usuario y contraseña.</p>
 
-        <form method="POST" action="{% url 'iniciarSesion' %}">
+        <form method="POST" action="{% url 'iniciarSesion' %}" id="loginForm">
           {% csrf_token %}
           <label for="email">Email</label>
           <input type="email" id="email" name="email" placeholder="Introduce tu correo" required>
@@ -50,6 +48,28 @@
       </div>
     </div>
   </div>
+
+  
+  <!-- Mensaje de éxito -->
+  <div id="successMessage" class="success-message">
+      Inicio de sesión con éxito
+  </div>
+
+  <!-- Modal de error -->
+  <div id="errorModal" class="error-modal">
+    <div class="error-content">
+      <span id="closeErrorModal" class="close">&times;</span>
+      <p id="errorMessageText">Aquí irá el mensaje de error</p>
+    </div>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div id="loadingOverlay">
+      <div class="spinner"></div>
+  </div>
+
+  <!-- STATIC JS -->
+  <script src="{% static 'staffweb/js/index.js' %}" defer></script>
 </body>
 
 </html>
