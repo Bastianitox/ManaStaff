@@ -1,0 +1,19 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/crear_documento.css' %}">
+<script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
+<title>Crear Documentos</title>
+{% endblock head%}
+
+{% block principal %}
+
+<div class="header">
+    <h1>Crear Documento</h1>
+    <p>Aquí puedes crear un documento</p>
+</div>
+
+
+{% endblock principal %}
