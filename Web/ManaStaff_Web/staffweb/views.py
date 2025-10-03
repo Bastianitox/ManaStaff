@@ -427,7 +427,9 @@ def modificar_usuario(request):
     
 def administrar_solicitudes(request):
     return render(request, "staffweb/administrar_solicitudes.html")
-    
+
+
+#---------------------------------------------------------------------Administración de documentos ------------------------------------------   
 def administrar_documentos(request):
 
     def normalize_rut(value):
@@ -501,6 +503,14 @@ def administrar_documentos(request):
         "users_docs_json": json.dumps(bloques, ensure_ascii=False)
     }
     return render(request, "staffweb/administrar_documentos.html", context)
+
+def crear_documento(request):
+    return render(request, "staffweb/crear_documento.html")
+
+def documentos_usuarios(request):
+    return render(request, "staffweb/documentos_usuarios.html")
+
+#---------------------------------------------------------------------------------------------------------------------------------------
 
 def administrar_noticiasyeventos(request):
     return render(request, "staffweb/administrar_noticiasyeventos.html")
