@@ -61,7 +61,7 @@ def listar_publicaciones():
     return anuncios
 
 # Crear nueva publicación
-def crear_publicacion(data):
+def crear_publicacion_funcion(data):
 
     database.child()
     ref = db.reference("Anuncio")
@@ -80,7 +80,7 @@ def modificar_publicacion(pub_id, data):
     ref.update(data)
 
 # Eliminar una publicación
-def eliminar_publicacion(pub_id):
+def eliminar_publicacion_funcion(pub_id):
     database.child()
     ref = db.reference(f"Anuncio/{pub_id}")
     ref.delete()

@@ -10,7 +10,7 @@ from django.shortcuts import render
 from urllib.parse import urlparse, unquote
 from collections import Counter, defaultdict
 
-from .funciones_dos import listar_publicaciones, crear_publicacion, modificar_publicacion, eliminar_publicacion, obtener_publicacion
+from .funciones_dos import listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
 
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
@@ -653,7 +653,7 @@ def crear_publicacion(request):
             "id_empleador": request.POST.get("autor"),
             "TipoAnuncio": request.POST.get("tipo")
         }
-        database.crear_publicacion(data)
+        crear_publicacion_funcion(data)
         return redirect("administrar_noticiasyeventos")
 
     return render(request, "staffweb/crear_noticiasyeventos.html")
@@ -670,7 +670,7 @@ def editar_publicacion(request, pub_id):
             "id_empleador": request.POST.get("autor"),
             "TipoAnuncio": request.POST.get("tipo")
         }
-        database.modificar_publicacion(pub_id, data)
+        modificar_publicacion(pub_id, data)
         return redirect("administrar_noticiasyeventos")
 
     return render(request, "staffweb/crear_noticiasyeventos.html", {
@@ -680,5 +680,5 @@ def editar_publicacion(request, pub_id):
 
 # Eliminar
 def eliminar_publicacion(request, pub_id):
-    database.eliminar_publicacion(pub_id)
+    eliminar_publicacion_funcion(pub_id)
     return redirect("administrar_noticiasyeventos")
