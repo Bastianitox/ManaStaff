@@ -1,12 +1,16 @@
 import re
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
-from django.http import JsonResponse, HttpResponseNotAllowed
-
+from django.http import JsonResponse, HttpResponse
+import json
+import re
+import base64
+from urllib.parse import unquote_plus
+import requests
+import mimetypes
 from .firebase import authP, auth, database, storage, db
-
 #-----------------------------------------PIN--------------------------------------------------
 from django.views.decorators.csrf import csrf_exempt
 
@@ -46,37 +50,37 @@ def validar_pin(request):
 
 #----------------------------------------------------------------------------------------------
 
-
-
-
-
 def funcion_dos(request):
     pass
 
+# Listar todas las publicaciones
+def listar_publicaciones():
+    database.child()
+    ref = db.reference("Anuncio")
+    anuncios = ref.get() or {}
+    return anuncios
 
-# def crear_publicacion(id_publicacion, data):
-#     """ Crea una nueva publicación en Firebase """
-#     database.child("NoticiasAvisos").child(id_publicacion).set({
-#         "titulo": data.get("titulo"),
-#         "fecha": datetime.now().strftime("%Y-%m-%d"),
-#         "autor": data.get("autor", "Administración"),
-#         "contenido": data.get("contenido"),
-#         "tipo": data.get("tipo", "noticia")  # noticia o aviso
-#     })
+# Crear nueva publicación
+def crear_publicacion(data):
 
-# def editar_publicacion(id_publicacion, data):
-#     """ Edita una publicación existente """
-#     database.child("NoticiasAvisos").child(id_publicacion).update({
-#         "titulo": data.get("titulo"),
-#         "contenido": data.get("contenido"),
-#         "tipo": data.get("tipo", "noticia")
-#     })
+    database.child()
+    ref = db.reference("Anuncio")
+    ref.push(data)
 
-# def eliminar_publicacion(id_publicacion):
-#     """ Elimina una publicación """
-#     database.child("NoticiasAvisos").child(id_publicacion).remove()
+# Obtener una publicación por ID
+def obtener_publicacion(pub_id):
+    database.child()
+    ref = db.reference(f"Anuncio/{pub_id}")
+    return ref.get()
 
-# def get_publicaciones():
-#     """ Obtiene todas las publicaciones """
-#     publicaciones = database.child("NoticiasAvisos").get().val()
-#     return publicaciones or {}
+# Modificar una publicación existente
+def modificar_publicacion(pub_id, data):
+    database.child()
+    ref = db.reference(f"Anuncio/{pub_id}")
+    ref.update(data)
+
+# Eliminar una publicación
+def eliminar_publicacion(pub_id):
+    database.child()
+    ref = db.reference(f"Anuncio/{pub_id}")
+    ref.delete()

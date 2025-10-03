@@ -12,7 +12,7 @@
     <p>Aquí puedes modificar, crear, eliminar noticias y eventos</p>
 </div>
 
-
+<!-- Search and Filter -->
 <div class="search-filter-section">
     <div class="search-container">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,7 +30,6 @@
     </div>
 </div>
 
-
 <!-- Tabs -->
 <div class="status-tabs">
     <button class="status-tab active" data-type="noticias">Noticias</button>
@@ -41,28 +40,27 @@
 <div class="noticias-section">
     <h2>Últimas publicaciones</h2>
     <div id="noticiasGrid" class="noticias-grid">
-       
         {% for pub_id, pub in publicaciones.items %}
         <div class="noticia-card">
             <h3>{{ pub.titulo }}</h3>
             <p class="fecha">Publicado el {{ pub.fecha }}</p>
             <p class="autor">Por: {{ pub.autor }}</p>
-            <p class="contenido">{{ pub.contenido }}</p>
+            <p class="contenido">{{ pub.contenido|truncatechars:150 }}</p>
             
             <div class="acciones-card">
                 <a href="{% url 'editar_publicacion' pub_id %}" class="btn editar">✏️ Editar</a>
-                <a href="{% url 'eliminar_publicacion' pub_id %}" class="btn eliminar">🗑️ Eliminar</a>
+                <a href="{% url 'eliminar_publicacion' pub_id %}" class="btn eliminar" 
+                   onclick="return confirm('¿Seguro que deseas eliminar esta publicación?');">🗑️ Eliminar</a>
             </div>
         </div>
         {% empty %}
-        <p>No hay publicaciones disponibles</p>
+        <p id="noResults" class="no-results">No hay publicaciones disponibles</p>
         {% endfor %}
     </div>
-</div> 
+</div>
 
 {% endblock principal %}
 
 {% block js %}
 <script src="{% static 'staffweb/js/administrar_noticiasyeventos.js' %}"></script>
 {% endblock js %}
-
