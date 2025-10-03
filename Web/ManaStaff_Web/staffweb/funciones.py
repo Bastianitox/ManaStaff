@@ -12,6 +12,7 @@ from urllib.parse import unquote_plus
 from .firebase import authP, auth, database, storage, db
 
 
+#INICIO DE SESION
 @require_POST
 def iniciarSesion(request):
     request.session.flush()
@@ -103,6 +104,27 @@ def cerrarSesion(request):
     request.session.flush()
     return redirect("index")
 
+@require_POST
+def recuperar_contrasena_funcion(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "false", "message": "JSON inválido."})
+        
+    correo = data.get("correo")
+    if not correo:
+        return JsonResponse({'status': 'false', 'mensaje':"El correo no debe estar vacío."})
+
+    try:
+        patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(patron_correo, correo):
+            return JsonResponse({'status': 'false', 'mensaje':"El correo tiene un formato inválido."})
+        authP.send_password_reset_email(correo)
+        return JsonResponse({'status': 'success', 'mensaje':"Link de restablecimiento enviado a esa dirección."})
+    except Exception as e:
+        return JsonResponse({'status': 'false', 'mensaje':"Error al enviar el correo: "+str(e)})
+
+#USUARIOS
 def obtener_usuarios(request):
     # OBTENER LOS USUARIOS DE LA BASE DE DATOS
     usuarios = database.child("Usuario").get().val() or {}
@@ -791,25 +813,9 @@ def cerrar_solicitud(request, id_solicitud, estado):
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud cerrada.'})
 
-@require_POST
-def recuperar_contrasena_funcion(request):
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"status": "false", "message": "JSON inválido."})
-        
-    correo = data.get("correo")
-    if not correo:
-        return JsonResponse({'status': 'false', 'mensaje':"El correo no debe estar vacío."})
-
-    try:
-        patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        if not re.match(patron_correo, correo):
-            return JsonResponse({'status': 'false', 'mensaje':"El correo tiene un formato inválido."})
-        authP.send_password_reset_email(correo)
-        return JsonResponse({'status': 'success', 'mensaje':"Link de restablecimiento enviado a esa dirección."})
-    except Exception as e:
-        return JsonResponse({'status': 'false', 'mensaje':"Error al enviar el correo: "+str(e)})
+#DOCUMENTOS
+def descargar_documento(request):
+    pass
 
 #FUNCIONES DE AYUDA
 def formatear_rut(rut_limpio):
