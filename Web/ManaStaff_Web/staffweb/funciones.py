@@ -9,7 +9,7 @@ import re
 import base64
 from urllib.parse import unquote_plus
 import requests
-
+import mimetypes
 from .firebase import authP, auth, database, storage, db
 
 
@@ -456,10 +456,7 @@ def modificar_usuario_funcion(request, rut):
         nombre_archivo = unquote_plus(nombre_archivo)
 
         blob = bucket.blob(f"{rut}/Imagen/{nombre_archivo}")
-        try:
-            blob.delete()
-        except:
-            print('Error al eliminar imagen de Database')
+        blob.delete()
 
 
         # SUBIR NUEVA IMAGEN A STORAGE
@@ -816,26 +813,32 @@ def cerrar_solicitud(request, id_solicitud, estado):
 
 #DOCUMENTOS
 def descargar_documento(request, doc_id):
-    # Aquí obtienes la info del documento desde Firebase Realtime Database
     documentos_ref = db.reference("Documentos").get() or {}
     doc_data = documentos_ref.get(doc_id)
     
     if not doc_data:
         return HttpResponse("Documento no encontrado", status=404)
 
-    # Construir URL de descarga de Storage
-    # Asumiendo que guardaste la ruta relativa o el token
-    url = doc_data.get("url")  # Por ejemplo, la URL completa con ?alt=media&token=...
-    nombre_archivo = doc_data.get("nombre", "documento.pdf")
-    
+    url = doc_data.get("url")  # URL completa con token
+    nombre_archivo = url.split("/")[-1]
+    nombre_archivo = str(nombre_archivo.split("?")[0])
+    nombre_archivo = unquote_plus(nombre_archivo)
+
+    prefix = doc_id + "/"
+    ultimo_segmento = nombre_archivo.split(prefix, 1)[-1]
+    # Intentar obtener el tipo MIME según extensión
+    tipo_mime, _ = mimetypes.guess_type(nombre_archivo)
+    if not tipo_mime:
+        tipo_mime = 'application/octet-stream'  # fallback
+
     # Descargar archivo desde Firebase Storage
     response = requests.get(url, stream=True)
     if response.status_code != 200:
         return HttpResponse("No se pudo descargar el documento", status=500)
 
     # Devolver como descarga
-    resp = HttpResponse(response.content, content_type=response.headers.get('Content-Type', 'application/octet-stream'))
-    resp['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+    resp = HttpResponse(response.content, content_type=tipo_mime)
+    resp['Content-Disposition'] = f'attachment; filename="{ultimo_segmento}"'
     return resp
 
 #FUNCIONES DE AYUDA
