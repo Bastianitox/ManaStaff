@@ -10,6 +10,7 @@ from django.shortcuts import render
 from urllib.parse import urlparse, unquote
 from collections import Counter, defaultdict
 
+from .funciones_dos import listar_publicaciones, crear_publicacion, modificar_publicacion, eliminar_publicacion, obtener_publicacion
 
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
@@ -512,8 +513,8 @@ def documentos_usuarios(request):
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 
-def administrar_noticiasyeventos(request):
-    return render(request, "staffweb/administrar_noticiasyeventos.html")
+#def administrar_noticiasyeventos(request):
+#    return render(request, "staffweb/administrar_noticiasyeventos.html")
 
 def administrar_logs(request):
     return render(request, "staffweb/administrar_logs.html")
@@ -556,22 +557,22 @@ def crear_noticiasyeventos(request):
     return render(request, "staffweb/crear_noticiasyeventos.html")
 
 
-# def administrar_noticiasyeventos(request):
-#     anuncios = database.child.listar_publicaciones()
-#     publicaciones = {}
+def administrar_noticiasyeventos(request):
+    anuncios = listar_publicaciones()
+    publicaciones = {}
 
-#     for key, val in anuncios.items():
-#         publicaciones[key] = {
-#             "titulo": val.get("titulo", ""),
-#             "contenido": val.get("contenido", ""),
-#             "fecha": val.get("fecha_emitida", ""),
-#             "autor": val.get("id_empleador", ""),
-#             "tipo": val.get("TipoAnuncio", "")
-#         }
+    for key, val in anuncios.items():
+        publicaciones[key] = {
+            "titulo": val.get("titulo", ""),
+            "contenido": val.get("contenido", ""),
+            "fecha": val.get("fecha_emitida", ""),
+            "autor": val.get("id_empleador", ""),
+            "tipo": val.get("TipoAnuncio", "")
+        }
 
-#     return render(request, "staffweb/administrar_noticiasyeventos.html", {
-#         "publicaciones": publicaciones
-#     })
+    return render(request, "staffweb/administrar_noticiasyeventos.html", {
+        "publicaciones": publicaciones
+    })
 
 # Crear
 def crear_publicacion(request):
@@ -583,14 +584,14 @@ def crear_publicacion(request):
             "id_empleador": request.POST.get("autor"),
             "TipoAnuncio": request.POST.get("tipo")
         }
-        database.child.crear_publicacion(data)
+        database.crear_publicacion(data)
         return redirect("administrar_noticiasyeventos")
 
     return render(request, "staffweb/crear_noticiasyeventos.html")
 
 # Editar
 def editar_publicacion(request, pub_id):
-    publicacion = database.child.obtener_publicacion(pub_id)
+    publicacion = obtener_publicacion(pub_id)
 
     if request.method == "POST":
         data = {
@@ -600,7 +601,7 @@ def editar_publicacion(request, pub_id):
             "id_empleador": request.POST.get("autor"),
             "TipoAnuncio": request.POST.get("tipo")
         }
-        database.child.modificar_publicacion(pub_id, data)
+        database.modificar_publicacion(pub_id, data)
         return redirect("administrar_noticiasyeventos")
 
     return render(request, "staffweb/crear_noticiasyeventos.html", {
@@ -610,5 +611,5 @@ def editar_publicacion(request, pub_id):
 
 # Eliminar
 def eliminar_publicacion(request, pub_id):
-    database.child.eliminar_publicacion(pub_id)
+    database.eliminar_publicacion(pub_id)
     return redirect("administrar_noticiasyeventos")
