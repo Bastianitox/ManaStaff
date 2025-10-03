@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST,require_GET
 from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 
 from .firebase import authP, auth, database, storage, db
 
@@ -45,9 +45,6 @@ def validar_pin(request):
         return JsonResponse({"ok": False, "error": "PIN incorrecto."}, status=403)
 
 #----------------------------------------------------------------------------------------------
-
-
-
 
 
 
