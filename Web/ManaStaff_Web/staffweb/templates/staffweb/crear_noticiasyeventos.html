@@ -1,0 +1,27 @@
+{% extends 'staffweb/plantilla.html' %}
+{% block principal %}
+<h2>{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</h2>
+<form method="POST">
+  {% csrf_token %}
+
+  <label>Título:</label>
+  <input type="text" name="titulo" value="{{ publicacion.titulo|default_if_none:'' }}" required><br>
+
+  <label>Contenido:</label>
+  <textarea name="contenido" required>{{ publicacion.contenido|default_if_none:'' }}</textarea><br>
+
+  <label>Fecha:</label>
+  <input type="date" name="fecha" value="{{ publicacion.fecha_emitida|default_if_none:'' }}" required><br>
+
+  <label>Autor (ID Empleador):</label>
+  <input type="text" name="autor" value="{{ publicacion.id_empleador|default_if_none:'' }}" required><br>
+
+  <label>Tipo:</label>
+  <select name="tipo">
+    <option value="Uno" {% if publicacion.TipoAnuncio == "Uno" %}selected{% endif %}>Noticia</option>
+    <option value="Dos" {% if publicacion.TipoAnuncio == "Dos" %}selected{% endif %}>Aviso</option>
+  </select><br>
+
+  <button type="submit">Guardar</button>
+</form>
+{% endblock %}

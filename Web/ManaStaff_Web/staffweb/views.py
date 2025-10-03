@@ -618,31 +618,66 @@ def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=
         )
     except Exception:
         return None
-    
 
-# def crear_publicacion(request, id_solicitud):
-#     if request.method == "POST":
-#         data = {
-#             "titulo": request.POST.get("titulo"),
-#             "contenido": request.POST.get("contenido"),
-#             "autor": request.session.get("nombre_usu", "Admin"),
-#             "tipo": request.POST.get("tipo", "noticia"),
+#--------------------------------------------------------------------------------#
+
+def crear_noticiasyeventos(request):
+    return render(request, "staffweb/crear_noticiasyeventos.html")
+
+
+# def administrar_noticiasyeventos(request):
+#     anuncios = database.child.listar_publicaciones()
+#     publicaciones = {}
+
+#     for key, val in anuncios.items():
+#         publicaciones[key] = {
+#             "titulo": val.get("titulo", ""),
+#             "contenido": val.get("contenido", ""),
+#             "fecha": val.get("fecha_emitida", ""),
+#             "autor": val.get("id_empleador", ""),
+#             "tipo": val.get("TipoAnuncio", "")
 #         }
-#         funciones.crear_publicacion(id_solicitud, data)
-#         return redirect("administrar_noticiasyeventos")
-#     return render(request, "staffweb/crear_publicacion.html")
 
-# def editar_publicacion(request, id_solicitud):
-#     if request.method == "POST":
-#         data = {
-#             "titulo": request.POST.get("titulo"),
-#             "contenido": request.POST.get("contenido"),
-#             "tipo": request.POST.get("tipo", "noticia"),
-#         }
-#         funciones.editar_publicacion(id_solicitud, data)
-#         return redirect("administrar_noticiasyeventos")
-#     return render(request, "staffweb/editar_publicacion.html")
+#     return render(request, "staffweb/administrar_noticiasyeventos.html", {
+#         "publicaciones": publicaciones
+#     })
 
-# def eliminar_publicacion(request, id_solicitud):
-#     funciones.eliminar_publicacion(id_solicitud)
-#     return redirect("administrar_noticiasyeventos")
+# Crear
+def crear_publicacion(request):
+    if request.method == "POST":
+        data = {
+            "titulo": request.POST.get("titulo"),
+            "contenido": request.POST.get("contenido"),
+            "fecha_emitida": request.POST.get("fecha"),
+            "id_empleador": request.POST.get("autor"),
+            "TipoAnuncio": request.POST.get("tipo")
+        }
+        database.child.crear_publicacion(data)
+        return redirect("administrar_noticiasyeventos")
+
+    return render(request, "staffweb/crear_noticiasyeventos.html")
+
+# Editar
+def editar_publicacion(request, pub_id):
+    publicacion = database.child.obtener_publicacion(pub_id)
+
+    if request.method == "POST":
+        data = {
+            "titulo": request.POST.get("titulo"),
+            "contenido": request.POST.get("contenido"),
+            "fecha_emitida": request.POST.get("fecha"),
+            "id_empleador": request.POST.get("autor"),
+            "TipoAnuncio": request.POST.get("tipo")
+        }
+        database.child.modificar_publicacion(pub_id, data)
+        return redirect("administrar_noticiasyeventos")
+
+    return render(request, "staffweb/crear_noticiasyeventos.html", {
+        "publicacion": publicacion,
+        "pub_id": pub_id
+    })
+
+# Eliminar
+def eliminar_publicacion(request, pub_id):
+    database.child.eliminar_publicacion(pub_id)
+    return redirect("administrar_noticiasyeventos")

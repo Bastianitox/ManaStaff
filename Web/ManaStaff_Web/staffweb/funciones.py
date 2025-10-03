@@ -12,34 +12,65 @@ import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
 
-
+MAX_INTENTOS = 5
+TIEMPO_BLOQUEO = timedelta(minutes=15)
 #INICIO DE SESION
 @require_POST
 def iniciarSesion(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "false", "message": "JSON inválido."})
+
+    # Obtener campos desde JSON
+    email = data.get("email")
+    password = data.get("password")
+
+    
+    # VALIDAR CAMPOS VACIOS
+    if not all([email, password]):
+        return JsonResponse({"status": "false", "message": "Los campos correo y/o contraseña están vacíos."})
+
+    # Validación de correo
+    patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(patron_email, email):
+        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+    email = str(email).lower()
+    if not correo_ya_existe(email):
+        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+
+    #CERRAR SESION
     request.session.flush()
 
-    email = request.POST.get('email', None)
-    password = request.POST.get('password', None)
-
-    # VALIDAR CAMPOS VACIOS
-    if not email or not password:
-        return render(request, 'staffweb/index.html', {"mensaje": "Los campos correo y/o contraseña están vacíos."})
-    email = str(email).lower()
-    # VALIDAR FORMATO DE CORREO
-    patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    if not re.match(patron_correo, email):
-        return render(request, 'staffweb/index.html', {"mensaje": "El correo es inválido."})
 
     # VERIFICAR QUE EL CORREO EXISTA EN REALTIME DATABASE
     usuario = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
 
     usuarioDATABASE = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
     if not usuarioDATABASE:
-        return render(request, 'staffweb/index.html', {"mensaje": "El correo no está registrado."})
+        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+
+    id_usu, usuario = next(iter(usuario.items()))
+
+    #VALIDAR QUE EL USUARIO NO ESTE BLOQUEADO
+    bloqueado_hasta = usuario.get("bloqueado_hasta")
+    if bloqueado_hasta:
+        bloqueado_dt = datetime.fromisoformat(bloqueado_hasta)
+        if bloqueado_dt > datetime.now():
+            return render(request, 'staffweb/index.html', {"mensaje": f"Cuenta bloqueada hasta {bloqueado_hasta}. Reestablece tu contraseña si olvidaste tu clave."})
+        else:
+            # Reiniciar bloqueo si ya pasó el tiempo
+            database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
+
+
 
     # INICIAR SESION USANDO PYREBASE
     try:
         user = authP.sign_in_with_email_and_password(email, password)
+        
+        # Login correcto: resetear intentos
+        database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
+
         id_token = user['idToken']
         refresh_token = user['refreshToken']
 
@@ -53,20 +84,34 @@ def iniciarSesion(request):
 
     except HTTPError as e:
         #VALIDAR QUE EL USUARIO Y CONTRASEÑA SEAN CORRECTOS
-        error_json = e.args[1]
-        error_message = error_json['error']['message']
+        try:
+            error_json = json.loads(e.args[1])
+            error_message = error_json['error']['message']
+        except Exception:
+            # fallback si no se puede parsear
+            error_message = str(e)
 
-        if error_message in ["INVALID_PASSWORD", "EMAIL_NOT_FOUND"]:
-            mensaje = "Correo o contraseña incorrectos."
+        if error_message in ["INVALID_PASSWORD", "EMAIL_NOT_FOUND", "INVALID_LOGIN_CREDENTIALS"]:
+            intentos = usuario.get("intentos_fallidos", 0) + 1
+            data_actualizar = {"intentos_fallidos": intentos}
+            if intentos >= MAX_INTENTOS:
+                # Bloquear cuenta
+                data_actualizar["bloqueado_hasta"] = (datetime.now() + TIEMPO_BLOQUEO).isoformat()
+            database.child("Usuario").child(id_usu).update(data_actualizar)
+
+            if intentos >= MAX_INTENTOS:
+                mensaje = f"Cuenta bloqueada tras {MAX_INTENTOS} intentos fallidos. Reestablece tu contraseña."
+            else:
+                mensaje = f"Correo o contraseña incorrectos. Intentos restantes: {MAX_INTENTOS - intentos}"
         elif error_message == "TOO_MANY_ATTEMPTS_TRY_LATER":
             mensaje = "Demasiados intentos de inicio de sesión, intente más tarde o reinicie su contraseña."
         else:
             mensaje = "Error de autenticación: " + error_message
 
-        return render(request, 'staffweb/index.html', {"mensaje": mensaje})
+        return JsonResponse({"status": "false", "message": mensaje})
 
     except Exception:
-        return render(request, 'staffweb/index.html', {"mensaje": "Error de autenticación con Firebase."})
+        return JsonResponse({"status": "false", "message": "Error de autenticación con Firebase."})
 
     # inicio correcto → guardar datos del usuario
     for id_usu, usuario in usuarioDATABASE.items():
@@ -98,7 +143,7 @@ def iniciarSesion(request):
         request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
         request.session['rol_usu'] = usuario.get('Rol', '')
 
-        return redirect("inicio_documentos")
+        return JsonResponse({"status": "success", "message": "Inicio de sesión correcto."})
 
 @require_GET
 def cerrarSesion(request):
@@ -321,6 +366,8 @@ def crear_usuario_funcion(request):
         "rol":rol,
         "PIN":pin,
         "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "intentos_fallidos": 0,
+        "bloqueado_hasta": None
     })
 
     return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
