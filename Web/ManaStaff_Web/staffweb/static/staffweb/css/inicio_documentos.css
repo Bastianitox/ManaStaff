@@ -414,7 +414,7 @@
 
 /* Atenuación al contenido detrás del modal */
 .documents-section.is-locked > *:not(#pinModalOverlay) {
-  filter: blur(2px) brightness(0.96);   /* discreto, sin “mancha” */
+  filter: blur(2px) brightness(0.96);
   transition: filter 160ms ease;
 }
 

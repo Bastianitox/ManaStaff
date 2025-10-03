@@ -1,10 +1,13 @@
 // ------------------------PIN---------------------
-const CORRECT_PIN = "1234"
-
 document.addEventListener("DOMContentLoaded", () => {
   initPinModal()
   initDocumentsApp()
 })
+
+function getCsrfToken() {
+  const m = document.cookie.match(/csrftoken=([^;]+)/)
+  return m ? m[1] : ""
+}
 
 function initPinModal() {
   const section = document.getElementById('documentsSection') || document.querySelector('.documents-section')
@@ -17,12 +20,12 @@ function initPinModal() {
 
   if (!pinInputs.length || !submitBtn || !modalOverlay) return
 
-  // Bloqueo visual solo de la sección + enfoque al primer input
+  // Bloqueo visual solo de la sección más enfoque al primer input
   section.classList.add('is-locked')
   section.style.overflow = 'hidden'
   pinInputs[0].focus()
 
-  // --- Manejo de entrada en los inputs auto-avance ---
+  // Manejo de entrada en los inputs auto-avance
   pinInputs.forEach((input, index) => {
     input.addEventListener("input", (e) => {
       const value = e.target.value
@@ -70,7 +73,7 @@ function initPinModal() {
     // Seleccionar el dígito al enfocar
     input.addEventListener("focus", (e) => e.target.select())
 
-    // Pegar: reparte los dígitos
+    // reparte los dígitos
     input.addEventListener("paste", (e) => {
       e.preventDefault()
       const numbers = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4)
@@ -83,25 +86,42 @@ function initPinModal() {
     })
   })
 
-  // --- Verificar PIN ---
-  submitBtn.addEventListener('click', () => {
+  // Verificar PIN
+  submitBtn.addEventListener('click', async () => {
     const enteredPin = Array.from(pinInputs).map(i => i.value).join('')
     if (enteredPin.length !== 4) {
       showPinError('Por favor, completa los 4 dígitos')
       return
     }
 
-    if (enteredPin === CORRECT_PIN) {
-      modalOverlay.style.animation = 'fadeOut 0.2s ease'
-      setTimeout(() => {
-        modalOverlay.classList.add('hidden')
-        section.classList.remove('is-locked')
-        section.style.overflow = 'auto'
-      }, 200)
-    } else {
-      showPinError('Código PIN incorrecto. Intenta nuevamente.')
-      pinInputs.forEach(i => (i.value = ''))
-      pinInputs[0].focus()
+    try {
+      // validar Django/Firebase 
+      const resp = await fetch('/validar_pin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({ pin: enteredPin }),
+        credentials: 'same-origin',
+      })
+
+      const data = await resp.json().catch(() => ({}))
+
+      if (resp.ok && data.ok) {
+        modalOverlay.style.animation = 'fadeOut 0.2s ease'
+        setTimeout(() => {
+          modalOverlay.classList.add('hidden')
+          section.classList.remove('is-locked')
+          section.style.overflow = 'auto'
+        }, 200)
+      } else {
+        showPinError('Código PIN incorrecto. Intenta nuevamente.')
+        pinInputs.forEach(i => (i.value = ''))
+        pinInputs[0].focus()
+      }
+    } catch (e) {
+      showPinError('No se pudo validar el PIN. Reintenta.')
     }
   })
 
