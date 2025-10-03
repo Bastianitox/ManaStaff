@@ -228,27 +228,19 @@ function applyFilters() {
 // Funciones para las acciones de documentos
 function verDocumento(documentoId) {
   console.log("[v0] Ver documento:", documentoId)
-  // Aquí va la lógica para ver el documento
-  // Por ejemplo: window.location.href = `/documentos/ver/${documentoId}/`;
 }
 
 function subirDocumento(documentoId) {
   console.log("[v0] Subir documento:", documentoId)
-  // Aquí va la lógica para subir/actualizar el documento
-  // Por ejemplo: window.location.href = `/documentos/subir/${documentoId}/`;
 }
 
 function modificarDocumento(documentoId) {
   console.log("[v0] Modificar documento:", documentoId)
-  // Aquí va la lógica para modificar el documento
-  // Por ejemplo: window.location.href = `/documentos/modificar/${documentoId}/`;
 }
 
 function eliminarDocumento(documentoId) {
   console.log("[v0] Eliminar documento:", documentoId)
-  // Aquí va la lógica para eliminar el documento
   if (confirm("¿Estás seguro de que deseas eliminar este documento?")) {
-    // Por ejemplo: realizar una petición AJAX para eliminar
-    // fetch(`/documentos/eliminar/${documentoId}/`, { method: 'DELETE' })
+
   }
 }
