@@ -27,7 +27,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Tiempo de expiración de sesión en segundos (ej: 30 min)
+SESSION_COOKIE_AGE = 30 * 60  
 
+# Expira la sesión al cerrar el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Reinicia el tiempo de sesión cada vez que el usuario haga algo
+SESSION_SAVE_EVERY_REQUEST = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -49,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'staffweb.middleware.FirebaseAuthMiddleware',
+    #'staffweb.middleware.InactivityTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'ManaStaff_Web.urls'

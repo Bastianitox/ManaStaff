@@ -76,3 +76,24 @@ function mostrarError(mensaje) {
       }
   };
 }
+
+
+function cerrar_modal_mensaje(){
+  // Mostrar mensaje de error
+  const modal = document.getElementById("errorModal");
+  const texto = document.getElementById("errorMessageText");
+  const cerrar = document.getElementById("closeErrorModal");
+
+  texto.textContent = mensaje;
+  modal.classList.add("show");
+
+  // Cerrar al hacer click en la "x"
+  cerrar.onclick = () => modal.classList.remove("show");
+
+  // Cerrar al hacer click fuera del contenido
+  window.onclick = (e) => {
+      if (e.target === modal) {
+          modal.classList.remove("show");
+      }
+  };
+}

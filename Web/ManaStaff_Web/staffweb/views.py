@@ -22,7 +22,8 @@ authP = firebase.auth()
 
 
 def index(request):
-    return render(request, 'staffweb/index.html')
+    mensaje = request.session.pop("mensaje_expiracion", "")
+    return render(request, 'staffweb/index.html', {"mensaje": mensaje})
 
 def recuperar_contrasena(request):
     return render(request, 'staffweb/recuperar_contrasena.html')
