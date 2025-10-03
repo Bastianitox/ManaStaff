@@ -682,7 +682,6 @@ def obtener_solicitudes_administrar(request):
                 estado_asignacion = "asignada"
             if fecha_fin != "null":
                 estado_asignacion = "cerrada"
-                print(estado_asignacion)
 
             solicitudes_lista.append({
                 "id_solicitud": id_solicitud,
@@ -751,8 +750,6 @@ def cerrar_solicitud(request, id_solicitud, estado):
     #OBTENER EL USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
 
-    print(id_solicitud)
-    print(estado)
     #VALIDAR USUARIO ACTUAL
     if not usuario_actual_rut:
         return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
