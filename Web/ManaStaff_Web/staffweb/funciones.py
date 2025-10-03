@@ -793,7 +793,23 @@ def cerrar_solicitud(request, id_solicitud, estado):
 
 @require_POST
 def recuperar_contrasena_funcion(request):
-    pass
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "false", "message": "JSON inválido."})
+        
+    correo = data.get("correo")
+    if not correo:
+        return JsonResponse({'status': 'false', 'mensaje':"El correo no debe estar vacío."})
+
+    try:
+        patron_correo = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(patron_correo, correo):
+            return JsonResponse({'status': 'false', 'mensaje':"El correo tiene un formato inválido."})
+        authP.send_password_reset_email(correo)
+        return JsonResponse({'status': 'success', 'mensaje':"Link de restablecimiento enviado a esa dirección."})
+    except Exception as e:
+        return JsonResponse({'status': 'false', 'mensaje':"Error al enviar el correo: "+str(e)})
 
 #FUNCIONES DE AYUDA
 def formatear_rut(rut_limpio):
