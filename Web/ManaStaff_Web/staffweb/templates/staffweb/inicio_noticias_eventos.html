@@ -5,54 +5,60 @@
 <!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/solicitudes.css' %}">
 <link rel="stylesheet" href="{% static 'staffweb/css/detalle_solicitud.css' %}">
-<title>Solicitudes</title>
+<title>Noticias y Avisos</title>
 {% endblock head %}
 
 
 {% block principal %}
 <div class="header">
-    <h1>Noticias y Avisos</h1>
-    <p>¡Revisa las últimas novedades de la empresa!</p>
-    
+  <h1>Noticias y Avisos</h1>
+  <p>¡Revisa las últimas novedades de la empresa!</p>
 </div>
 
 <!-- Search and Filter Section -->
 <div class="search-filter-section">
-    <div class="search-container">
-        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" class="search-input" placeholder="Busca tus noticias..." id="searchInput">
-    </div>
-    <button class="filter-btn" id="filterBtn">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
-        </svg>
-        Filtrar
-    </button>
+  <div class="search-container">
+    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <input type="text" class="search-input" placeholder="Busca tus noticias..." id="searchInput">
+  </div>
+  <button class="filter-btn" id="filterBtn">
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd"
+            d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
+    </svg>
+    Filtrar
+  </button>
 </div>
 
 <!-- Status Tabs -->
 <div class="status-tabs">
-    <button class="status-tab active" data-status="all">Todas</button>
-    <button class="status-tab" data-status="noticia">Noticias</button>
-    <button class="status-tab" data-status="aviso">Avisos</button>
+  <button class="status-tab active" data-status="all">Todas</button>
+  <button class="status-tab" data-status="noticia">Noticias</button>
+  <button class="status-tab" data-status="aviso">Avisos</button>
 </div>
 
- <!-- Seccion de solicitudes -->
+<!-- Sección de novedades -->
 <div class="requests-section">
-    <h2>Novedades recientes</h2>
-    <div class="requests-grid" id="requestsGrid">
-        <!-- Solicitudes seran obtenidas a través de JS -->
-    </div>
-    <div class="no-results" id="noResults" style="display: none;">
-        <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <h3>No se encontraron noticias/eventos</h3>
-        <p>Intenta ajustar tus filtros de búsqueda</p>
-    </div>
+  <h2>Novedades recientes</h2>
+  <div class="requests-grid" id="requestsGrid"></div>
+  <div class="no-results" id="noResults" style="display:none;">
+    <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <h3>No se encontraron noticias/eventos</h3>
+    <p>Intenta ajustar tus filtros de búsqueda</p>
+  </div>
 </div>
+
+<!-- (NUEVO) JSON con anuncios desde Django.
+     La vista pone en 'announcements_json' el arreglo de anuncios. -->
+<script id="announcements-data" type="application/json">
+  {{ announcements_json|default:"[]"|safe }}
+</script>
 {% endblock principal %}
 
 

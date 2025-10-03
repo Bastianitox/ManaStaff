@@ -1,5 +1,6 @@
 ﻿from datetime import datetime, timedelta
 import re
+import json
 
 from django.shortcuts import render
 
@@ -130,10 +131,60 @@ def inicio_documentos(request):
 def inicio_perfil(request):
     return render(request, 'staffweb/inicio_perfil.html')
     
-
+#---------------------------------------------------------------------------
 def inicio_noticias_eventos(request):
-    return render(request, 'staffweb/inicio_noticias_eventos.html')
-    
+    raw = database.child("Anuncio").get().val() or {}
+    if not isinstance(raw, dict):
+        raw = {}
+
+    def map_tipo(tipo_nombre):
+        if not tipo_nombre:
+            return "noticia"
+        t = str(tipo_nombre).strip().lower()
+        if t == "noticia":
+            return "noticia"
+        # si viene "evento" u otro, lo mostramos como "aviso"
+        return "aviso"
+
+    items = []
+    for anuncio_id, data in raw.items():
+        if not isinstance(data, dict):
+            continue
+
+        titulo = data.get("titulo", "Sin título")
+        contenido = data.get("contenido", "")
+        fecha_raw = data.get("fecha_emitida", "")
+        id_publicador = str(data.get("id_empleador", ""))
+
+        # nombre del tipo (si guardas "Uno"/"Dos")
+        tipo_codigo = str(data.get("TipoAnuncio", "")).strip()
+        tipo_nombre = None
+        try:
+            if tipo_codigo:
+                tipo_info = database.child("TipoAnuncio").child(tipo_codigo).get().val() or {}
+                tipo_nombre = tipo_info.get("nombre")  # "Noticia" o "Evento"
+        except Exception:
+            tipo_nombre = None
+
+        tipo_front = map_tipo(tipo_nombre or "Noticia")
+
+        fecha_publicacion = str(fecha_raw)
+
+        items.append({
+            "id": anuncio_id,               
+            "titulo": titulo,
+            "contenido": contenido,
+            "tipo": tipo_front,               
+            "fecha_publicacion": fecha_publicacion,
+            "id_publicador": id_publicador,
+        })
+
+    # Orden por fecha
+    context = {
+        "announcements_json": json.dumps(items, ensure_ascii=False)
+    }
+    return render(request, 'staffweb/inicio_noticias_eventos.html', context)
+#---------------------------------------------------------------------------    
 
 def inicio_dashboard(request):
     return render(request, 'staffweb/inicio_dashboard.html')
