@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sortFilter = document.getElementById('sortFilter')
   const sizeFilter = document.getElementById('sizeFilter')
 
+
   // Representa los filtros activos en la interfaz
   const state = {
     search: '',
@@ -370,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bindCardActions(container)
   }
+  
 
   // Mantiene los botones Ver/Descargar funcionando con las URLs reales
   function bindCardActions(container) {
@@ -381,23 +383,16 @@ document.addEventListener('DOMContentLoaded', () => {
       })
     })
 
-    const downloadButtons = container.querySelectorAll('.download-btn')
-    downloadButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const docId = button.dataset.docId
-        const doc = documents.find((item) => String(item.id) === String(docId))
-        if (doc && doc.available && doc.downloadPath) {
-          const a = document.createElement('a')
-          a.href = doc.downloadPath   //
-          a.download = `${doc.title}.${(doc.format || 'pdf').toLowerCase()}`
-          document.body.appendChild(a)
-          a.click()
-          a.remove()
-        } else {
-          alert('Documento no disponible para descarga.')
-        }
-      })
-    })
+    
+    const downloadButtons = document.querySelectorAll(".download-btn");
+      
+    downloadButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const docId = btn.dataset.docId;
+            // Redirigir al endpoint de Django que descarga el documento
+            window.location.href = `/descargar_documento/${docId}`;
+        });
+    });
   }
 
   // Aplica búsqueda, formato, tamaño y orden sobre las tarjetas visibles
