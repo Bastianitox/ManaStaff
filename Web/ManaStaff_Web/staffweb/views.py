@@ -246,6 +246,12 @@ def ver_documentos(request):
 
     return render(request, "staffweb/ver_documentos.html", {"documento": documento})
 
+def documentos_usuarios(request):
+    return render(request, "staffweb/documentos_usuarios.html")
+
+def crear_documento(request):
+    return render(request, "staffweb/crear_documento.html")
+
 def cambiar_contrasena(request):
     return render(request, "staffweb/cambiar_contrasena.html")
 
