@@ -318,7 +318,6 @@ function showLoader(message = "Procesando solicitud...") {
     const text = overlay.querySelector(".loading-text");
     text.textContent = message;
     overlay.classList.add("show");
-    console.log("PRUEBA")
 }
 
 function hideLoader() {
@@ -608,7 +607,6 @@ function openConfirmModal(action, requestId) {
 
                 modal.style.display = "none";
                 filterRequests(filteredRequests);
-                goBackToList();
             }else{
                 alert("⚠️ " + (data.mensaje || "Error desconocido al cerrar la solicitud."));
                 modal.style.display = "none";
@@ -618,6 +616,7 @@ function openConfirmModal(action, requestId) {
             alert("Error de conexión al cerrar la solicitud.");
         }finally{
             hideLoaderCerrar();
+            goBackToList();
         }
 
     };
