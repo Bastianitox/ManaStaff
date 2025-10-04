@@ -9,165 +9,98 @@
     <p>Complete el formulario para crear un nuevo documento</p>
 </div>
 
- <!--Mensaje de éxito--> 
-<div id="successMessage" class="success-message">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-    </svg>
-    <span>Documento creado correctamente</span>
-</div>
+{% if messages %}
+  {% for m in messages %}
+    <div class="success-message show {% if m.tags == 'error' %}is-error{% else %}is-success{% endif %}">
+        <span>{{ m }}</span>
+    </div>
+  {% endfor %}
+{% endif %}
 
- <!--Formulario--> 
 <div class="form-container">
-    <form id="createDocumentForm" class="document-form">
-        
- <!--nombre documento--> 
-        <div class="form-group">
-            <label for="documentName" class="form-label">
-                Nombre del Documento
-                <span class="required">*</span>
-            </label>
-            <input 
-                type="text" 
-                id="documentName" 
-                name="documentName" 
-                class="form-input" 
-                placeholder="Ej: Contrato de trabajo, Certificado médico..."
-                required
-            >
-            <span class="error-message" id="documentNameError"></span>
-        </div>
+  <form id="createDocumentForm" class="document-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
 
- <!--estado documento--> 
-        <div class="form-group">
-            <label class="form-label">
-                <span class="required">*</span>
-            </label>
-            <div class="status-options">
-                <label class="status-option">
-                    <input type="radio" name="documentStatus" value="activo" id="statusActivo" checked>
-                    <div class="status-card">
-                        <div class="status-icon activo">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                        </div>
-                        <div class="status-info">
-                            <div class="status-title">Activo</div>
-                            <div class="status-description">Documento completo y listo para usar</div>
-                        </div>
-                    </div>
-                </label>
-                <label class="status-option">
-                    <input type="radio" name="documentStatus" value="pendiente" id="statusPendiente">
-                    <div class="status-card">
-                        <div class="status-icon pendiente">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                        </div>
-                        <div class="status-info">
-                            <div class="status-title">Pendiente</div>
-                            <div class="status-description">Archivo opcional, se puede subir después</div>
-                        </div>
-                    </div>
-                </label>
+    <!-- nombre -->
+    <div class="form-group">
+      <label for="documentName" class="form-label">
+        Nombre del Documento <span class="required">*</span>
+      </label>
+      <input type="text" id="documentName" name="documentName" class="form-input" placeholder="Ej: Contrato, Finiquito..." required>
+      <span class="error-message" id="documentNameError"></span>
+    </div>
+
+    <!-- estado -->
+    <div class="form-group">
+      <label class="form-label"><span class="required">*</span> Estado</label>
+      <div class="status-options">
+        <label class="status-option">
+          <input type="radio" name="documentStatus" value="activo" id="statusActivo" checked>
+          <div class="status-card">
+            <div class="status-icon activo"></div>
+            <div class="status-info">
+              <div class="status-title">Activo</div>
+              <div class="status-description">Requiere archivo</div>
             </div>
-        </div>
-
- <!--subir archivo--> 
-        <div class="form-group">
-            <label for="documentFile" class="form-label">
-                Archivo
-                <span class="required" id="fileRequired">*</span>
-                <span class="optional" id="fileOptional" style="display: none;">(Opcional)</span>
-            </label>
-            <div class="file-upload-wrapper">
-                <input 
-                    type="file" 
-                    id="documentFile" 
-                    name="documentFile" 
-                    class="file-input" 
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                >
-                <label for="documentFile" class="file-label">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <span id="fileName">Seleccionar archivo</span>
-                </label>
+          </div>
+        </label>
+        <label class="status-option">
+          <input type="radio" name="documentStatus" value="pendiente" id="statusPendiente">
+          <div class="status-card">
+            <div class="status-icon pendiente"></div>
+            <div class="status-info">
+              <div class="status-title">Pendiente</div>
+              <div class="status-description">Sin archivo (opcional)</div>
             </div>
-            <span class="file-info">Formatos permitidos: PDF, DOC, DOCX, JPG, PNG (Máx. 10MB)</span>
-            <span class="error-message" id="documentFileError"></span>
-        </div>
+          </div>
+        </label>
+      </div>
+    </div>
 
- <!--buscar usuario--> 
-        <div class="form-group">
-            <label for="userSearch" class="form-label">
-                Usuario Asignado
-                <span class="required">*</span>
-            </label>
-            <div class="search-wrapper">
-                <input 
-                    type="text" 
-                    id="userSearch" 
-                    name="userSearch" 
-                    class="form-input search-input" 
-                    placeholder="Buscar por nombre o RUT..."
-                    autocomplete="off"
-                >
-                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
-                
- <!--dropdown de resultados--> 
-                <div id="userDropdown" class="user-dropdown">
-                </div>
-            </div>
-            <input type="hidden" id="selectedUserId" name="selectedUserId">
-            <div id="selectedUserDisplay" class="selected-user"></div>
-            <span class="error-message" id="userSearchError"></span>
-        </div>
+    <!-- archivo -->
+    <div class="form-group">
+      <label for="documentFile" class="form-label">
+        Archivo <span class="required" id="fileRequired">*</span>
+        <span class="optional" id="fileOptional" style="display:none;">(Opcional)</span>
+      </label>
+      <div class="file-upload-wrapper">
+        <input type="file" id="documentFile" name="documentFile" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        <label for="documentFile" class="file-label">
+          <span id="fileName">Seleccionar archivo</span>
+        </label>
+      </div>
+      <span class="file-info">PDF, DOC, DOCX, JPG, PNG (Máx. 10MB)</span>
+      <span class="error-message" id="documentFileError"></span>
+    </div>
 
- <!--Fecha de vencimiento opcional--> 
-        <div class="form-group">
-            <label for="expirationDate" class="form-label">
-                Fecha de Vencimiento
-                <span class="optional">(Opcional)</span>
-            </label>
-            <input 
-                type="date" 
-                id="expirationDate" 
-                name="expirationDate" 
-                class="form-input"
-            >
-            <span class="file-info">Si el documento tiene fecha de vencimiento, especifíquela aquí</span>
-        </div>
+    <!-- usuario -->
+    <div class="form-group">
+      <label for="userSearch" class="form-label">Usuario Asignado <span class="required">*</span></label>
+      <div class="search-wrapper">
+        <input type="text" id="userSearch" class="form-input search-input" placeholder="Buscar por nombre o RUT..." autocomplete="off">
+        <div id="userDropdown" class="user-dropdown"></div>
+      </div>
+      <input type="hidden" id="selectedUserId" name="selectedUserId">
+      <div id="selectedUserDisplay" class="selected-user"></div>
+      <span class="error-message" id="userSearchError"></span>
+    </div>
 
- <!--botones--> 
-        <div class="form-actions">
-            <a href="{% url 'administrar_documentos' %}" class="btn-cancel">
-                Cancelar
-            </a>
-            <button type="submit" class="btn-submit">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
-                </svg>
-                Crear Documento
-            </button>
-        </div>
+    <!-- vencimiento -->
+    <div class="form-group">
+      <label for="expirationDate" class="form-label">Fecha de Vencimiento <span class="optional">(Opcional)</span></label>
+      <input type="date" id="expirationDate" name="expirationDate" class="form-input">
+    </div>
 
-    </form>
+    <div class="form-actions">
+      <a href="{% url 'administrar_documentos' %}" class="btn-cancel">Cancelar</a>
+      <button type="submit" class="btn-submit">Crear Documento</button>
+    </div>
+  </form>
 </div>
+
+<!-- JSON para el JS -->
+<script id="usuarios-data" type="application/json">{{ usuarios_json|default:"[]"|safe }}</script>
+<script id="estados-data" type="application/json">{{ estados_json|default:"{}"|safe }}</script>
 
 <script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
 {% endblock %}
-
