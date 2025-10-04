@@ -10,7 +10,7 @@ def registrar_auditoria_manual(request, accion, descripcion=""):
     
     log_data = {
         "id_auditoria": str(uuid.uuid4()),
-        "usuario_rut": usuario_id,
+        "id_rut": usuario_id,
         "accion": accion,
         "descripcion": descripcion,
         "fecha_hora": ahora,
