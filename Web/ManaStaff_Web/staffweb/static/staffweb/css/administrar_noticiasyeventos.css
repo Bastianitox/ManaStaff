@@ -201,3 +201,47 @@
 .btn.cancelar:hover {
   background-color: #cbd5e1;
 }
+
+
+
+
+/* boton de crear */
+
+.documents-section {
+  margin-top: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  color: #1f2937;
+  margin: 0;
+}
+
+.btn-create-document {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-create-document:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+}
