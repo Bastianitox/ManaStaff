@@ -55,8 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'staffweb.middleware.FirebaseAuthMiddleware',
-    #'staffweb.middleware.InactivityTimeoutMiddleware',
+    'staffweb.middleware.FirebaseAuthAuditoriaMiddleware',
 ]
 
 ROOT_URLCONF = 'ManaStaff_Web.urls'
