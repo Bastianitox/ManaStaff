@@ -1,0 +1,116 @@
+body {
+  background-color: #f4f6f8;
+  font-family: "Inter", sans-serif;
+  color: #1e293b;
+}
+
+/* === Contenedor principal === */
+.editar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 60px;
+}
+
+/* === Encabezado === */
+.editar-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.editar-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.editar-header p {
+  font-size: 1rem;
+  color: #475569;
+  margin: 2px 0;
+}
+
+.descripcion {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* === Tarjeta de formulario === */
+.editar-card {
+  background-color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 30px 40px;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* === Campos del formulario === */
+.form-group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+  background-color: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  background-color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  outline: none;
+}
+
+/* === Botones === */
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.btn.guardar {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+}
+
+.btn.guardar:hover {
+  background-color: #2563eb;
+}
+
+.btn.cancelar {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.btn.cancelar:hover {
+  background-color: #cbd5e1;
+}
