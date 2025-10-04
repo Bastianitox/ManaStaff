@@ -1,19 +1,15 @@
 {% extends 'staffweb/plantilla.html' %}
 {% load static %}
 
-{% block head %}
-<!-- STATIC CSS -->
-<link rel="stylesheet" href="{% static 'staffweb/css/crear_documento.css' %}">
-<title>Crear Documento</title>
-{% endblock head %}
-
 {% block principal %}
+<link rel="stylesheet" href="{% static 'staffweb/css/crear_documento.css' %}">
+
 <div class="header">
     <h1>Crear Documento</h1>
     <p>Complete el formulario para crear un nuevo documento</p>
 </div>
 
-<!-- Creado correctamente mensaje -->
+ <!--Mensaje de éxito--> 
 <div id="successMessage" class="success-message">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -22,11 +18,11 @@
     <span>Documento creado correctamente</span>
 </div>
 
-<!-- estructura formulario -->
+ <!--Formulario--> 
 <div class="form-container">
     <form id="createDocumentForm" class="document-form">
         
-<!-- FNombre de documento -->
+ <!--nombre documento--> 
         <div class="form-group">
             <label for="documentName" class="form-label">
                 Nombre del Documento
@@ -43,11 +39,51 @@
             <span class="error-message" id="documentNameError"></span>
         </div>
 
-<!-- Subir el archivo -->
+ <!--estado documento--> 
+        <div class="form-group">
+            <label class="form-label">
+                <span class="required">*</span>
+            </label>
+            <div class="status-options">
+                <label class="status-option">
+                    <input type="radio" name="documentStatus" value="activo" id="statusActivo" checked>
+                    <div class="status-card">
+                        <div class="status-icon activo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="status-info">
+                            <div class="status-title">Activo</div>
+                            <div class="status-description">Documento completo y listo para usar</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="status-option">
+                    <input type="radio" name="documentStatus" value="pendiente" id="statusPendiente">
+                    <div class="status-card">
+                        <div class="status-icon pendiente">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="status-info">
+                            <div class="status-title">Pendiente</div>
+                            <div class="status-description">Archivo opcional, se puede subir después</div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+ <!--subir archivo--> 
         <div class="form-group">
             <label for="documentFile" class="form-label">
                 Archivo
-                <span class="required">*</span>
+                <span class="required" id="fileRequired">*</span>
+                <span class="optional" id="fileOptional" style="display: none;">(Opcional)</span>
             </label>
             <div class="file-upload-wrapper">
                 <input 
@@ -56,7 +92,6 @@
                     name="documentFile" 
                     class="file-input" 
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    required
                 >
                 <label for="documentFile" class="file-label">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -71,7 +106,7 @@
             <span class="error-message" id="documentFileError"></span>
         </div>
 
-<!-- Buscar por usuario o rut -->
+ <!--buscar usuario--> 
         <div class="form-group">
             <label for="userSearch" class="form-label">
                 Usuario Asignado
@@ -91,9 +126,8 @@
                     <path d="m21 21-4.35-4.35"></path>
                 </svg>
                 
-<!-- Dropdown tabla con los usuarios -->
+ <!--dropdown de resultados--> 
                 <div id="userDropdown" class="user-dropdown">
-                     Los resultados se cargarán dinámicamente aquí 
                 </div>
             </div>
             <input type="hidden" id="selectedUserId" name="selectedUserId">
@@ -101,7 +135,7 @@
             <span class="error-message" id="userSearchError"></span>
         </div>
 
-<!-- Fecha de vencimiento opcional -->
+ <!--Fecha de vencimiento opcional--> 
         <div class="form-group">
             <label for="expirationDate" class="form-label">
                 Fecha de Vencimiento
@@ -116,11 +150,11 @@
             <span class="file-info">Si el documento tiene fecha de vencimiento, especifíquela aquí</span>
         </div>
 
-<!-- Botonos de Crear documento y cancelar -->        
+ <!--botones--> 
         <div class="form-actions">
-            <button type="button" class="btn-cancel" >
+            <a href="{% url 'administrar_documentos' %}" class="btn-cancel">
                 Cancelar
-            </button>
+            </a>
             <button type="submit" class="btn-submit">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -136,3 +170,4 @@
 
 <script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
 {% endblock %}
+
