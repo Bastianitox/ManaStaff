@@ -7,10 +7,10 @@
 {% endblock head %}
 
 {% block principal %}
-<div class="editar-container">
+<div class="editar-wrapper">
   <div class="editar-header">
-    <h1>{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</h1>
-    <p>Noticias y Avisos</p>
+    <h1 class="titulo-principal">{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</h1>
+    <h2 class="subtitulo">Noticias y Avisos</h2>
     <p class="descripcion">Aquí puedes editar las noticias y avisos</p>
   </div>
 
@@ -34,7 +34,7 @@
       </div>
 
       <div class="form-group">
-        <label for="autor">Autor</label>
+        <label for="autor">Autor (ID Empleador)</label>
         <input type="text" id="autor" name="autor" value="{{ publicacion.id_empleador|default_if_none:'' }}" required>
       </div>
 
@@ -46,9 +46,9 @@
         </select>
       </div>
 
-      <div class="form-actions">
-        <button type="submit" class="btn-guardar">💾 Guardar</button>
-        <a href="{% url 'administrar_noticiasyeventos' %}" class="btn-cancelar">Cancelar</a>
+      <div class="botones">
+        <a href="{% url 'administrar_noticiasyeventos' %}" class="btn cancelar">Cancelar</a>
+        <button type="submit" class="btn guardar">💾 Guardar</button>
       </div>
     </form>
   </div>

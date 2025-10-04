@@ -1,37 +1,37 @@
 body {
-  background-color: #f4f6f8;
+  background-color: #f5f6f8;
   font-family: "Inter", sans-serif;
   color: #1e293b;
 }
 
 /* === Contenedor principal === */
-.editar-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 60px;
+.editar-wrapper {
+  width: 100%;
+  max-width: 900px;
+  margin: 50px auto;
 }
 
 /* === Encabezado === */
 .editar-header {
-  text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
-.editar-header h1 {
+.titulo-principal {
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  color: #2563eb; /* azul corporativo */
+  margin-bottom: 4px;
 }
 
-.editar-header p {
-  font-size: 1rem;
-  color: #475569;
-  margin: 2px 0;
+.subtitulo {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 2px;
 }
 
 .descripcion {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #64748b;
 }
 
@@ -42,7 +42,6 @@ body {
   border-radius: 16px;
   padding: 30px 40px;
   width: 100%;
-  max-width: 600px;
 }
 
 /* === Campos del formulario === */
@@ -94,16 +93,17 @@ select:focus {
   padding: 10px 18px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .btn.guardar {
-  background-color: #3b82f6;
+  background-color: #2563eb;
   color: #ffffff;
   border: none;
 }
 
 .btn.guardar:hover {
-  background-color: #2563eb;
+  background-color: #1d4ed8;
 }
 
 .btn.cancelar {
