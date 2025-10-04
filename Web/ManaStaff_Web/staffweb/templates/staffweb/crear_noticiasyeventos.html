@@ -1,27 +1,62 @@
 {% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'staffweb/css/administrar_noticiasyeventos.css' %}">
+<link rel="stylesheet" href="{% static 'staffweb/css/crear_noticiasyeventos.css' %}">
+
+<title>{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</title>
+{% endblock head %}
+
 {% block principal %}
-<h2>{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</h2>
-<form method="POST">
-  {% csrf_token %}
+<div class="header">
+  <h1>Noticias y Avisos</h1>
+  <p>Aquí puedes {% if publicacion %}editar{% else %}crear{% endif %} las noticias y avisos</p>
+</div>
 
-  <label>Título:</label>
-  <input type="text" name="titulo" value="{{ publicacion.titulo|default_if_none:'' }}" required><br>
+<div class="form-container">
+  <div class="form-card">
+    <h2>{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</h2>
 
-  <label>Contenido:</label>
-  <textarea name="contenido" required>{{ publicacion.contenido|default_if_none:'' }}</textarea><br>
+    <form method="POST" class="publicacion-form">
+      {% csrf_token %}
 
-  <label>Fecha:</label>
-  <input type="date" name="fecha" value="{{ publicacion.fecha_emitida|default_if_none:'' }}" required><br>
+      <div class="form-group">
+        <label for="titulo">Título</label>
+        <input type="text" id="titulo" name="titulo"
+               value="{{ publicacion.titulo|default_if_none:'' }}" required>
+      </div>
 
-  <label>Autor (ID Empleador):</label>
-  <input type="text" name="autor" value="{{ publicacion.id_empleador|default_if_none:'' }}" required><br>
+      <div class="form-group">
+        <label for="contenido">Contenido</label>
+        <textarea id="contenido" name="contenido" rows="5" required>{{ publicacion.contenido|default_if_none:'' }}</textarea>
+      </div>
 
-  <label>Tipo:</label>
-  <select name="tipo">
-    <option value="Uno" {% if publicacion.TipoAnuncio == "Uno" %}selected{% endif %}>Noticia</option>
-    <option value="Dos" {% if publicacion.TipoAnuncio == "Dos" %}selected{% endif %}>Aviso</option>
-  </select><br>
+      <div class="form-group">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha"
+               value="{{ publicacion.fecha_emitida|default_if_none:'' }}" required>
+      </div>
 
-  <button type="submit">Guardar</button>
-</form>
+      <div class="form-group">
+        <label for="autor">Autor (ID Empleador)</label>
+        <input type="text" id="autor" name="autor"
+               value="{{ publicacion.id_empleador|default_if_none:'' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="tipo">Tipo</label>
+        <select id="tipo" name="tipo">
+          <option value="Uno" {% if publicacion.TipoAnuncio == "Uno" %}selected{% endif %}>Noticia</option>
+          <option value="Dos" {% if publicacion.TipoAnuncio == "Dos" %}selected{% endif %}>Aviso</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-guardar">💾 Guardar</button>
+        <a href="{% url 'administrar_noticiasyeventos' %}" class="btn-cancelar">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
