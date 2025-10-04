@@ -1,4 +1,3 @@
-// Datos falsos de usuarios para búsqueda
 const usuarios = [
   { id: 1, nombre: "Juan Carlos Pérez González", rut: "12.345.678-9" },
   { id: 2, nombre: "María Fernanda López Martínez", rut: "23.456.789-0" },
@@ -14,7 +13,6 @@ const usuarios = [
 
 let selectedUser = null
 
-// Elementos del DOM
 const userSearchInput = document.getElementById("userSearch")
 const userDropdown = document.getElementById("userDropdown")
 const selectedUserDisplay = document.getElementById("selectedUserDisplay")
@@ -23,8 +21,11 @@ const documentFileInput = document.getElementById("documentFile")
 const fileNameSpan = document.getElementById("fileName")
 const createDocumentForm = document.getElementById("createDocumentForm")
 const successMessage = document.getElementById("successMessage")
+const statusActivo = document.getElementById("statusActivo")
+const statusPendiente = document.getElementById("statusPendiente")
+const fileRequired = document.getElementById("fileRequired")
+const fileOptional = document.getElementById("fileOptional")
 
-// Búsqueda de usuarios
 userSearchInput.addEventListener("input", function () {
   const searchTerm = this.value.toLowerCase().trim()
 
@@ -33,12 +34,10 @@ userSearchInput.addEventListener("input", function () {
     return
   }
 
-  // Filtrar usuarios por nombre o RUT
   const filteredUsers = usuarios.filter(
     (user) => user.nombre.toLowerCase().includes(searchTerm) || user.rut.includes(searchTerm),
   )
 
-  // Mostrar resultados
   if (filteredUsers.length > 0) {
     userDropdown.innerHTML = filteredUsers
       .map(
@@ -57,7 +56,6 @@ userSearchInput.addEventListener("input", function () {
   }
 })
 
-// Seleccionar usuario del dropdown
 userDropdown.addEventListener("click", (e) => {
   const userOption = e.target.closest(".user-option")
   if (userOption) {
@@ -67,12 +65,10 @@ userDropdown.addEventListener("click", (e) => {
 
     selectedUser = { id: userId, nombre: userName, rut: userRut }
 
-    // Actualizar UI
     userSearchInput.value = ""
     selectedUserIdInput.value = userId
     userDropdown.classList.remove("show")
 
-    // Mostrar usuario seleccionado
     selectedUserDisplay.innerHTML = `
             <div class="selected-user-info">
                 <div class="selected-user-name">${userName}</div>
@@ -87,13 +83,11 @@ userDropdown.addEventListener("click", (e) => {
         `
     selectedUserDisplay.classList.add("show")
 
-    // Limpiar error si existe
     document.getElementById("userSearchError").classList.remove("show")
     userSearchInput.classList.remove("error")
   }
 })
 
-// Remover usuario seleccionado
 function removeSelectedUser() {
   selectedUser = null
   selectedUserIdInput.value = ""
@@ -101,20 +95,17 @@ function removeSelectedUser() {
   selectedUserDisplay.innerHTML = ""
 }
 
-// Cerrar dropdown al hacer clic fuera
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".search-wrapper")) {
     userDropdown.classList.remove("show")
   }
 })
 
-// Actualizar nombre del archivo seleccionado
 documentFileInput.addEventListener("change", function () {
   if (this.files.length > 0) {
     const fileName = this.files[0].name
     fileNameSpan.textContent = fileName
 
-    // Limpiar error si existe
     document.getElementById("documentFileError").classList.remove("show")
     this.classList.remove("error")
   } else {
@@ -122,13 +113,26 @@ documentFileInput.addEventListener("change", function () {
   }
 })
 
-// Validación y envío del formulario
+function updateFileRequirement() {
+  if (statusPendiente.checked) {
+    fileRequired.style.display = "none"
+    fileOptional.style.display = "inline"
+  } else {
+    fileRequired.style.display = "inline"
+    fileOptional.style.display = "none"
+  }
+}
+
+statusActivo.addEventListener("change", updateFileRequirement)
+statusPendiente.addEventListener("change", updateFileRequirement)
+
+updateFileRequirement()
+
 createDocumentForm.addEventListener("submit", function (e) {
   e.preventDefault()
 
   let isValid = true
 
-  // Validar nombre del documento
   const documentName = document.getElementById("documentName")
   const documentNameError = document.getElementById("documentNameError")
   if (documentName.value.trim() === "") {
@@ -141,19 +145,36 @@ createDocumentForm.addEventListener("submit", function (e) {
     documentName.classList.remove("error")
   }
 
-  // Validar archivo
   const documentFileError = document.getElementById("documentFileError")
-  if (documentFileInput.files.length === 0) {
-    documentFileError.textContent = "Debe seleccionar un archivo"
-    documentFileError.classList.add("show")
-    isValid = false
-  } else {
-    // Validar tamaño del archivo (máx 10MB)
-    const fileSize = documentFileInput.files[0].size / 1024 / 1024 // en MB
-    if (fileSize > 10) {
-      documentFileError.textContent = "El archivo no debe superar los 10MB"
+  const documentStatus = document.querySelector('input[name="documentStatus"]:checked').value
+
+  if (documentStatus === "activo") {
+    if (documentFileInput.files.length === 0) {
+      documentFileError.textContent = "Debe seleccionar un archivo para documentos activos"
       documentFileError.classList.add("show")
       isValid = false
+    } else {
+
+      const fileSize = documentFileInput.files[0].size / 1024 / 1024 
+      if (fileSize > 10) {
+        documentFileError.textContent = "El archivo no debe superar los 10MB"
+        documentFileError.classList.add("show")
+        isValid = false
+      } else {
+        documentFileError.classList.remove("show")
+      }
+    }
+  } else {
+
+    if (documentFileInput.files.length > 0) {
+      const fileSize = documentFileInput.files[0].size / 1024 / 1024
+      if (fileSize > 10) {
+        documentFileError.textContent = "El archivo no debe superar los 10MB"
+        documentFileError.classList.add("show")
+        isValid = false
+      } else {
+        documentFileError.classList.remove("show")
+      }
     } else {
       documentFileError.classList.remove("show")
     }
@@ -171,12 +192,9 @@ createDocumentForm.addEventListener("submit", function (e) {
     userSearchInput.classList.remove("error")
   }
 
-  // Si todo es válido, simular creación y redirigir
   if (isValid) {
-    // Mostrar mensaje de éxito
     successMessage.classList.add("show")
 
-    // Deshabilitar botón de envío
     const submitButton = this.querySelector(".btn-submit")
     submitButton.disabled = true
     submitButton.textContent = "Creando..."
@@ -184,12 +202,12 @@ createDocumentForm.addEventListener("submit", function (e) {
     setTimeout(() => {
       console.log("[v0] Documento creado:", {
         nombre: documentName.value,
-        archivo: documentFileInput.files[0].name,
+        estado: documentStatus,
+        archivo: documentFileInput.files.length > 0 ? documentFileInput.files[0].name : "Sin archivo",
         usuario: selectedUser,
         fechaVencimiento: document.getElementById("expirationDate").value,
       })
 
-      // Redirigir a administrar_documentos
       window.location.href = document.querySelector(".back-button").href
     }, 1500)
   }
