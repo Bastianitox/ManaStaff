@@ -1,116 +1,112 @@
+// ---------------- Utils ----------------
+function readTemplateJSON(id, fallback) {
+  const el = document.getElementById(id);
+  if (!el) return fallback;
+  try { return JSON.parse(el.textContent); } catch { return fallback; }
+}
+function esc(s) {
+  return String(s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
 
-const capFirst = (s)=>{ s=String(s||""); return s? s.charAt(0).toUpperCase()+s.slice(1): s; };
-const escapeHtml = (s)=> String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const readJSON = (id, fb)=>{ const el=document.getElementById(id); if(!el) return fb; try{return JSON.parse(el.textContent);}catch{return fb;} };
-
+// ---------------- State ----------------
 let currentFilter = "todos";
-const usuario   = readJSON("user-data", {nombre:"", rut:""});
-const documentos = readJSON("docs-data", []);
+const USUARIO = readTemplateJSON("usuario-data", { nombre: "Usuario", rut: "-", rut_visible: "-" });
+const DOCUMENTOS = readTemplateJSON("documentos-data", []);
 
-
+// ---------------- Init ----------------
 document.addEventListener("DOMContentLoaded", () => {
   renderUserInfo();
-  renderDocuments();
+  renderDocuments(DOCUMENTOS);
   initializeFilters();
   initializeSearch();
 });
 
-
+// ---------------- Render ----------------
 function renderUserInfo() {
   const employeeName = document.getElementById("employeeName");
   const employeeRut  = document.getElementById("employeeRut");
-  if (employeeName) employeeName.textContent = usuario.nombre || "—";
-  if (employeeRut)  employeeRut.textContent  = usuario.rut || "—";
+  if (employeeName) employeeName.textContent = USUARIO.nombre || "Usuario";
+  if (employeeRut)  employeeRut.textContent  = USUARIO.rut_visible || USUARIO.rut || "-";
 }
 
+function renderDocuments(lista) {
+  const container = document.getElementById("documentsGrid");
+  if (!container) return;
 
-function renderDocuments() {
-  const documentsGrid = document.getElementById("documentsGrid");
-  if (!documentsGrid) return;
+  container.innerHTML = "";
 
-  documentsGrid.innerHTML = "";
-
-  if (!documentos || documentos.length === 0) {
-    documentsGrid.innerHTML = `
+  if (!Array.isArray(lista) || lista.length === 0) {
+    container.innerHTML = `
       <div class="no-documents">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
         <p>No hay documentos disponibles para este usuario</p>
       </div>`;
     return;
   }
 
-  documentos.forEach((documento) => {
+  lista.forEach(d => {
     const card = document.createElement("div");
-    const estado = (documento.estado || "activo").toLowerCase();
+    const estado = String(d.estado || "activo").toLowerCase();
+    const nombre = d.nombre || d.titulo || "Documento";
+    const fecha  = d.fecha_subida || d.fecha || "";
 
     card.className = "document-card";
     card.setAttribute("data-status", estado);
-    card.setAttribute("data-nombre", (documento.nombre || "").toLowerCase());
+    card.setAttribute("data-nombre", nombre.toLowerCase());
 
     card.innerHTML = `
       <div class="document-header">
-        <h3 class="document-name">${escapeHtml(documento.nombre || "Documento")}</h3>
-        <span class="status-badge status-${estado}">
-          ${capFirst(estado)}
-        </span>
+        <div class="document-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="document-info">
+          <h4 class="document-title">${esc(nombre)}</h4>
+          <span class="status-badge ${esc(estado)}">
+            ${getStatusIcon(estado)}
+            ${estado.charAt(0).toUpperCase() + estado.slice(1)}
+          </span>
+        </div>
       </div>
 
-      <div class="document-info">
-        <div class="info-item">
-          <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      <div class="document-meta">
+        <div class="document-date">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span>Subido: ${escapeHtml(documento.fecha_subida || "")}</span>
+          Subido: ${esc(fecha)}
         </div>
       </div>
 
       <div class="document-actions">
-        <button class="action-btn btn-view" onclick="verDocumento('${String(documento.id)}')">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-          </svg>
-          Ver
-        </button>
-        <button class="action-btn btn-upload" onclick="subirDocumento('${String(documento.id)}')">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-          </svg>
-          Subir
-        </button>
-        <button class="action-btn btn-edit" onclick="modificarDocumento('${String(documento.id)}')">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
-          Modificar
-        </button>
-        <button class="action-btn btn-delete" onclick="eliminarDocumento('${String(documento.id)}')">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-          Eliminar
-        </button>
+        <button class="btn-view"   onclick="verDocumento('${esc(d.id || '')}', '${esc(d.url || '')}')">Ver</button>
+        <button class="btn-upload" onclick="subirDocumento('${esc(d.id || '')}')">Subir</button>
+        <button class="btn-modify" onclick="modificarDocumento('${esc(d.id || '')}')">Modificar</button>
+        <button class="btn-delete" onclick="eliminarDocumento('${esc(d.id || '')}')">Eliminar</button>
       </div>
     `;
-
-    documentsGrid.appendChild(card);
+    container.appendChild(card);
   });
 }
 
-
+// ---------------- Filtros & Búsqueda ----------------
 function initializeFilters() {
   const filterButtons = document.querySelectorAll(".status-tab");
-  filterButtons.forEach((button) => {
-    button.addEventListener("click", function () {
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", function () {
       const status = this.getAttribute("data-status");
       if (currentFilter === status) {
         currentFilter = "todos";
-        filterButtons.forEach((btn) => btn.classList.remove("active"));
+        filterButtons.forEach(b => b.classList.remove("active"));
       } else {
         currentFilter = status;
-        filterButtons.forEach((btn) => btn.classList.remove("active"));
+        filterButtons.forEach(b => b.classList.remove("active"));
         this.classList.add("active");
       }
       applyFilters();
@@ -120,37 +116,50 @@ function initializeFilters() {
 
 function initializeSearch() {
   const searchInput = document.getElementById("searchInput");
-  if (searchInput) searchInput.addEventListener("input", () => applyFilters());
+  if (searchInput) {
+    searchInput.addEventListener("input", applyFilters);
+  }
 }
 
 function applyFilters() {
-  const searchTerm = (document.getElementById("searchInput").value || "").toLowerCase();
-  const documentCards = document.querySelectorAll(".document-card");
-  documentCards.forEach((card) => {
-    const name = card.getAttribute("data-nombre") || "";
-    const st   = card.getAttribute("data-status") || "";
-    const okSearch = name.includes(searchTerm);
-    const okFilter = currentFilter === "todos" || st === currentFilter;
-    card.classList.toggle("hidden", !(okSearch && okFilter));
+  const term = (document.getElementById("searchInput").value || "").toLowerCase();
+  document.querySelectorAll(".document-card").forEach(card => {
+    const n = card.getAttribute("data-nombre") || "";
+    const st = card.getAttribute("data-status") || "";
+    const okSearch = n.includes(term);
+    const okStatus = currentFilter === "todos" || st === currentFilter;
+    card.classList.toggle("hidden", !(okSearch && okStatus));
   });
 }
 
-
-function verDocumento(docId) {
-  const base = (window.ROUTES && window.ROUTES.verDocumento) || "";
-  if (base) {
-    window.location.href = `${base}?docId=${encodeURIComponent(docId)}`;
+// ---------------- Acciones ----------------
+function verDocumento(id, url) {
+  if (url) {
+    window.open(url, "_blank");
   } else {
-
-    const doc = (documentos || []).find(d => String(d.id) === String(docId));
-    if (doc && doc.url) window.open(doc.url, "_blank", "noopener");
+    console.log("[verDocumento] Documento sin URL", id);
+    alert("Este documento no tiene archivo cargado todavía.");
   }
 }
-function subirDocumento(id){ console.log("[v0] Subir documento:", id); }
-function modificarDocumento(id){ console.log("[v0] Modificar documento:", id); }
+function subirDocumento(id){ console.log("Subir documento:", id); }
+function modificarDocumento(id){ console.log("Modificar documento:", id); }
 function eliminarDocumento(id){
-  console.log("[v0] Eliminar documento:", id);
-  if (confirm("¿Estás seguro de que deseas eliminar este documento?")) {
-  
+  if (confirm("¿Estás seguro de eliminar este documento?")) {
+    console.log("Eliminar documento:", id);
   }
+}
+
+function getStatusIcon(estado) {
+  const icons = {
+    "activo": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>`,
+    "pendiente": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+    </svg>`,
+    "caducado": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 001.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+    </svg>`
+  };
+  return icons[String(estado).toLowerCase()] || "";
 }

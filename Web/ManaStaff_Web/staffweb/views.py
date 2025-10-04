@@ -510,75 +510,93 @@ def crear_documento(request):
     return render(request, "staffweb/crear_documento.html")
 
 def documentos_usuarios(request):
-
-    def normalize_rut(value: str) -> str:
+    def normalize_rut(value):
         return ''.join(ch for ch in str(value or '') if ch.isdigit())
 
-    def formatear_rut(rut_limpio: str) -> str:
-        if not rut_limpio:
-            return ""
-        rut_sin_dv, dv = rut_limpio[:-1], rut_limpio[-1]
-        partes = []
-        while len(rut_sin_dv) > 3:
-            partes.insert(0, rut_sin_dv[-3:])
-            rut_sin_dv = rut_sin_dv[:-3]
-        partes.insert(0, rut_sin_dv)
-        return f"{'.'.join(partes)}-{dv}"
+    rut_qs = request.GET.get('rut', '')
+    rut_norm = normalize_rut(rut_qs)
 
-    def calcular_estado_y_fecha(fecha_str: str, url: str):
-        fecha_str = (fecha_str or "").strip()
-        estado = 'pendiente' if not url else 'activo'
-        fecha_show = fecha_str
-        if url and fecha_str:
-            try:
+    # --- Usuario ---
+    usuario = {}
+    try:
+        user_raw = database.child("Usuario").child(rut_norm).get().val()
+        if not isinstance(user_raw, dict):
+            user_raw = None
+        if not user_raw:
+            todos_users = database.child("Usuario").get().val() or {}
+            if isinstance(todos_users, dict):
+                user_raw = todos_users.get(rut_norm)
+        if isinstance(user_raw, dict):
+            nombre = f"{(user_raw.get('Nombre') or '').strip()} {(user_raw.get('ApellidoPaterno') or '').strip()}".strip()
+            usuario = {
+                "nombre": nombre or "Usuario",
+                "rut": rut_norm,
+                "rut_visible": rut_norm,
+                "imagen": user_raw.get("imagen") or "",
+            }
+        else:
+            usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
+    except Exception:
+        usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
+
+    # --- Documentos del RUT ---
+    def calcular_estado_y_fecha(fecha_emitida_str, url):
+        estado = 'activo'
+        if not url:
+            return 'pendiente', (fecha_emitida_str or "")
+
+        fecha_show = fecha_emitida_str or ""
+        try:
+            # formatos
+            for fmt in ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S.%f"):
                 try:
-                    f = datetime.strptime(fecha_str, "%d-%m-%Y")
+                    f = datetime.strptime(str(fecha_emitida_str).strip(), fmt)
+                    break
                 except ValueError:
-                    f = datetime.strptime(fecha_str, "%Y-%m-%d")
+                    f = None
+            if f:
                 if f < datetime.now() - timedelta(days=550):
                     estado = 'caducado'
                 fecha_show = f.strftime("%d/%m/%Y")
-            except Exception:
-                fecha_show = fecha_str
+        except Exception:
+            pass
         return estado, fecha_show
 
-    rut_qs = normalize_rut(request.GET.get("rut", ""))
-    if not rut_qs:
-        return redirect("administrar_documentos")
-
-    # Usuario 
-    usuario_raw = database.child("Usuario").child(rut_qs).get().val() or {}
-    nombre = f"{usuario_raw.get('Nombre','').strip()} {usuario_raw.get('ApellidoPaterno','').strip()}".strip() or rut_qs
-    usuario = {"nombre": nombre, "rut": formatear_rut(rut_qs)}
-
-    # Documentos del usuario 
-    documentos_raw = db.reference('Documentos').get() or {}
     documentos = []
-    for doc_id, data in (documentos_raw or {}).items():
+    try:
+        docs_raw = db.reference('Documentos').get() or {}
+        if not isinstance(docs_raw, dict):
+            docs_raw = {}
+    except Exception:
+        docs_raw = {}
+
+    for doc_id, data in docs_raw.items():
         if not isinstance(data, dict):
             continue
+
+        # Filtrar por el dueño
         rut_doc = normalize_rut(data.get('id_rut') or data.get('Rut') or data.get('rut'))
-        if rut_doc != rut_qs:
+        if rut_doc != rut_norm:
             continue
 
-        fecha_db = str(data.get('Fecha_emitida') or data.get('fecha_emitida') or '')
-        url = data.get('url') or ''
-        estado, fecha_show = calcular_estado_y_fecha(fecha_db, url)
+        estado, fecha_show = calcular_estado_y_fecha(
+            data.get('Fecha_emitida') or data.get('fecha_emitida'),
+            data.get('url')
+        )
 
         documentos.append({
             "id": doc_id,
             "nombre": data.get('nombre') or data.get('titulo') or 'Documento',
-            "estado": estado,                       # activo/pendiente/caducado
-            "fecha_subida": fecha_show or "",
-            "url": url,                             # para botón Ver
-            "tipo_documento": (data.get('tipo_documento') or 'PDF').upper(),
-            "tamano_archivo": str(data.get('tamano_archivo') or data.get('size') or ''),
-            "fecha_sort": fecha_db,                 # opcional para ordenar en el front si quieres
+            "estado": estado,
+            "fecha_subida": fecha_show,
+            "url": data.get('url') or "",
+            "tipo": (data.get('tipo_documento') or 'PDF').upper(),
+            "tamano": str(data.get('tamano_archivo') or data.get('size') or ''),
         })
 
     context = {
-        "user_json": json.dumps(usuario, ensure_ascii=False),
-        "docs_json": json.dumps(documentos, ensure_ascii=False),
+        "usuario_json": json.dumps(usuario, ensure_ascii=False),
+        "documentos_json": json.dumps(documentos, ensure_ascii=False),
     }
     return render(request, "staffweb/documentos_usuarios.html", context)
 #---------------------------------------------------------------------------------------------------------------------------------------

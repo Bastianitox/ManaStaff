@@ -2,61 +2,67 @@
 {% load static %}
 
 {% block head %}
+ <!--STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/documentos_usuarios.css' %}">
 <title>Documentos del Usuario</title>
 {% endblock head%}
 
 {% block principal %}
-
 <div class="header">
-  <div class="header-top-section">
-    <a href="{% url 'administrar_documentos' %}" class="back-button">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-      Volver
-    </a>
-  </div>
-  <h1>Documentos del Usuario</h1>
-  <p>Visualiza y gestiona todos los documentos del empleado</p>
+    <div class="header-top-section">
+        <a href="{% url 'administrar_documentos' %}" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Volver
+        </a>
+    </div>
+    <h1>Documentos del Usuario</h1>
+    <p>Visualiza y gestiona todos los documentos del empleado</p>
 </div>
 
+ <!--Tarjeta -->
 <div class="employee-info-card">
-  <div class="employee-details">
-    <div class="employee-label">Empleado</div>
-    <div class="employee-name" id="employeeName">Cargando...</div>
-  </div>
-  <div class="employee-rut-container">
-    <div class="employee-label">RUT</div>
-    <div class="employee-rut" id="employeeRut">-</div>
-  </div>
+    <div class="employee-details">
+        <div class="employee-label">Empleado</div>
+        <div class="employee-name" id="employeeName">Cargando...</div>
+    </div>
+    <div class="employee-rut-container">
+        <div class="employee-label">RUT</div>
+        <div class="employee-rut" id="employeeRut">-</div>
+    </div>
 </div>
 
+ <!--Buscador -->
 <div class="search-filter-section">
-  <div class="search-container">
-    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-    </svg>
-    <input type="text" class="search-input" placeholder="Buscar por nombre de documento..." id="searchInput">
-  </div>
+    <div class="search-container">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" 
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Buscar por nombre de documento..." id="searchInput">
+    </div>
 </div>
 
+ <!--Tabs -->
 <div class="status-tabs">
-  <button class="status-tab" data-status="todos">Todos</button>
-  <button class="status-tab" data-status="activo">Activos</button>
-  <button class="status-tab" data-status="pendiente">Pendientes</button>
-  <button class="status-tab" data-status="caducado">Caducados</button>
+    <button class="status-tab" data-status="todos">Todos</button>
+    <button class="status-tab" data-status="activo">Activos</button>
+    <button class="status-tab" data-status="pendiente">Pendientes</button>
+    <button class="status-tab" data-status="caducado">Caducados</button>
 </div>
 
 
-<script id="user-data" type="application/json">{{ user_json|default:"{}"|safe }}</script>
-<script id="docs-data" type="application/json">{{ docs_json|default:"[]"|safe }}</script>
+<div class="documents-grid" id="documentsGrid">
+</div>
 
-
-<script>
-  window.ROUTES = {
-    verDocumento: "{% url 'ver_documentos' %}"   
-  };
+<!-- INYECTAMOS DATA -->
+<script id="usuario-data" type="application/json">
+  {{ usuario_json|default:"{}"|safe }}
+</script>
+<script id="documentos-data" type="application/json">
+  {{ documentos_json|default:"[]"|safe }}
 </script>
 
 <script src="{% static 'staffweb/js/documentos_usuarios.js' %}"></script>
