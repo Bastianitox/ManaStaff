@@ -432,3 +432,10 @@
     justify-content: center;
   }
 }
+
+.success-message.is-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.success-message.is-error {
+  background: #ef4444;
+}

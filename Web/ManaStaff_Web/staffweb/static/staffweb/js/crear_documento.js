@@ -1,214 +1,132 @@
-const usuarios = [
-  { id: 1, nombre: "Juan Carlos Pérez González", rut: "12.345.678-9" },
-  { id: 2, nombre: "María Fernanda López Martínez", rut: "23.456.789-0" },
-  { id: 3, nombre: "Pedro Antonio Ramírez Silva", rut: "34.567.890-1" },
-  { id: 4, nombre: "Ana Sofía Torres Vargas", rut: "45.678.901-2" },
-  { id: 5, nombre: "Carlos Eduardo Morales Castro", rut: "56.789.012-3" },
-  { id: 6, nombre: "Valentina Isabel Rojas Muñoz", rut: "67.890.123-4" },
-  { id: 7, nombre: "Diego Alejandro Soto Herrera", rut: "78.901.234-5" },
-  { id: 8, nombre: "Camila Andrea Vega Flores", rut: "89.012.345-6" },
-  { id: 9, nombre: "Sebastián Ignacio Díaz Ponce", rut: "90.123.456-7" },
-  { id: 10, nombre: "Francisca Belén Núñez Ortiz", rut: "01.234.567-8" },
-]
 
-let selectedUser = null
+function readJSON(id, fb) {
+  const el = document.getElementById(id);
+  if (!el) return fb;
+  try { return JSON.parse(el.textContent); } catch { return fb; }
+}
+function normalizeRut(v){ return String(v||"").replace(/[^\d]/g,""); }
 
-const userSearchInput = document.getElementById("userSearch")
-const userDropdown = document.getElementById("userDropdown")
-const selectedUserDisplay = document.getElementById("selectedUserDisplay")
-const selectedUserIdInput = document.getElementById("selectedUserId")
-const documentFileInput = document.getElementById("documentFile")
-const fileNameSpan = document.getElementById("fileName")
-const createDocumentForm = document.getElementById("createDocumentForm")
-const successMessage = document.getElementById("successMessage")
-const statusActivo = document.getElementById("statusActivo")
-const statusPendiente = document.getElementById("statusPendiente")
-const fileRequired = document.getElementById("fileRequired")
-const fileOptional = document.getElementById("fileOptional")
+const USUARIOS = readJSON("usuarios-data", []);   
+const ESTADOS  = readJSON("estados-data", {});    
 
+let selectedUser = null;
+
+// elementos
+const userSearchInput      = document.getElementById("userSearch");
+const userDropdown         = document.getElementById("userDropdown");
+const selectedUserDisplay  = document.getElementById("selectedUserDisplay");
+const selectedUserIdInput  = document.getElementById("selectedUserId");
+const documentFileInput    = document.getElementById("documentFile");
+const fileNameSpan         = document.getElementById("fileName");
+const createDocumentForm   = document.getElementById("createDocumentForm");
+const statusActivo         = document.getElementById("statusActivo");
+const statusPendiente      = document.getElementById("statusPendiente");
+const fileRequired         = document.getElementById("fileRequired");
+const fileOptional         = document.getElementById("fileOptional");
+
+// buscador de usuarios 
 userSearchInput.addEventListener("input", function () {
-  const searchTerm = this.value.toLowerCase().trim()
+  const term = this.value.toLowerCase().trim();
+  if (!term) { userDropdown.classList.remove("show"); return; }
 
-  if (searchTerm.length === 0) {
-    userDropdown.classList.remove("show")
-    return
-  }
+  const matches = USUARIOS.filter(u =>
+    (u.nombre || "").toLowerCase().includes(term) ||
+    String(u.rut_visible || u.rut || "").includes(term)
+  );
 
-  const filteredUsers = usuarios.filter(
-    (user) => user.nombre.toLowerCase().includes(searchTerm) || user.rut.includes(searchTerm),
-  )
+  userDropdown.innerHTML = matches.length
+    ? matches.map(u => `
+        <div class="user-option" data-rut="${u.rut}" data-name="${u.nombre}">
+          <div class="user-option-name">${u.nombre}</div>
+          <div class="user-option-rut">${u.rut}</div>
+        </div>`).join("")
+    : `<div class="no-results">No se encontraron usuarios</div>`;
 
-  if (filteredUsers.length > 0) {
-    userDropdown.innerHTML = filteredUsers
-      .map(
-        (user) => `
-            <div class="user-option" data-user-id="${user.id}" data-user-name="${user.nombre}" data-user-rut="${user.rut}">
-                <div class="user-option-name">${user.nombre}</div>
-                <div class="user-option-rut">${user.rut}</div>
-            </div>
-        `,
-      )
-      .join("")
-    userDropdown.classList.add("show")
-  } else {
-    userDropdown.innerHTML = '<div class="no-results">No se encontraron usuarios</div>'
-    userDropdown.classList.add("show")
-  }
-})
+  userDropdown.classList.add("show");
+});
 
 userDropdown.addEventListener("click", (e) => {
-  const userOption = e.target.closest(".user-option")
-  if (userOption) {
-    const userId = userOption.dataset.userId
-    const userName = userOption.dataset.userName
-    const userRut = userOption.dataset.userRut
+  const opt = e.target.closest(".user-option");
+  if (!opt) return;
+  const rut = String(opt.dataset.rut);
+  const name = String(opt.dataset.name);
+  selectedUser = { rut, nombre: name };
 
-    selectedUser = { id: userId, nombre: userName, rut: userRut }
+  userSearchInput.value = "";
+  userDropdown.classList.remove("show");
 
-    userSearchInput.value = ""
-    selectedUserIdInput.value = userId
-    userDropdown.classList.remove("show")
+  selectedUserIdInput.value = normalizeRut(rut); 
+  selectedUserDisplay.innerHTML = `
+    <div class="selected-user-info">
+      <div class="selected-user-name">${name}</div>
+      <div class="selected-user-rut">${rut}</div>
+    </div>
+    <button type="button" class="remove-user" id="removeUserBtn">X</button>`;
+  selectedUserDisplay.classList.add("show");
 
-    selectedUserDisplay.innerHTML = `
-            <div class="selected-user-info">
-                <div class="selected-user-name">${userName}</div>
-                <div class="selected-user-rut">${userRut}</div>
-            </div>
-            <button type="button" class="remove-user" onclick="removeSelectedUser()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        `
-    selectedUserDisplay.classList.add("show")
+  document.getElementById("userSearchError")?.classList.remove("show");
 
-    document.getElementById("userSearchError").classList.remove("show")
-    userSearchInput.classList.remove("error")
-  }
-})
-
-function removeSelectedUser() {
-  selectedUser = null
-  selectedUserIdInput.value = ""
-  selectedUserDisplay.classList.remove("show")
-  selectedUserDisplay.innerHTML = ""
-}
+  document.getElementById("removeUserBtn").onclick = () => {
+    selectedUser = null;
+    selectedUserIdInput.value = "";
+    selectedUserDisplay.classList.remove("show");
+    selectedUserDisplay.innerHTML = "";
+  };
+});
 
 document.addEventListener("click", (e) => {
-  if (!e.target.closest(".search-wrapper")) {
-    userDropdown.classList.remove("show")
-  }
-})
+  if (!e.target.closest(".search-wrapper")) userDropdown.classList.remove("show");
+});
 
+// archivo
 documentFileInput.addEventListener("change", function () {
-  if (this.files.length > 0) {
-    const fileName = this.files[0].name
-    fileNameSpan.textContent = fileName
+  fileNameSpan.textContent = this.files?.[0]?.name || "Seleccionar archivo";
+  document.getElementById("documentFileError")?.classList.remove("show");
+});
 
-    document.getElementById("documentFileError").classList.remove("show")
-    this.classList.remove("error")
-  } else {
-    fileNameSpan.textContent = "Seleccionar archivo"
-  }
-})
-
+// estado
 function updateFileRequirement() {
-  if (statusPendiente.checked) {
-    fileRequired.style.display = "none"
-    fileOptional.style.display = "inline"
-  } else {
-    fileRequired.style.display = "inline"
-    fileOptional.style.display = "none"
-  }
+  const pendiente = statusPendiente.checked;
+  fileRequired.style.display = pendiente ? "none" : "inline";
+  fileOptional.style.display = pendiente ? "inline" : "none";
 }
+statusActivo.addEventListener("change", updateFileRequirement);
+statusPendiente.addEventListener("change", updateFileRequirement);
+updateFileRequirement();
 
-statusActivo.addEventListener("change", updateFileRequirement)
-statusPendiente.addEventListener("change", updateFileRequirement)
+// validación liviana
+createDocumentForm.addEventListener("submit", (e) => {
+  let ok = true;
 
-updateFileRequirement()
+  const nameEl = document.getElementById("documentName");
+  const nameErr = document.getElementById("documentNameError");
+  if (!nameEl.value.trim()) {
+    nameErr.textContent = "El nombre del documento es obligatorio";
+    nameErr.classList.add("show"); nameEl.classList.add("error"); ok = false;
+  } else { nameErr.classList.remove("show"); nameEl.classList.remove("error"); }
 
-createDocumentForm.addEventListener("submit", function (e) {
-  e.preventDefault()
-
-  let isValid = true
-
-  const documentName = document.getElementById("documentName")
-  const documentNameError = document.getElementById("documentNameError")
-  if (documentName.value.trim() === "") {
-    documentNameError.textContent = "El nombre del documento es obligatorio"
-    documentNameError.classList.add("show")
-    documentName.classList.add("error")
-    isValid = false
+  const status = document.querySelector('input[name="documentStatus"]:checked')?.value || "activo";
+  const fileErr = document.getElementById("documentFileError");
+  if (status === "activo") {
+    if (!documentFileInput.files.length) {
+      fileErr.textContent = "Debe seleccionar un archivo para documentos activos";
+      fileErr.classList.add("show"); ok = false;
+    } else if ((documentFileInput.files[0].size / 1024 / 1024) > 10) {
+      fileErr.textContent = "El archivo no debe superar los 10MB";
+      fileErr.classList.add("show"); ok = false;
+    } else { fileErr.classList.remove("show"); }
   } else {
-    documentNameError.classList.remove("show")
-    documentName.classList.remove("error")
+    if (documentFileInput.files.length &&
+        (documentFileInput.files[0].size / 1024 / 1024) > 10) {
+      fileErr.textContent = "El archivo no debe superar los 10MB";
+      fileErr.classList.add("show"); ok = false;
+    } else { fileErr.classList.remove("show"); }
   }
 
-  const documentFileError = document.getElementById("documentFileError")
-  const documentStatus = document.querySelector('input[name="documentStatus"]:checked').value
+  const selectedRut = selectedUserIdInput.value;
+  const userErr = document.getElementById("userSearchError");
+  if (!selectedRut) { userErr.textContent = "Debe seleccionar un usuario"; userErr.classList.add("show"); ok = false; }
+  else { userErr.classList.remove("show"); }
 
-  if (documentStatus === "activo") {
-    if (documentFileInput.files.length === 0) {
-      documentFileError.textContent = "Debe seleccionar un archivo para documentos activos"
-      documentFileError.classList.add("show")
-      isValid = false
-    } else {
-
-      const fileSize = documentFileInput.files[0].size / 1024 / 1024 
-      if (fileSize > 10) {
-        documentFileError.textContent = "El archivo no debe superar los 10MB"
-        documentFileError.classList.add("show")
-        isValid = false
-      } else {
-        documentFileError.classList.remove("show")
-      }
-    }
-  } else {
-
-    if (documentFileInput.files.length > 0) {
-      const fileSize = documentFileInput.files[0].size / 1024 / 1024
-      if (fileSize > 10) {
-        documentFileError.textContent = "El archivo no debe superar los 10MB"
-        documentFileError.classList.add("show")
-        isValid = false
-      } else {
-        documentFileError.classList.remove("show")
-      }
-    } else {
-      documentFileError.classList.remove("show")
-    }
-  }
-
-  const userSearchError = document.getElementById("userSearchError")
-  const selectedUserId = document.getElementById("selectedUserId").value
-  if (!selectedUserId || selectedUserId.trim() === "") {
-    userSearchError.textContent = "Debe seleccionar un usuario"
-    userSearchError.classList.add("show")
-    userSearchInput.classList.add("error")
-    isValid = false
-  } else {
-    userSearchError.classList.remove("show")
-    userSearchInput.classList.remove("error")
-  }
-
-  if (isValid) {
-    successMessage.classList.add("show")
-
-    const submitButton = this.querySelector(".btn-submit")
-    submitButton.disabled = true
-    submitButton.textContent = "Creando..."
-
-    setTimeout(() => {
-      console.log("[v0] Documento creado:", {
-        nombre: documentName.value,
-        estado: documentStatus,
-        archivo: documentFileInput.files.length > 0 ? documentFileInput.files[0].name : "Sin archivo",
-        usuario: selectedUser,
-        fechaVencimiento: document.getElementById("expirationDate").value,
-      })
-
-      window.location.href = document.querySelector(".back-button").href
-    }, 1500)
-  }
-})
+  if (!ok) e.preventDefault();
+});
