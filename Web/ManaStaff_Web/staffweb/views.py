@@ -1143,4 +1143,4 @@ def editar_publicacion(request, pub_id):
 # Eliminar
 def eliminar_publicacion(request, pub_id):
     eliminar_publicacion_funcion(pub_id)
-    return redirect("eliminar_publicacion")
+    return redirect("administrar_noticiasyeventos")
