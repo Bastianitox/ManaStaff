@@ -1,5 +1,5 @@
 (function () {
-  //Utils 
+  // Utils
   function readTemplateJSON(id, fallback) {
     const el = document.getElementById(id);
     if (!el) return fallback;
@@ -19,7 +19,7 @@
   const BLOQUES = readTemplateJSON('users-docs-data', []);
   const usersContainer = document.getElementById('usersContainer');
 
-  // Render
+  // Render 
   function renderUsersBlocks(blocks) {
     if (!usersContainer) return;
     usersContainer.innerHTML = blocks.map(b => usuarioBlockHTML(b)).join('');
@@ -83,8 +83,7 @@
         </div>
 
         <div class="document-actions">
-          <button class="btn-view"   onclick="verDocumento('${esc(d.id || '')}')">Ver</button>
-          <button class="btn-upload" onclick="subirDocumento('${esc(d.id || '')}')">Subir</button>
+          <button class="btn-view"   onclick="verDocumento('${esc(d.id || '')}', '${esc(d.url || '')}')">Ver</button>
           <button class="btn-modify" onclick="modificarDocumento('${esc(d.id || '')}')">Modificar</button>
           <button class="btn-delete" onclick="eliminarDocumento('${esc(d.id || '')}')">Eliminar</button>
         </div>
@@ -93,18 +92,19 @@
   }
 
   // Acciones
-  window.verDocumento = id => console.log('Ver documento:', id);
-  window.subirDocumento = id => console.log('Subir documento:', id);
-  
-  // MODIFICAR 
+    // ver
+  window.verDocumento = (id, url) => {
+    if (url) { window.open(url, '_blank'); }
+    else { alert('Este documento no tiene archivo cargado todavía.'); }
+  };
+    // modificar
   window.modificarDocumento = (id) => {
     const tpl = (window.ROUTES && window.ROUTES.modificarDocumento) || '/modificar_documento/DOC_ID';
     const url = tpl.replace('DOC_ID', encodeURIComponent(id));
-    const next = window.location.href; // volvemos aquí después
+    const next = window.location.href;
     window.location.href = `${url}?next=${encodeURIComponent(next)}`;
   };
-
-  // ELIMINAR
+    // eliminar
   window.eliminarDocumento = id => {
     if (!id) return;
     if (!confirm('¿Eliminar este documento definitivamente?')) return;
@@ -121,11 +121,8 @@
     .then(r => r.json())
     .then(res => {
       if (res.ok) {
-        // Quitar todas las tarjetas que correspondan a ese id
         document.querySelectorAll('.document-card').forEach(card => {
-          if ((card.getAttribute('data-doc-id') || '') === id) {
-            card.remove();
-          }
+          if ((card.getAttribute('data-doc-id') || '') === id) card.remove();
         });
         alert('Documento eliminado.');
       } else {

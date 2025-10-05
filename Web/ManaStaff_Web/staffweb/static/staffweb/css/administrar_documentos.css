@@ -320,21 +320,23 @@
 /* Botones de acción */
 .document-actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .document-actions button {
-  padding: 10px 16px;
+  width: 100%;
+  padding: 12px 0;      
   border: none;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; 
   gap: 6px;
 }
 
@@ -354,25 +356,14 @@
   transform: translateY(-2px);
 }
 
-.btn-upload {
+.btn-modify {
   background: #8b5cf6;
   color: white;
 }
 
-.btn-upload:hover {
+.btn-modify:hover {
   background: #7c3aed;
   box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
-  transform: translateY(-2px);
-}
-
-.btn-modify {
-  background: #10b981;
-  color: white;
-}
-
-.btn-modify:hover {
-  background: #059669;
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
   transform: translateY(-2px);
 }
 
@@ -409,6 +400,21 @@
 
   .document-actions {
     grid-template-columns: 1fr;
+  }
+
+  .document-actions button {
+    width: 100%;
+    padding: 12px 0; 
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
 }
 

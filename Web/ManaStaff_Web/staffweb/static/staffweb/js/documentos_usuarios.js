@@ -1,4 +1,4 @@
-// Utils 
+//Utils
 function readTemplateJSON(id, fallback) {
   const el = document.getElementById(id);
   if (!el) return fallback;
@@ -14,12 +14,12 @@ function getCSRFToken() {
   return m ? decodeURIComponent(m[1]) : "";
 }
 
-//  State 
+// State
 let currentFilter = "todos";
 const USUARIO    = readTemplateJSON("usuario-data", { nombre: "Usuario", rut: "-", rut_visible: "-" });
 const DOCUMENTOS = readTemplateJSON("documentos-data", []);
 
-//  Init 
+// Init
 document.addEventListener("DOMContentLoaded", () => {
   renderUserInfo();
   renderDocuments(DOCUMENTOS);
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeSearch();
 });
 
-//  Render 
+// Render
 function renderUserInfo() {
   const employeeName = document.getElementById("employeeName");
   const employeeRut  = document.getElementById("employeeRut");
@@ -93,7 +93,6 @@ function renderDocuments(lista) {
 
       <div class="document-actions">
         <button class="btn-view"   onclick="verDocumento('${esc(d.id || '')}', '${esc(d.url || '')}')">Ver</button>
-        <button class="btn-upload" onclick="subirDocumento('${esc(d.id || '')}')">Subir</button>
         <button class="btn-modify" onclick="modificarDocumento('${esc(d.id || '')}')">Modificar</button>
         <button class="btn-delete" onclick="eliminarDocumento('${esc(d.id || '')}')">Eliminar</button>
       </div>
@@ -102,7 +101,7 @@ function renderDocuments(lista) {
   });
 }
 
-//  Filtros & Búsqueda 
+//Filtros & Búsqueda
 function initializeFilters() {
   const filterButtons = document.querySelectorAll(".status-tab");
   filterButtons.forEach((btn) => {
@@ -139,26 +138,22 @@ function applyFilters() {
   });
 }
 
-// Acciones 
+//Acciones
 function verDocumento(id, url) {
   if (url) {
     window.open(url, "_blank");
   } else {
-    console.log("[verDocumento] Documento sin URL", id);
     alert("Este documento no tiene archivo cargado todavía.");
   }
 }
-function subirDocumento(id){ console.log("Subir documento:", id); }
 
-// Modificar
 function modificarDocumento(id){
   const tpl = (window.ROUTES && window.ROUTES.modificarDocumento) || '/modificar_documento/DOC_ID';
   const url = tpl.replace('DOC_ID', encodeURIComponent(id));
-  const next = window.location.href; // al terminar volvemos a esta vista
+  const next = window.location.href;
   window.location.href = `${url}?next=${encodeURIComponent(next)}`;
 }
 
-// Eliminar
 function eliminarDocumento(id){
   if (!id) return;
   if (!confirm("¿Estás seguro de eliminar este documento?")) return;
@@ -175,7 +170,6 @@ function eliminarDocumento(id){
   .then(r => r.json())
   .then(res => {
     if (res.ok) {
-      // eliminar la card visualmente
       document.querySelectorAll('.document-card').forEach(card => {
         if ((card.getAttribute('data-doc-id') || '') === id) {
           card.remove();
