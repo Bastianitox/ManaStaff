@@ -54,7 +54,7 @@
   color: #9ca3af;
 }
 
-/* Tabs - FILTRO POR STATUS */
+/* Tabs */
 .status-tabs {
   display: flex;
   gap: 10px;
@@ -182,7 +182,7 @@
   display: none;
 }
 
-/* Grid de documentos - solo 2 columnas */
+/* Grid de documentos*/
 .documents-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

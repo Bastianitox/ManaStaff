@@ -1,19 +1,25 @@
-// ---------------- Utils ----------------
+// Utils 
 function readTemplateJSON(id, fallback) {
   const el = document.getElementById(id);
   if (!el) return fallback;
   try { return JSON.parse(el.textContent); } catch { return fallback; }
 }
 function esc(s) {
-  return String(s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(s || "").replace(/[&<>"']/g, m => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+  ));
+}
+function getCSRFToken() {
+  const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
 }
 
-// ---------------- State ----------------
+//  State 
 let currentFilter = "todos";
-const USUARIO = readTemplateJSON("usuario-data", { nombre: "Usuario", rut: "-", rut_visible: "-" });
+const USUARIO    = readTemplateJSON("usuario-data", { nombre: "Usuario", rut: "-", rut_visible: "-" });
 const DOCUMENTOS = readTemplateJSON("documentos-data", []);
 
-// ---------------- Init ----------------
+//  Init 
 document.addEventListener("DOMContentLoaded", () => {
   renderUserInfo();
   renderDocuments(DOCUMENTOS);
@@ -21,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeSearch();
 });
 
-// ---------------- Render ----------------
+//  Render 
 function renderUserInfo() {
   const employeeName = document.getElementById("employeeName");
   const employeeRut  = document.getElementById("employeeRut");
@@ -48,7 +54,7 @@ function renderDocuments(lista) {
   }
 
   lista.forEach(d => {
-    const card = document.createElement("div");
+    const card  = document.createElement("div");
     const estado = String(d.estado || "activo").toLowerCase();
     const nombre = d.nombre || d.titulo || "Documento";
     const fecha  = d.fecha_subida || d.fecha || "";
@@ -56,6 +62,7 @@ function renderDocuments(lista) {
     card.className = "document-card";
     card.setAttribute("data-status", estado);
     card.setAttribute("data-nombre", nombre.toLowerCase());
+    card.setAttribute("data-doc-id", d.id || "");
 
     card.innerHTML = `
       <div class="document-header">
@@ -95,7 +102,7 @@ function renderDocuments(lista) {
   });
 }
 
-// ---------------- Filtros & Búsqueda ----------------
+//  Filtros & Búsqueda 
 function initializeFilters() {
   const filterButtons = document.querySelectorAll(".status-tab");
   filterButtons.forEach((btn) => {
@@ -124,7 +131,7 @@ function initializeSearch() {
 function applyFilters() {
   const term = (document.getElementById("searchInput").value || "").toLowerCase();
   document.querySelectorAll(".document-card").forEach(card => {
-    const n = card.getAttribute("data-nombre") || "";
+    const n  = card.getAttribute("data-nombre") || "";
     const st = card.getAttribute("data-status") || "";
     const okSearch = n.includes(term);
     const okStatus = currentFilter === "todos" || st === currentFilter;
@@ -132,7 +139,7 @@ function applyFilters() {
   });
 }
 
-// ---------------- Acciones ----------------
+// Acciones 
 function verDocumento(id, url) {
   if (url) {
     window.open(url, "_blank");
@@ -143,10 +150,36 @@ function verDocumento(id, url) {
 }
 function subirDocumento(id){ console.log("Subir documento:", id); }
 function modificarDocumento(id){ console.log("Modificar documento:", id); }
+
+// Eliminar
 function eliminarDocumento(id){
-  if (confirm("¿Estás seguro de eliminar este documento?")) {
-    console.log("Eliminar documento:", id);
-  }
+  if (!id) return;
+  if (!confirm("¿Estás seguro de eliminar este documento?")) return;
+
+  const endpoint = (window.ROUTES && window.ROUTES.eliminarDocumento) || "/eliminar_documento";
+  fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCSRFToken()
+    },
+    body: JSON.stringify({ doc_id: id })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.ok) {
+      // eliminar la card visualmente
+      document.querySelectorAll('.document-card').forEach(card => {
+        if ((card.getAttribute('data-doc-id') || '') === id) {
+          card.remove();
+        }
+      });
+      alert("Documento eliminado.");
+    } else {
+      alert("No se pudo eliminar: " + (res.error || "Error desconocido"));
+    }
+  })
+  .catch(() => alert("Error de red al eliminar."));
 }
 
 function getStatusIcon(estado) {

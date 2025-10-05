@@ -65,6 +65,11 @@
   {{ documentos_json|default:"[]"|safe }}
 </script>
 
+<script>
+  window.ROUTES = window.ROUTES || {};
+  window.ROUTES.eliminarDocumento = "{% url 'eliminar_documento' %}";
+</script>
+
 <script src="{% static 'staffweb/js/documentos_usuarios.js' %}"></script>
 
 {% endblock principal %}

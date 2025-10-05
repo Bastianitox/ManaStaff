@@ -1,29 +1,34 @@
 (function () {
-  // --- Utils ---
+  //Utils 
   function readTemplateJSON(id, fallback) {
-    const el = document.getElementById(id)
-    if (!el) return fallback
-    try { return JSON.parse(el.textContent) } catch { return fallback }
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    try { return JSON.parse(el.textContent); } catch { return fallback; }
   }
   function esc(s) {
-    return String(s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))
+    return String(s || "").replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+  function getCSRFToken() {
+    const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
   }
 
-  // --- Data ---
-  const BLOQUES = readTemplateJSON('users-docs-data', [])
-  const usersContainer = document.getElementById('usersContainer')
+  // Data 
+  const BLOQUES = readTemplateJSON('users-docs-data', []);
+  const usersContainer = document.getElementById('usersContainer');
 
-  // --- Render ---
+  // Render
   function renderUsersBlocks(blocks) {
-    if (!usersContainer) return
-    usersContainer.innerHTML = blocks.map(b => usuarioBlockHTML(b)).join('')
+    if (!usersContainer) return;
+    usersContainer.innerHTML = blocks.map(b => usuarioBlockHTML(b)).join('');
   }
 
   function usuarioBlockHTML(b) {
-    const baseHref = (window.ROUTES && window.ROUTES.documentosUsuarios) || '#'
-    const verMasHref = `${baseHref}?rut=${encodeURIComponent(b.rut)}`
-    const docsHTML = (b.documentos || []).map(d => documentoCardHTML(d)).join('')
-
+    const baseHref = (window.ROUTES && window.ROUTES.documentosUsuarios) || '#';
+    const verMasHref = `${baseHref}?rut=${encodeURIComponent(b.rut)}`;
+    const docsHTML = (b.documentos || []).map(d => documentoCardHTML(d)).join('');
 
     return `
       <div class="bloque-usuario" data-user-id="${esc(b.rut)}">
@@ -38,28 +43,27 @@
           ${docsHTML || ''}
         </div>
       </div>
-    `
+    `;
   }
 
   function documentoCardHTML(d) {
-    const estado = String(d.estado || 'activo').toLowerCase()
-    const titulo = d.titulo || d.nombre || 'Documento'
-    const fecha  = d.fecha || d.fecha_subida || ''
+    const estado = String(d.estado || 'activo').toLowerCase();
+    const titulo = d.titulo || d.nombre || 'Documento';
+    const fecha  = d.fecha || d.fecha_subida || '';
 
     const docSVG = `
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-      </svg>`
-
+      </svg>`;
 
     const badge =
       `<span class="status-badge ${estado}">
          ${estado.charAt(0).toUpperCase() + estado.slice(1)}
-       </span>`
+       </span>`;
 
     return `
-      <div class="document-card" data-status="${esc(estado)}">
+      <div class="document-card" data-doc-id="${esc(d.id || '')}" data-status="${esc(estado)}">
         <div class="document-header">
           <div class="document-icon">${docSVG}</div>
           <div class="document-info">
@@ -85,44 +89,72 @@
           <button class="btn-delete" onclick="eliminarDocumento('${esc(d.id || '')}')">Eliminar</button>
         </div>
       </div>
-    `
+    `;
   }
 
+  // Acciones
+  window.verDocumento = id => console.log('Ver documento:', id);
+  window.subirDocumento = id => console.log('Subir documento:', id);
+  window.modificarDocumento = id => console.log('Modificar documento:', id);
 
-  window.verDocumento = id => console.log('Ver documento:', id)
-  window.subirDocumento = id => console.log('Subir documento:', id)
-  window.modificarDocumento = id => console.log('Modificar documento:', id)
+  // ELIMINAR
   window.eliminarDocumento = id => {
-    if (confirm('¿Eliminar documento?')) console.log('Eliminar documento:', id)
-  }
+    if (!id) return;
+    if (!confirm('¿Eliminar este documento definitivamente?')) return;
 
+    const url = (window.ROUTES && window.ROUTES.eliminarDocumento) || '/eliminar_documento';
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+      },
+      body: JSON.stringify({ doc_id: id })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok) {
+        // Quitar todas las tarjetas que correspondan a ese id
+        document.querySelectorAll('.document-card').forEach(card => {
+          if ((card.getAttribute('data-doc-id') || '') === id) {
+            card.remove();
+          }
+        });
+        alert('Documento eliminado.');
+      } else {
+        alert('No se pudo eliminar: ' + (res.error || 'Error desconocido'));
+      }
+    })
+    .catch(() => alert('Error de red al eliminar.'));
+  };
 
+  // Init
   document.addEventListener('DOMContentLoaded', () => {
-    renderUsersBlocks(BLOQUES)
+    renderUsersBlocks(BLOQUES);
 
-    const searchInput = document.getElementById('searchInput')
+    const searchInput = document.getElementById('searchInput');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase()
+        const term = e.target.value.toLowerCase();
         document.querySelectorAll('.bloque-usuario').forEach(block => {
-          const name = (block.querySelector('.usuario-nombre')?.textContent || '').toLowerCase()
-          const rut  = (block.querySelector('.usuario-rut')?.textContent || '').toLowerCase()
-          block.style.display = (name.includes(term) || rut.includes(term)) ? '' : 'none'
-        })
-      })
+          const name = (block.querySelector('.usuario-nombre')?.textContent || '').toLowerCase();
+          const rut  = (block.querySelector('.usuario-rut')?.textContent || '').toLowerCase();
+          block.style.display = (name.includes(term) || rut.includes(term)) ? '' : 'none';
+        });
+      });
     }
 
-    const tabs = document.querySelectorAll('.status-tab')
+    const tabs = document.querySelectorAll('.status-tab');
     tabs.forEach(tab => {
       tab.addEventListener('click', function () {
-        tabs.forEach(t => t.classList.remove('active'))
-        this.classList.add('active')
-        const selected = this.getAttribute('data-status')
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const selected = this.getAttribute('data-status');
         document.querySelectorAll('.document-card').forEach(card => {
-          const st = card.getAttribute('data-status')
-          card.style.display = (selected === 'todos' || st === selected) ? '' : 'none' // mantiene grid
-        })
-      })
-    })
-  })
+          const st = card.getAttribute('data-status');
+          card.style.display = (selected === 'todos' || st === selected) ? '' : 'none';
+        });
+      });
+    });
+  });
 })();

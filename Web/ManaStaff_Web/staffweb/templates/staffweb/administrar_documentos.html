@@ -58,6 +58,10 @@
 </script>
 
 <script>
+  window.ROUTES.eliminarDocumento = "{% url 'eliminar_documento' %}";
+</script>
+
+<script>
 
   const goDocsUsuario = (rut) => {
     const limpio = String(rut).replace(/[^\dkK]/g, "");

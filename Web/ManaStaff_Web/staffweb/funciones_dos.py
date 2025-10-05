@@ -11,6 +11,7 @@ from urllib.parse import unquote_plus
 import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
+from urllib.parse import urlparse, unquote, parse_qs
 #-----------------------------------------PIN--------------------------------------------------
 from django.views.decorators.csrf import csrf_exempt
 
@@ -48,8 +49,14 @@ def validar_pin(request):
     else:
         return JsonResponse({"ok": False, "error": "PIN incorrecto."}, status=403)
 
-#----------------------------------------------------------------------------------------------
 
+
+
+
+
+
+
+#-----------------------------------------------------------------------------------------------
 def funcion_dos(request):
     pass
 
