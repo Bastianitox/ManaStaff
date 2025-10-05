@@ -1148,25 +1148,23 @@ def eliminar_publicacion(request, pub_id):
 
 #--------------------------------------------------------------------------------#
 def perfil(request):
-    # ID del usuario guardado en la sesión
     usuario_id = request.session.get('usuario_id')
     if not usuario_id:
         messages.error(request, "No se encontró la sesión del usuario.")
         return redirect('login')
 
-    # Obtener datos del usuario
     usuario = obtener_datos_usuario(usuario_id)
 
-    # Si se envía el formulario
     if request.method == "POST":
-        nuevo_telefono = request.POST.get("celular", "").strip()
+        nuevo_celular = request.POST.get("celular", "").strip()
         nueva_direccion = request.POST.get("direccion", "").strip()
 
-        if not nuevo_telefono or not nueva_direccion:
-            messages.warning(request, "Debe completar ambos campos para guardar los cambios.")
+        if not nuevo_celular or not nueva_direccion:
+            messages.warning(request, "Por favor completa ambos campos.")
         else:
-            actualizar_datos_usuario(usuario_id, nuevo_telefono, nueva_direccion)
-            messages.success(request, "Datos actualizados correctamente.")
+            actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion)
+            messages.success(request, "Datos guardados correctamente.")
             return redirect('perfil')
 
-    return render(request, "staffweb/perfil.html", {"usuario": usuario})
+    return render(request, "staffweb/perfil.html", {"usuario": usuario, "usuario_id": usuario_id})
+
