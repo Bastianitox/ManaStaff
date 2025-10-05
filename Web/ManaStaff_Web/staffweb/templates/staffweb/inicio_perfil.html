@@ -5,13 +5,10 @@
 
 {% block head %}
 <div class="contenido">
-
-  <!-- STATIC CSS -->
   <link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
   <script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
-  
 </div>
-{% endblock head%}
+{% endblock head %}
 
 {% block principal %}
 <div class="header">
@@ -25,28 +22,24 @@
         <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil" class="foto">
         <button type="button" class="btn-foto">Cambiar foto</button>
     </div>
-    <form method="post">
-        {% csrf_token %}
-=======
 
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
         <div class="fila">
             <div class="campo">
                 <label for="nombres">Nombres</label>
-                <input type="text" id="nombres" value="{{ usuario.nombre }}" readonly>
+                <input type="text" id="nombres" value="{{ usuario.nombre }} {{ usuario.segundo_nombre }}" readonly>
             </div>
             <div class="campo">
                 <label for="apellidos">Apellidos</label>
-                <input type="text" id="apellidos" value="{{ usuario.apellido }}" readonly>
+                <input type="text" id="apellidos" value="{{ usuario.apellido_paterno }} {{ usuario.apellido_materno }}" readonly>
             </div>
         </div>
 
         <div class="fila">
             <div class="campo">
                 <label for="rut">RUT</label>
-                <input type="text" id="rut" value="{{ usuario.rut }}" readonly>
+                <input type="text" id="rut" value="{{ usuario_id }}" readonly>
             </div>
             <div class="campo">
                 <label for="correo">Correo Electrónico</label>
@@ -60,30 +53,26 @@
                 <input type="text" id="cargo" value="{{ usuario.cargo }}" readonly>
             </div>
             <div class="campo">
-                <label for="cargo">Rol</label>
-                <input type="text" id="cargo" value="{{ usuario.rol }}" readonly>
+                <label for="rol">Rol</label>
+                <input type="text" id="rol" value="{{ usuario.rol }}" readonly>
             </div>
             <div class="campo">
                 <label for="celular">Número de Celular</label>
-                <input type="text" id="celular" value="{{ usuario.celular }}">
+                <input type="text" id="celular" name="celular" value="{{ usuario.telefono }}">
             </div>
         </div>
 
         <div class="fila">
             <div class="campo">
                 <label for="direccion">Dirección</label>
-                <input type="text" id="direccion" value="{{ usuario.direccion }}">
+                <input type="text" id="direccion" name="direccion" value="{{ usuario.direccion }}">
             </div>
         </div>
 
         <div class="acciones">
-          <a href="{% url 'cambiar_contrasena' %}" class="btn-secundario">
-            Cambiar Contraseña
-        </a>
-         <a href="{% url 'cambiar_pin' %}" class="btn-secundario">
-            Cambiar Pin
-        </a>
-            <button type="submit" class="btn-guardar">Guardar Cambios</button>
+          <a href="{% url 'cambiar_contrasena' %}" class="btn-secundario">Cambiar Contraseña</a>
+          <a href="{% url 'cambiar_pin' %}" class="btn-secundario">Cambiar Pin</a>
+          <button type="submit" class="btn-guardar">Guardar Cambios</button>
         </div>
     </form>
 </div>

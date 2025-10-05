@@ -91,3 +91,45 @@ def eliminar_publicacion_funcion(pub_id):
     database.child()
     ref = db.reference(f"Anuncio/{pub_id}")
     ref.delete()
+
+
+
+
+#--------------------------------------------------------------------------------#
+def obtener_datos_usuario(usuario_id):
+    """
+    Obtiene los datos del usuario desde Firebase.
+    """
+    datos = database.child("Usuario").child(usuario_id).get().val()
+    if not datos:
+        return {}
+
+    # Buscar el nombre del cargo
+    cargo_id = datos.get("Cargo")
+    cargo_nombre = ""
+    if cargo_id:
+        cargo_data = database.child("Cargo").child(cargo_id).get().val()
+        if cargo_data:
+            cargo_nombre = cargo_data.get("Nombre", "")
+
+    usuario = {
+        "nombre": datos.get("Nombre", ""),
+        "segundo_nombre": datos.get("Segundo_nombre", ""),
+        "apellido_paterno": datos.get("ApellidoPaterno", ""),
+        "apellido_materno": datos.get("ApellidoMaterno", ""),
+        "correo": datos.get("correo", ""),
+        "telefono": datos.get("Telefono", ""),
+        "direccion": datos.get("Direccion", ""),
+        "cargo": cargo_nombre,
+    }
+    return usuario
+
+
+def actualizar_datos_usuario(usuario_id, nuevo_telefono, nueva_direccion):
+    """
+    Actualiza solo el teléfono y dirección del usuario en Firebase.
+    """
+    database.child("Usuario").child(usuario_id).update({
+        "Telefono": nuevo_telefono,
+        "Direccion": nueva_direccion
+    })

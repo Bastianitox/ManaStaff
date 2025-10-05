@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST
 from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
 
-from .funciones_dos import listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
+from .funciones_dos import obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
 
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
@@ -1144,3 +1144,29 @@ def editar_publicacion(request, pub_id):
 def eliminar_publicacion(request, pub_id):
     eliminar_publicacion_funcion(pub_id)
     return redirect("administrar_noticiasyeventos")
+
+
+#--------------------------------------------------------------------------------#
+def perfil(request):
+    # ID del usuario guardado en la sesión
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        messages.error(request, "No se encontró la sesión del usuario.")
+        return redirect('login')
+
+    # Obtener datos del usuario
+    usuario = obtener_datos_usuario(usuario_id)
+
+    # Si se envía el formulario
+    if request.method == "POST":
+        nuevo_telefono = request.POST.get("celular", "").strip()
+        nueva_direccion = request.POST.get("direccion", "").strip()
+
+        if not nuevo_telefono or not nueva_direccion:
+            messages.warning(request, "Debe completar ambos campos para guardar los cambios.")
+        else:
+            actualizar_datos_usuario(usuario_id, nuevo_telefono, nueva_direccion)
+            messages.success(request, "Datos actualizados correctamente.")
+            return redirect('perfil')
+
+    return render(request, "staffweb/perfil.html", {"usuario": usuario})
