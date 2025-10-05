@@ -889,9 +889,11 @@ def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=
 
 #--------------------------------------------------------------------------------#
 
-def crear_noticiasyeventos(request):
-    return render(request, "staffweb/crear_noticiasyeventos.html")
+def editar_noticiasyeventos(request):
+    return render(request, "staffweb/editar_noticiasyeventos.html")
 
+def crear_publicacion(request):
+    return render(request, "staffweb/crear_publicacion.html")
 
 def administrar_noticiasyeventos(request):
     anuncios = listar_publicaciones()
@@ -923,7 +925,7 @@ def crear_publicacion(request):
         crear_publicacion_funcion(data)
         return redirect("administrar_noticiasyeventos")
 
-    return render(request, "staffweb/crear_noticiasyeventos.html")
+    return render(request, "staffweb/editar_noticiasyeventos.html")
 
 # Editar
 def editar_publicacion(request, pub_id):
@@ -940,7 +942,7 @@ def editar_publicacion(request, pub_id):
         modificar_publicacion(pub_id, data)
         return redirect("administrar_noticiasyeventos")
 
-    return render(request, "staffweb/crear_noticiasyeventos.html", {
+    return render(request, "staffweb/editar_noticiasyeventos.html", {
         "publicacion": publicacion,
         "pub_id": pub_id
     })
@@ -948,4 +950,4 @@ def editar_publicacion(request, pub_id):
 # Eliminar
 def eliminar_publicacion(request, pub_id):
     eliminar_publicacion_funcion(pub_id)
-    return redirect("administrar_noticiasyeventos")
+    return redirect("eliminar_publicacion")

@@ -166,25 +166,82 @@
   margin-top: 1rem;
 }
 
-.btn.guardar {
-  background-color: #2563eb;
-  color: #fff;
-}
-
-.btn.cancelar {
-  background-color: #ef4444;
-  color: #fff;
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .btn {
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
+  display: inline-block;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background 0.2s;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
-.btn:hover {
-  opacity: 0.9;
+.btn.guardar {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+}
+
+.btn.guardar:hover {
+  background-color: #2563eb;
+}
+
+.btn.cancelar {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.btn.cancelar:hover {
+  background-color: #cbd5e1;
+}
+
+
+
+
+/* boton de crear */
+
+.documents-section {
+  margin-top: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  color: #1f2937;
+  margin: 0;
+}
+
+.btn-create-document {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-create-document:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
 }
