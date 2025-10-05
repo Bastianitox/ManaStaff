@@ -1,15 +1,18 @@
 ﻿from datetime import datetime, timedelta
 import re, json, uuid, os, re, mimetypes
-from django.contrib import messages
-from django.shortcuts import render, redirect
 
 from django.conf import settings
+from django.urls import reverse
+from django.http import JsonResponse
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
+
 from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+
 from .funciones_dos import listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
-from datetime import datetime, timedelta
+
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
 from .firebase import firebase, db, storage, database
@@ -769,7 +772,198 @@ def documentos_usuarios(request):
         "documentos_json": json.dumps(documentos, ensure_ascii=False),
     }
     return render(request, "staffweb/documentos_usuarios.html", context)
+#-------Modificar documento
+def _extract_filename_from_storage_data(data: dict) -> str:
 
+    storage_path = str((data or {}).get("storage_path") or "").strip()
+    if storage_path:
+        return os.path.basename(storage_path)
+    # fallback
+    raw_url = str((data or {}).get("url") or "").strip()
+    if raw_url:
+        try:
+            object_enc = urlparse(raw_url).path.split("/o/", 1)[1]
+            blob_name = unquote(object_enc)
+            return os.path.basename(blob_name)
+        except Exception:
+            pass
+    return ""
+
+def _delete_old_blob_if_exists(data: dict):
+    #Borra archivo antiguo en Storage
+    try:
+        storage_path = str((data or {}).get("storage_path") or "").strip()
+        bucket_name  = str((data or {}).get("storage_bucket") or "").strip()
+        raw_url      = str((data or {}).get("url") or "").strip()
+
+        bucket = storage.bucket(bucket_name) if bucket_name else storage.bucket()
+
+        if storage_path:
+            blob = bucket.blob(storage_path)
+            try:
+                if hasattr(blob, "exists"):
+                    if blob.exists():
+                        blob.delete()
+                else:
+                    blob.delete()
+                return True
+            except Exception:
+                return False
+        elif raw_url.startswith("http"):
+            bname, blob_name = _infer_blob_from_download_url(raw_url)
+            bucket2 = storage.bucket(bname) if bname else bucket
+            if blob_name:
+                blob = bucket2.blob(blob_name)
+                try:
+                    if hasattr(blob, "exists"):
+                        if blob.exists():
+                            blob.delete()
+                    else:
+                        blob.delete()
+                    return True
+                except Exception:
+                    return False
+    except Exception:
+        return False
+    return False
+
+
+def modificar_documento(request, doc_id):
+    # Obtener documento
+    ref = db.reference("Documentos").child(doc_id)
+    data = ref.get() or None
+    if not data or not isinstance(data, dict):
+        messages.error(request, "Documento no encontrado.")
+        return redirect("administrar_documentos")
+
+    # Mapeo de estados
+    name_to_code, code_to_name = _tipoestado_codes()
+
+    # Normalizar usuario dueño
+    rut_sel = _normalize_rut(data.get("id_rut") or data.get("Rut") or data.get("rut"))
+
+    # Usuario
+    usuario = {"nombre": "Usuario", "rut": rut_sel, "rut_visible": rut_sel}
+    try:
+        user_raw = database.child("Usuario").child(rut_sel).get().val()
+        if isinstance(user_raw, dict):
+            nombre = f"{(user_raw.get('Nombre') or '').strip()} {(user_raw.get('ApellidoPaterno') or '').strip()}".strip() or "Usuario"
+            usuario["nombre"] = nombre
+    except Exception:
+        pass
+
+    if request.method == "POST":
+        # Procesar actualización
+        nombre_doc = (request.POST.get("documentName") or "").strip()
+        estado_sel = (request.POST.get("documentStatus") or "").strip().lower()
+        fecha_venc = (request.POST.get("expirationDate") or "").strip()
+        file = request.FILES.get("documentFile")
+
+        if not nombre_doc:
+            return JsonResponse({"ok": False, "error": "El nombre del documento es obligatorio."}, status=400)
+        if estado_sel not in {"activo", "pendiente"}:
+            return JsonResponse({"ok": False, "error": "Estado inválido."}, status=400)
+
+        # regla: si se marca activo y no hay archivo actual ni se adjunta nuevo, error
+        had_url = bool(str(data.get("url") or "").strip())
+        if estado_sel == "activo" and not had_url and not file:
+            return JsonResponse({"ok": False, "error": "Para estado ACTIVO debes subir un archivo."}, status=400)
+
+        tipoestado_code = name_to_code.get(estado_sel, "Uno")
+
+        # subida opcional de archivo nuevo y se borraria el anterior
+        download_url   = data.get("url") or ""
+        storage_path   = data.get("storage_path") or ""
+        storage_bucket = data.get("storage_bucket") or ""
+        tipo_doc       = data.get("tipo_documento") or "PDF"
+        tamano_archivo = data.get("tamano_archivo") or ""
+
+        if file:
+            # borro el antiguo si había
+            _delete_old_blob_if_exists(data)
+
+            # subo el nuevo
+            bucket = storage.bucket()
+            safe_name = _safe_filename(file.name)
+            blob_name = f"{rut_sel}/Documentos/{doc_id}/{safe_name}"
+            blob = bucket.blob(blob_name)
+
+            content_type = file.content_type or mimetypes.guess_type(safe_name)[0] or "application/octet-stream"
+            token = uuid.uuid4().hex
+            blob.metadata = {"firebaseStorageDownloadTokens": token}
+            blob.upload_from_file(file, content_type=content_type)
+
+            quoted = quote(blob_name, safe="")
+            download_url   = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{quoted}?alt=media&token={token}"
+            storage_path   = blob_name
+            storage_bucket = bucket.name
+            tipo_doc       = _ext_to_type(file.name)
+            tamano_archivo = _size_to_mb_str(file)
+
+        # armo payload de actualización
+        update_payload = {
+            "nombre": nombre_doc,
+            "Tipoestado": tipoestado_code,
+            "url": download_url,
+            "storage_path": storage_path,
+            "storage_bucket": storage_bucket,
+            "tipo_documento": tipo_doc,
+            "tamano_archivo": tamano_archivo,
+        }
+        # fecha de vencimiento
+        if fecha_venc:
+            update_payload["fecha_vencimiento"] = fecha_venc
+        else:
+            # limpiar key si existía
+            if "fecha_vencimiento" in data:
+                update_payload["fecha_vencimiento"] = None  
+
+        try:
+            ref.update(update_payload)
+        except Exception:
+            return JsonResponse({"ok": False, "error": "No se pudo actualizar el documento."}, status=500)
+
+        # a dónde volver
+        next_url = request.GET.get("next") or reverse("administrar_documentos")
+        return JsonResponse({"ok": True, "redirect_url": next_url})
+
+    # GET 
+    # normalizar estado y fechas para el front
+    estado = code_to_name.get(str(data.get("Tipoestado") or "").strip()) or ("pendiente" if not data.get("url") else "activo")
+    fecha_venc = str(data.get("fecha_vencimiento") or "").strip()
+    # si viene en formatos raros, tratar de normalizar a YYYY-MM-DD
+    def _to_yyyy_mm_dd(s):
+        s = (s or "").strip()
+        if not s:
+            return ""
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S.%f"):
+            try:
+                return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
+            except ValueError:
+                continue
+        return s 
+
+    doc_json = {
+        "id": doc_id,
+        "nombre": data.get("nombre") or data.get("titulo") or "Documento",
+        "estado": estado,
+        "url": data.get("url") or "",
+        "archivo_nombre": _extract_filename_from_storage_data(data),
+        "fecha_emitida": str(data.get("Fecha_emitida") or ""),
+        "fecha_vencimiento": _to_yyyy_mm_dd(fecha_venc),
+        "tipo_documento": (data.get("tipo_documento") or "PDF").upper(),
+        "tamano": str(data.get("tamano_archivo") or data.get("size") or ""),
+        "rut": rut_sel,
+    }
+
+    ctx = {
+        "doc_id": doc_id,
+        "usuario_json": json.dumps(usuario, ensure_ascii=False),
+        "doc_json": json.dumps(doc_json, ensure_ascii=False),
+        "next_url": request.GET.get("next") or "",
+    }
+    return render(request, "staffweb/modificar_documento.html", ctx)
+#Eliminar documento
 def _infer_blob_from_download_url(url: str):
     try:
         path = urlparse(url).path
@@ -783,7 +977,6 @@ def _infer_blob_from_download_url(url: str):
         return bucket_name, blob_name
     except Exception:
         return None, None
-
 
 @require_POST
 def eliminar_documento(request):
@@ -840,7 +1033,7 @@ def eliminar_documento(request):
     except Exception:
         pass
 
-    # Borrar nodo en Realtime
+    # Borrar nodo en realtime
     try:
         ref.delete()
     except Exception:

@@ -1,0 +1,139 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+ <!--STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/modificar_documento.css' %}">
+<title>Documentos del Usuario</title>
+{% endblock head%}
+
+{% block principal %}
+
+
+<!-- Header -->
+<div class="header">
+    <h1>Modificar Documento</h1>
+    <p>Actualice la información del documento</p>
+</div>
+
+<!-- Mensaje de éxito -->
+<div id="successMessage" class="success-message">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    <span>Documento modificado correctamente</span>
+</div>
+
+<!-- Formulario -->
+<div class="form-container">
+    <form id="modifyDocumentForm" class="document-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Campo: Usuario asignado -->
+        <div class="form-group">
+            <label class="form-label">Usuario Asignado</label>
+            <div class="readonly-user">
+                <div class="readonly-user-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <div class="readonly-user-info">
+                    <div class="readonly-user-name" id="userName">Cargando...</div>
+                    <div class="readonly-user-rut" id="userRut">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nombre del documento -->
+        <div class="form-group">
+            <label for="documentName" class="form-label">
+                Nombre del Documento <span class="required">*</span>
+            </label>
+            <input type="text" id="documentName" name="documentName" class="form-input" placeholder="Ej: Contrato de trabajo, Certificado médico..." required>
+            <span class="error-message" id="documentNameError"></span>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+            <label class="form-label">Estado del Documento <span class="required">*</span></label>
+            <div class="status-options">
+                <label class="status-option">
+                    <input type="radio" name="documentStatus" value="activo" id="statusActivo">
+                    <div class="status-card">
+                        <div class="status-icon activo">✔</div>
+                        <div class="status-info">
+                            <div class="status-title">Activo</div>
+                            <div class="status-description">Documento completo y listo para usar</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="status-option">
+                    <input type="radio" name="documentStatus" value="pendiente" id="statusPendiente">
+                    <div class="status-card">
+                        <div class="status-icon pendiente">⏱</div>
+                        <div class="status-info">
+                            <div class="status-title">Pendiente</div>
+                            <div class="status-description">Archivo opcional, se puede subir después</div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Documento actual -->
+        <div class="form-group">
+            <label class="form-label">Documento Actual</label>
+            <div id="currentDocumentDisplay" class="current-document"></div>
+        </div>
+
+        <!-- Cambiar archivo -->
+        <div class="form-group">
+            <label for="documentFile" class="form-label">Cambiar Archivo <span class="optional">(Opcional)</span></label>
+            <div class="file-upload-wrapper">
+                <input type="file" id="documentFile" name="documentFile" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <label for="documentFile" class="file-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span id="fileName">Seleccionar nuevo archivo</span>
+                </label>
+            </div>
+            <span class="file-info">Formatos permitidos: PDF, DOC, DOCX, JPG, PNG (Máx. 10MB)</span>
+            <span class="error-message" id="documentFileError"></span>
+        </div>
+
+        <!-- Fecha de vencimiento -->
+        <div class="form-group">
+            <label for="expirationDate" class="form-label">Fecha de Vencimiento <span class="optional">(Opcional)</span></label>
+            <input type="date" id="expirationDate" name="expirationDate" class="form-input">
+            <span class="file-info">Si el documento tiene fecha de vencimiento, especifíquela aquí</span>
+        </div>
+
+        <!-- Botones -->
+        <div class="form-actions">
+            <a href="{% url 'administrar_documentos' %}" class="btn-cancel">Cancelar</a>
+            <button type="submit" class="btn-submit">
+                Guardar cambios
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<!-- Datos inyectados -->
+<script id="usuario-data" type="application/json">{{ usuario_json|default:"{}"|safe }}</script>
+<script id="doc-data" type="application/json">{{ doc_json|default:"{}"|safe }}</script>
+<script>
+  window.MOD_DOC = {
+    postUrl: window.location.pathname,              
+    nextUrl: "{{ next_url|default:'' }}",            
+  };
+</script>
+
+<script src="{% static 'staffweb/js/modificar_documento.js' %}"></script>
+{% endblock %}
