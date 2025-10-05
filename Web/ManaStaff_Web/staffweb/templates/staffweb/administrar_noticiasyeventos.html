@@ -65,12 +65,14 @@
           <p class="fecha">Publicado el {{ pub.fecha }}</p>
           <p class="autor">Por: {{ pub.autor }}</p>
           <p class="contenido">{{ pub.contenido }}</p>
-          <div class="acciones-card">
-              <a href="{% url 'editar_publicacion' pub_id %}" class="btn editar">Editar</a>
-              <a href="{% url 'eliminar_publicacion' pub_id %}" class="btn eliminar" 
-                 onclick="return confirm('¿Seguro que deseas eliminar esta publicación?');">Eliminar</a>
-          </div>
-      </div>
+            <div class="acciones-card">
+                <a href="{% url 'editar_publicacion' pub_id %}" class="btn btn-editar">Editar</a>
+                <a href="{% url 'eliminar_publicacion' pub_id %}" class="btn btn-eliminar" 
+                   onclick="return confirm('¿Seguro que deseas eliminar esta publicación?');"> Eliminar
+                </a>
+            </div>     
+        </div>
+    </div>
       {% empty %}
       <div class="no-results" id="noResults">
           <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
