@@ -95,7 +95,14 @@
   // Acciones
   window.verDocumento = id => console.log('Ver documento:', id);
   window.subirDocumento = id => console.log('Subir documento:', id);
-  window.modificarDocumento = id => console.log('Modificar documento:', id);
+  
+  // MODIFICAR 
+  window.modificarDocumento = (id) => {
+    const tpl = (window.ROUTES && window.ROUTES.modificarDocumento) || '/modificar_documento/DOC_ID';
+    const url = tpl.replace('DOC_ID', encodeURIComponent(id));
+    const next = window.location.href; // volvemos aquí después
+    window.location.href = `${url}?next=${encodeURIComponent(next)}`;
+  };
 
   // ELIMINAR
   window.eliminarDocumento = id => {

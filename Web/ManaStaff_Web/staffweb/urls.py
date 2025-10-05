@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import  eliminar_documento, eliminar_publicacion,editar_publicacion,crear_publicacion, editar_noticiasyeventos, documentos_usuarios, crear_documento, administrar_noticiasyeventos,administrar_logs,modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
+from .views import  modificar_documento, eliminar_documento, eliminar_publicacion,editar_publicacion,crear_publicacion, editar_noticiasyeventos, documentos_usuarios, crear_documento, administrar_noticiasyeventos,administrar_logs,modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
 from .funciones import descargar_documento,recuperar_contrasena_funcion,cerrar_solicitud,asignarme_solicitud,obtener_solicitudes_administrar,obtener_usuario_actual,cancelar_solicitud_funcion,crear_solicitud_funcion,obtener_solicitudes_usuario,modificar_usuario_funcion,obtener_usuario,eliminar_usuario,crear_usuario_funcion,iniciarSesion, cerrarSesion, ejemplo_crear, ejemplo_modificar, ejemplo_eliminar, obtener_usuarios
 from .funciones_dos import  eliminar_publicacion_funcion, modificar_publicacion, obtener_publicacion, crear_publicacion_funcion, validar_pin, funcion_dos
 from .funciones_tres import funcion_tres
@@ -20,7 +20,9 @@ urlpatterns = [
     path('ver_documentos',ver_documentos,name="ver_documentos"),
     path('cambiar_contrasena',cambiar_contrasena,name="cambiar_contrasena"),
     path('cambiar_pin',cambiar_pin,name="cambiar_pin"),
-    
+    path('crear_documento',crear_documento,name="crear_documento"),
+    path('modificar_documento/<str:doc_id>', modificar_documento, name='modificar_documento'),
+
     #ADMINISTRAR PAGINAS
     path('panel_administrar',panel_administrar,name="panel_administrar"),
     path('administrar_documentos',administrar_documentos,name="administrar_documentos"),
@@ -30,7 +32,6 @@ urlpatterns = [
     path('modificar_usuario',modificar_usuario,name="modificar_usuario"),
     path('administrar_logs',administrar_logs,name="administrar_logs"),
     path('administrar_noticiasyeventos',administrar_noticiasyeventos,name="administrar_noticiasyeventos"),
-    path('crear_documento',crear_documento,name="crear_documento"),
     path('documentos_usuarios',documentos_usuarios,name="documentos_usuarios"),
     path('editar_noticiasyeventos',editar_noticiasyeventos,name="editar_noticiasyeventos"),
     path('crear_publicacion',crear_publicacion,name="crear_publicacion"),

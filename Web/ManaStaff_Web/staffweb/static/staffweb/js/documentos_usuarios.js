@@ -149,7 +149,14 @@ function verDocumento(id, url) {
   }
 }
 function subirDocumento(id){ console.log("Subir documento:", id); }
-function modificarDocumento(id){ console.log("Modificar documento:", id); }
+
+// Modificar
+function modificarDocumento(id){
+  const tpl = (window.ROUTES && window.ROUTES.modificarDocumento) || '/modificar_documento/DOC_ID';
+  const url = tpl.replace('DOC_ID', encodeURIComponent(id));
+  const next = window.location.href; // al terminar volvemos a esta vista
+  window.location.href = `${url}?next=${encodeURIComponent(next)}`;
+}
 
 // Eliminar
 function eliminarDocumento(id){
