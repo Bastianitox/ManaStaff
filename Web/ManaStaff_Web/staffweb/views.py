@@ -652,7 +652,7 @@ def crear_documento(request):
         except Exception:
             messages.error(request, "Hubo un problema guardando el documento.")
 
-        return redirect("administrar_documentos")
+        return redirect(reverse("crear_documento"))
 
     # GET 
     usuarios_raw = database.child("Usuario").get().val() or {}
