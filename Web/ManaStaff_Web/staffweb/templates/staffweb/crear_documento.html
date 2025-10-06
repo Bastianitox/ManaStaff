@@ -102,6 +102,7 @@
   </form>
 </div>
 
+<<<<<<< Updated upstream
 <script id="usuarios-data" type="application/json">{{ usuarios_json|default:"[]"|safe }}</script>
 <script id="estados-data" type="application/json">{{ estados_json|default:"{}"|safe }}</script>
 
@@ -122,5 +123,11 @@
 })();
 </script>
 
+=======
+<!-- JSON para el JS -->
+<script id="usuarios-data" type="application/json">{{ usuarios_json|default:"[]"|safe }}</script>
+<script id="estados-data" type="application/json">{{ estados_json|default:"{}"|safe }}</script>
+
+>>>>>>> Stashed changes
 <script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
 {% endblock %}

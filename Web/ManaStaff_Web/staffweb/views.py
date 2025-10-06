@@ -1,5 +1,6 @@
 ﻿from datetime import datetime, timedelta
 import re, json, uuid, os, re, mimetypes
+<<<<<<< Updated upstream
 
 from django.conf import settings
 from django.urls import reverse
@@ -8,6 +9,13 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 
+=======
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
+from django.conf import settings
+from django.shortcuts import render
+>>>>>>> Stashed changes
 from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
 
@@ -573,7 +581,11 @@ def administrar_documentos(request):
 
 def crear_documento(request):
     if request.method == "POST":
+<<<<<<< Updated upstream
         # Validación y normalización
+=======
+        #Validación y normalización
+>>>>>>> Stashed changes
         nombre_doc = (request.POST.get("documentName") or "").strip()
         estado_sel = (request.POST.get("documentStatus") or "").strip().lower()
         rut_sel    = _normalize_rut(request.POST.get("selectedUserId"))
@@ -599,6 +611,7 @@ def crear_documento(request):
         name_to_code, _ = _tipoestado_codes()
         tipoestado_code = name_to_code.get(estado_sel, "Uno")
 
+<<<<<<< Updated upstream
         # Datos base
         ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         id_empleador   = _normalize_rut(request.session.get("usuario_rut") or request.session.get("usuario_id") or "1111111111")
@@ -619,10 +632,33 @@ def crear_documento(request):
             blob_name = f"{rut_sel}/Documentos/{doc_id}/{safe_name}" 
             blob = bucket.blob(blob_name)
 
+=======
+        # Preparar datos base
+        ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        id_empleador = _normalize_rut(request.session.get("usuario_rut") or request.session.get("usuario_id") or "1111111111")
+        tipo_doc = _ext_to_type(file.name) if file else "PDF"
+        tamano_archivo = _size_to_mb_str(file)
+
+        # crear id propio
+        doc_id = f"IdDoc_{uuid.uuid4().hex[:10]}"
+
+        # Subir a Storage si hay archivo
+        download_url = ""
+        if file:
+            bucket = storage.bucket()
+
+            # ruta
+            safe_name = _safe_filename(file.name)
+            blob_name = f"{rut_sel}/Documentos/{doc_id}/{safe_name}"
+            blob = bucket.blob(blob_name)
+
+            # content-type y token de descarga pública
+>>>>>>> Stashed changes
             content_type = file.content_type or mimetypes.guess_type(safe_name)[0] or "application/octet-stream"
             token = uuid.uuid4().hex
             blob.metadata = {"firebaseStorageDownloadTokens": token}
 
+<<<<<<< Updated upstream
             blob.upload_from_file(file, content_type=content_type)
 
             quoted = quote(blob_name, safe="")
@@ -634,14 +670,31 @@ def crear_documento(request):
         data = {
             "Fecha_emitida": ahora_str,
             "Tipoestado": tipoestado_code,
+=======
+            # subir el archivo
+            blob.upload_from_file(file, content_type=content_type)
+
+            # URL pública con token
+            quoted = quote(blob_name, safe="")
+            download_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{quoted}?alt=media&token={token}"
+
+        # Guardar en Realtime
+        data = {
+            "Fecha_emitida": ahora_str,
+            "Tipoestado": tipoestado_code, 
+>>>>>>> Stashed changes
             "id_empleador": id_empleador,
             "id_rut": rut_sel,
             "nombre": nombre_doc,
             "tamano_archivo": tamano_archivo,
             "tipo_documento": tipo_doc,
+<<<<<<< Updated upstream
             "url": download_url,
             "storage_path": storage_path,   
             "storage_bucket": storage_bucket
+=======
+            "url": download_url,            
+>>>>>>> Stashed changes
         }
         if fecha_venc:
             data["fecha_vencimiento"] = fecha_venc
@@ -652,22 +705,41 @@ def crear_documento(request):
         except Exception:
             messages.error(request, "Hubo un problema guardando el documento.")
 
+<<<<<<< Updated upstream
         return redirect(reverse("crear_documento"))
 
     # GET 
+=======
+        return redirect("administrar_documentos")
+
+    # ============== GET ==============
+    # Usuarios para el buscador
+>>>>>>> Stashed changes
     usuarios_raw = database.child("Usuario").get().val() or {}
     usuarios_lista = []
     if isinstance(usuarios_raw, dict):
         for rut, u in usuarios_raw.items():
+<<<<<<< Updated upstream
             if not isinstance(u, dict):
+=======
+            if not isinstance(u, dict): 
+>>>>>>> Stashed changes
                 continue
             nombre = f"{(u.get('Nombre') or '').strip()} {(u.get('ApellidoPaterno') or '').strip()}".strip() or rut
             usuarios_lista.append({
                 "rut": str(rut),
+<<<<<<< Updated upstream
                 "rut_visible": str(rut),
                 "nombre": nombre
             })
 
+=======
+                "rut_visible": str(rut), 
+                "nombre": nombre
+            })
+
+    # Mapa de estados
+>>>>>>> Stashed changes
     name_to_code, _ = _tipoestado_codes()
     estados_json = {
         "activo": name_to_code.get("activo", "Uno"),
@@ -709,13 +781,21 @@ def documentos_usuarios(request):
     except Exception:
         usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
 
+<<<<<<< Updated upstream
     # Documentos del RUT 
     def calcular_estado_y_fecha(fecha_emitida_str, url, tipoestado_code):
         estado = code_to_name.get(str(tipoestado_code or '').strip())
+=======
+    # --- Documentos del RUT ---
+    def calcular_estado_y_fecha(fecha_emitida_str, url, tipoestado_code):
+        estado = code_to_name.get(str(tipoestado_code or '').strip())
+
+>>>>>>> Stashed changes
         if not estado:
             estado = 'pendiente' if not url else 'activo'
 
         fecha_show = fecha_emitida_str or ""
+        #caducado por antigüedad
         try:
             f = None
             for fmt in ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y",

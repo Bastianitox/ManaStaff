@@ -1,4 +1,3 @@
-
 function readJSON(id, fb) {
   const el = document.getElementById(id);
   if (!el) return fb;
