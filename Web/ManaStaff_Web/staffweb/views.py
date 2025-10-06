@@ -133,7 +133,12 @@ def inicio_documentos(request):
 
 
 def inicio_perfil(request):
-    return render(request, 'staffweb/inicio_perfil.html')
+    nombre_usu = request.session.get('nombre_usu')
+
+    contexto = {
+        'nombre_usu': nombre_usu
+    }
+    return render(request, 'staffweb/inicio_perfil.html', contexto)
     
 #---------------------------------------------------------------------------
 def inicio_noticias_eventos(request):
