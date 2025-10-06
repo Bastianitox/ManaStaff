@@ -132,13 +132,7 @@ def inicio_documentos(request):
     return render(request, "staffweb/inicio_documentos.html", context)
 
 
-def inicio_perfil(request):
-    nombre_usu = request.session.get('nombre_usu')
 
-    contexto = {
-        'nombre_usu': nombre_usu
-    }
-    return render(request, 'staffweb/inicio_perfil.html', contexto)
     
 #---------------------------------------------------------------------------
 def inicio_noticias_eventos(request):
@@ -1153,6 +1147,27 @@ def eliminar_publicacion(request, pub_id):
 
 
 #--------------------------------------------------------------------------------#
+def inicio_perfil(request):
+    nombre_usu = request.session.get('nombre_usu')
+    apellido_usu = request.session.get('apellido_usu')
+    correo_usu = request.session.get('correo_usu')
+    cargo_usu = request.session.get('cargo_usu')
+    rol_usu = request.session.get('rol_usu')
+    telefono = request.session.get('telefono')
+    direccion = request.session.get('direccion')
+
+    contexto = {
+        'nombre_usu': nombre_usu,
+        'apellido_usu': apellido_usu,
+        'correo_usu': correo_usu,
+        'cargo_usu': cargo_usu,
+        'rol_usu': rol_usu,
+        'telefono': telefono,
+        'direccion': direccion
+    }
+    return render(request, 'staffweb/inicio_perfil.html', contexto)
+
+
 def perfil(request):
     usuario_id = request.session.get('usuario_id')
     if not usuario_id:

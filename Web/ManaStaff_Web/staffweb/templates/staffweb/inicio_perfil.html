@@ -28,11 +28,11 @@
         <div class="fila">
             <div class="campo">
                 <label for="nombres">Nombres</label>
-                <input type="text" id="nombres" value="{{ nombre_usu }} {{ usuario.segundo_nombre }}" readonly>
+                <input type="text" id="nombres" value="{{ nombre_usu }} " readonly>
             </div>
             <div class="campo">
                 <label for="apellidos">Apellidos</label>
-                <input type="text" id="apellidos" value="{{ usuario.apellido_paterno }} {{ usuario.apellido_materno }}" readonly>
+                <input type="text" id="apellidos" value="{{ apellido_usu }} " readonly>
             </div>
         </div>
 
@@ -43,14 +43,14 @@
             </div>
             <div class="campo">
                 <label for="correo">Correo Electrónico</label>
-                <input type="email" id="correo" value="{{ usuario.correo }}" readonly>
+                <input type="email" id="correo" value="{{ correo_usu }}" readonly>
             </div>
         </div>
 
         <div class="fila">
             <div class="campo">
                 <label for="cargo">Cargo</label>
-                <input type="text" id="cargo" value="{{ usuario.cargo }}" readonly>
+                <input type="text" id="cargo" value="{{ cargo_usu }}" readonly>
             </div>
             <div class="campo">
                 <label for="rol">Rol</label>
