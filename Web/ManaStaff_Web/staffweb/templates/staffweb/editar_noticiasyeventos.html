@@ -7,11 +7,14 @@
 {% endblock head %}
 
 {% block principal %}
+<div class="header">
+    <h1>{% if publicacion %}Editar{% else %}Nueva{% endif %} Noticias y Avisos</h1>
+    <p>Aquí puedes editar las noticias y avisos</p>
+</div>
+
 <div class="editar-wrapper">
   <div class="editar-header">
-    <h1 class="titulo-principal">{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</h1>
     <h2 class="subtitulo">Noticias y Avisos</h2>
-    <p class="descripcion">Aquí puedes editar las noticias y avisos</p>
   </div>
 
   <div class="editar-card">
