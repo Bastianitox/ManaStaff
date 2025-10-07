@@ -1,0 +1,26 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<!-- STATIC CSS -->
+<link rel="stylesheet" href="{% static 'staffweb/css/403.css' %}">
+<title>Acceso denegado | MANA STAFF</title>
+{% endblock head%}
+
+
+{% block principal %}
+<div class="error-container">
+    <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M12 18h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+
+    <div class="error-code">403</div>
+    <div class="error-message">Acceso denegado</div>
+    <div class="error-description">
+        No tienes permisos para acceder a esta sección.  
+        Si crees que esto es un error, contacta con el administrador del sistema.
+    </div>
+    <a href="{% url 'inicio_dashboard' %}" class="btn-volver">Volver al inicio</a>
+</div>
+{% endblock principal %}

@@ -12,7 +12,7 @@ from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
 
 from .funciones_dos import obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
-
+from .decorators import admin_required
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
 from .firebase import firebase, db, storage, database
@@ -188,6 +188,7 @@ def inicio_noticias_eventos(request):
     }
     return render(request, 'staffweb/inicio_noticias_eventos.html', context)
 #---------------------------------------------------------------------------    
+@admin_required
 def inicio_dashboard(request):
     solicitudes_ref = db.reference("Solicitudes").get() or {}
     documentos_ref = db.reference("Documentos").get() or {}
@@ -373,12 +374,15 @@ def cambiar_pin(request):
     return render(request, "staffweb/cambiar_pin.html")
 
 #ADMINISTRACION
+@admin_required
 def panel_administrar(request):
     return render(request, "staffweb/panel_administrar.html")
 
+@admin_required
 def administrar_usuarios(request):
     return render(request, "staffweb/administrar_usuarios.html")
 
+@admin_required
 def crear_usuario(request):
     roles_lista = []
     cargos_lista = []
@@ -403,6 +407,7 @@ def crear_usuario(request):
     }
     return render(request, "staffweb/crear_usuario.html", valores)
 
+@admin_required
 def modificar_usuario(request):
     roles_lista = []
     cargos_lista = []
@@ -427,6 +432,7 @@ def modificar_usuario(request):
     }
     return render(request, "staffweb/modificar_usuario.html", valores)
     
+@admin_required
 def administrar_solicitudes(request):
     return render(request, "staffweb/administrar_solicitudes.html")
 
@@ -487,6 +493,7 @@ def _tipoestado_codes():
     name_to_code.setdefault("caducado", "Tres")
     return name_to_code, code_to_name
 
+@admin_required
 def administrar_documentos(request):
     # Usar los helpers comunes
     name_to_code, code_to_name = _tipoestado_codes()
@@ -571,6 +578,7 @@ def administrar_documentos(request):
     }
     return render(request, "staffweb/administrar_documentos.html", context)
 
+@admin_required
 def crear_documento(request):
     if request.method == "POST":
         # Validación y normalización
@@ -680,6 +688,7 @@ def crear_documento(request):
     }
     return render(request, "staffweb/crear_documento.html", ctx)
 
+@admin_required
 def documentos_usuarios(request):
     name_to_code, code_to_name = _tipoestado_codes()
 
@@ -828,6 +837,7 @@ def _delete_old_blob_if_exists(data: dict):
     return False
 
 
+@admin_required
 def modificar_documento(request, doc_id):
     # Obtener documento
     ref = db.reference("Documentos").child(doc_id)
@@ -978,6 +988,7 @@ def _infer_blob_from_download_url(url: str):
     except Exception:
         return None, None
 
+@admin_required
 @require_POST
 def eliminar_documento(request):
     try:
@@ -1082,12 +1093,15 @@ def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=
 
 #--------------------------------------------------------------------------------#
 
+@admin_required
 def editar_noticiasyeventos(request):
     return render(request, "staffweb/editar_noticiasyeventos.html")
 
+@admin_required
 def crear_publicacion(request):
     return render(request, "staffweb/crear_publicacion.html")
 
+@admin_required
 def administrar_noticiasyeventos(request):
     anuncios = listar_publicaciones()
     publicaciones = {}
@@ -1106,6 +1120,7 @@ def administrar_noticiasyeventos(request):
     })
 
 # Crear
+@admin_required
 def crear_publicacion(request):
     if request.method == "POST":
         data = {
@@ -1121,6 +1136,7 @@ def crear_publicacion(request):
     return render(request, "staffweb/editar_noticiasyeventos.html")
 
 # Editar
+@admin_required
 def editar_publicacion(request, pub_id):
     publicacion = obtener_publicacion(pub_id)
 
@@ -1141,6 +1157,7 @@ def editar_publicacion(request, pub_id):
     })
 
 # Eliminar
+@admin_required
 def eliminar_publicacion(request, pub_id):
     eliminar_publicacion_funcion(pub_id)
     return redirect("administrar_noticiasyeventos")
@@ -1189,3 +1206,8 @@ def perfil(request):
 
     return render(request, "staffweb/perfil.html", {"usuario": usuario, "usuario_id": usuario_id})
 
+
+
+#ERROR 403 (ACCESO DENEGADO)
+def error_403(request, exception=None):
+    return render(request, "staffweb/403.html", status=403)

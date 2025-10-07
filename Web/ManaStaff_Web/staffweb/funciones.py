@@ -11,6 +11,7 @@ from urllib.parse import unquote_plus
 import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
+from .decorators import admin_required
 import locale
 
 MAX_INTENTOS = 5
@@ -188,6 +189,7 @@ def recuperar_contrasena_funcion(request):
         return JsonResponse({'status': 'false', 'mensaje':"Error al enviar el correo: "+str(e)})
 
 #USUARIOS
+@admin_required
 def obtener_usuarios(request):
     # OBTENER LOS USUARIOS DE LA BASE DE DATOS
     usuarios = database.child("Usuario").get().val() or {}
@@ -226,6 +228,7 @@ def obtener_usuarios(request):
 
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
 
+@admin_required
 def obtener_usuario(request):
     rut = request.GET.get("id")
     if not rut:
@@ -261,6 +264,7 @@ def obtener_usuario(request):
 
     return JsonResponse({"status": "success", "usuario": usuario_json})
 
+@admin_required
 def obtener_usuario_actual(request):
     rut = request.session.get("usuario_id")
     if not rut:
@@ -280,6 +284,7 @@ def obtener_usuario_actual(request):
         }
     })
 
+@admin_required
 @require_POST
 def crear_usuario_funcion(request):
     try:
@@ -389,6 +394,7 @@ def crear_usuario_funcion(request):
 
     return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
 
+@admin_required
 @require_POST
 def eliminar_usuario(request, rut):
     try:
@@ -425,6 +431,7 @@ def eliminar_usuario(request, rut):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
+@admin_required
 def eliminar_archivos_usuario(rut):
     # Validación de entrada
     if not rut or not isinstance(rut, str):
@@ -448,6 +455,7 @@ def eliminar_archivos_usuario(rut):
     except Exception as e:
         return {"status": "error", "mensaje": f"Ocurrió un error al eliminar los archivos: {str(e)}"}
 
+@admin_required
 @require_POST
 def modificar_usuario_funcion(request, rut):
     #OBTENER CAMPOS MENOS EL RUT (RUT NO SE DEBE EDITAR YA QUE ES UNICO)
@@ -715,6 +723,7 @@ def cancelar_solicitud_funcion(request, id_solicitud):
     
     return JsonResponse({"status": "success", "message": "Solicitud cancelada (eliminada)."})
 
+@admin_required
 def obtener_solicitudes_administrar(request):
     #OBTENER USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
@@ -789,6 +798,7 @@ def obtener_solicitudes_administrar(request):
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
 
+@admin_required
 def asignarme_solicitud(request, id_solicitud):
     #OBTENER EL USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
@@ -830,6 +840,7 @@ def asignarme_solicitud(request, id_solicitud):
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
 
+@admin_required
 def cerrar_solicitud(request, id_solicitud, estado):
     #OBTENER EL USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")

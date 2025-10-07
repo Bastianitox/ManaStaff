@@ -72,7 +72,8 @@
                 </div>
                 <span class="nav-text">Noticias y Avisos</span>
             </a>
-
+            
+            {% if rol_usu == "Uno" %}
             <a href="{% url 'inicio_dashboard' %}" class="nav-item {% if request.resolver_match.url_name in 'inicio_dashboard' %}active{% endif %}">
                 <div class="nav-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -90,6 +91,7 @@
                 </div>
                 <span class="nav-text">Administración</span>
             </a>
+            {% endif %}
 
         <div class="user-section">
             <div class="user-profile">
