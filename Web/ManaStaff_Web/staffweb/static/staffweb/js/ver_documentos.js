@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadBtn = document.getElementById("downloadBtn")
 
   const urlParams = new URLSearchParams(window.location.search)
+  console.log(urlParams)
   const docId = Number.parseInt(urlParams.get("docId"))
   const docTitle = urlParams.get("doc")
 
