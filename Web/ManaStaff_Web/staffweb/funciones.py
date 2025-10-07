@@ -931,41 +931,6 @@ def correo_ya_existe(email):
     except auth.UserNotFoundError:
         return False
 
-#EJEMPLOS
 
-def ejemplo_crear(request):
-    ref = database.child('/Usuario/'+ "RUT")
-    ref.set({
-        "ApellidoPaterno": "Nuñez",
-        "Nombre": "Javier",
-        "Telefono": "912345678",
-        "Direccion": "asdasda",
-        "Rol": "Dos",
-        "Cargo": "Uno",
-        "Fecha_creacion": datetime.now().isoformat()
-    })
 
-    return redirect("inicio_documentos")
-
-def ejemplo_modificar(request):
-
-    rut = "RUT"
-    ref = database.child('/Usuario/'+ rut)
-    ref.update({
-        "ApellidoPaterno": "Nuñez_nuevo",
-        "Nombre": "Javier_nuevo",
-        "Telefono": "912345678",
-        "Direccion": "asdasda_nuevo",
-        "Fecha_creacion": datetime.now().isoformat()
-    })
-
-    return redirect("inicio_documentos")
-
-def ejemplo_eliminar(request):
-    #NO funciona por permisos
-    rut = "RUT"
-    ref = db.reference('/Usuario/'+ rut)
-    ref.delete()
-
-    return redirect("inicio_documentos")
 
