@@ -154,7 +154,7 @@ def iniciarSesion(request):
         request.session['cargo_usu'] = cargo_nombre
         request.session['logeado'] = True
         request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
-        request.session['rol_usu'] = usuario.get('Rol', '')
+        request.session['rol_usu'] = usuario.get('rol', '')
 
         return JsonResponse({"status": "success", "message": "Inicio de sesión correcto."})
 
