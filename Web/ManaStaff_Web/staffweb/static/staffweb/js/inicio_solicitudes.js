@@ -2,7 +2,9 @@
 var requests = [];
 
 async function obtener_solicitudes_usuario() {
+  const loader = document.getElementById("loader");
   try {
+    loader.style.display = "block";
     const response = await fetch("obtener_solicitudes_usuario")
     if (!response.ok) throw new Error("Error HTTP " + response.status)
 
@@ -10,9 +12,11 @@ async function obtener_solicitudes_usuario() {
     requests = data.solicitudes
 
     filteredRequests = [...requests].sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate))
-    renderRequests(filteredRequests);
+    filterRequests()
   } catch (error) {
     console.error("Error al obtener las solicitudes:", error)
+  }finally{
+    loader.style.display = "none";
   }
 }
 

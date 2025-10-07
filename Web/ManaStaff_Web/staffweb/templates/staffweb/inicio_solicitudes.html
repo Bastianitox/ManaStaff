@@ -53,7 +53,11 @@
 <div class="requests-section">
     <h2>Solicitudes recientes</h2>
     <div class="requests-grid" id="requestsGrid">
-        <!-- Solicitudes seran obtenidas a través de JS -->
+    <div id="loader" class="loader-container">
+        <div class="spinner-carga"></div>
+        <p>Cargando solicitudes...</p>
+    </div>
+        
     </div>
     <div class="no-results" id="noResults" style="display: none;">
         <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
