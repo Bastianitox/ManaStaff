@@ -1246,6 +1246,6 @@ def cambiar_contrasena_funcion(request):
         # ✅ Actualizar contraseña usando la función del módulo
         actualizar_contrasena(usuario_id, nueva_password)
         messages.success(request, "Contraseña cambiada correctamente.")
-        return redirect("cambiar_contrasena")
+        return redirect('inicio_perfil')
 
-    return render(request, "staffweb/inicio_perfil.html")
+    return redirect('inicio_perfil')
