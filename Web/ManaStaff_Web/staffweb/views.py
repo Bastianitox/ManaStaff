@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST
 from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
 
-from .funciones_dos import obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
+from .funciones_dos import verificar_contrasena_actual, actualizar_contrasena, obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
 from .decorators import admin_required
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
@@ -1211,3 +1211,36 @@ def perfil(request):
 #ERROR 403 (ACCESO DENEGADO)
 def error_403(request, exception=None):
     return render(request, "staffweb/403.html", status=403)
+
+#----------------------------------------------------------------------------------------------------#
+
+def cambiar_contrasena_funcion(request):
+    usuario_id = request.session.get("usuario_id")
+
+    if not usuario_id:
+        messages.error(request, "No se encontró la sesión del usuario.")
+        return redirect("login")
+
+    if request.method == "POST":
+        password_actual = request.POST.get("password_actual", "").strip()
+        nueva_password = request.POST.get("nueva_password", "").strip()
+        confirmar_password = request.POST.get("confirmar_password", "").strip()
+
+        if not password_actual or not nueva_password or not confirmar_password:
+            messages.warning(request, "Por favor, completa todos los campos.")
+            return redirect("cambiar_contrasena")
+
+        if not verificar_contrasena_actual(usuario_id, password_actual):
+            messages.error(request, "La contraseña actual es incorrecta.")
+            return redirect("cambiar_contrasena")
+
+        if nueva_password != confirmar_password:
+            messages.warning(request, "Las contraseñas no coinciden.")
+            return redirect("cambiar_contrasena")
+
+        # ✅ Actualizar contraseña usando la función del módulo
+        actualizar_contrasena(usuario_id, nueva_password)
+        messages.success(request, "Contraseña cambiada correctamente.")
+        return redirect("cambiar_contrasena")
+
+    return render(request, "staffweb/inicio_perfil.html")

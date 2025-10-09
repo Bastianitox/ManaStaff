@@ -125,3 +125,24 @@ def actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion):
         "Telefono": nuevo_celular,
         "Direccion": nueva_direccion
     })
+
+
+#-------------------------------------------------------------------------#
+
+def verificar_contrasena_actual(usuario_id, contrasena_ingresada):
+    """
+    Verifica si la contraseña actual ingresada coincide con la registrada en Firebase.
+    """
+    datos = database.child("Usuario").child(usuario_id).get().val()
+    if not datos:
+        return False
+    return datos.get("Contrasena", "") == contrasena_ingresada
+
+
+def actualizar_contrasena(usuario_id, nueva_contrasena):
+    """
+    Actualiza la contraseña del usuario en Firebase.
+    """
+    database.child("Usuario").child(usuario_id).update({
+        "Contrasena": nueva_contrasena
+    })

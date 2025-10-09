@@ -2,11 +2,12 @@
 {% load static %}
 
 {% block head %}
-<!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
-<script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+<script src="{% static 'staffweb/js/cambiar_contrasena.js' %}"></script>
 <title>Cambiar Contraseña</title>
-{% endblock head%}
+{% endblock head %}
 
 {% block principal %}
 
@@ -17,9 +18,7 @@
 
 <div class="perfil-contenedor">
     <div class="perfil-caja">
-        <form method="post">
-            {% csrf_token %}
-
+        <form id="formCambiarContrasena">
             <div class="campo">
                 <label for="password_actual">Contraseña Actual</label>
                 <input type="password" id="password_actual" name="password_actual" required>
@@ -37,24 +36,10 @@
 
             <div class="acciones">
                 <button type="submit" class="btn-guardar">Guardar Cambios</button>
-                <a href="{% url 'inicio_perfil' %}">
-                    <button type="button" class="btn-guardar">Cancelar</button>
-                </a>
+                <a href="{% url 'inicio_perfil' %}" class="btn-secundario">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
 
 {% endblock principal %}
