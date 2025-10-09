@@ -4,10 +4,9 @@
 {% block title %}Perfil{% endblock %}
 
 {% block head %}
-<div class="contenido">
   <link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
   <script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
-</div>
+  <title>Perfil</title>
 {% endblock head %}
 
 {% block principal %}
@@ -19,11 +18,11 @@
 <div class="perfil-formulario">
    <!-- Foto de perfil -->
     <div class="foto-seccion">
-        <img src="{% static 'staffweb/img/user.jpg' %}" alt="Foto de perfil" class="foto">
+        <img src="{{url_imagen_usuario}}" alt="Foto de perfil" class="foto">
         <button type="button" class="btn-foto">Cambiar foto</button>
     </div>
 
-    <form method="post">
+    <form method="post" action= "{% url 'perfil' %}" >
         {% csrf_token %}
         <div class="fila">
             <div class="campo">
@@ -54,18 +53,18 @@
             </div>
             <div class="campo">
                 <label for="rol">Rol</label>
-                <input type="text" id="rol" value="{{ usuario.rol }}" readonly>
+                <input type="text" id="rol" value="{{ rol_usu }}" readonly>
             </div>
             <div class="campo">
                 <label for="celular">Número de Celular</label>
-                <input type="text" id="celular" name="celular" value="{{ usuario.telefono }}">
+                <input type="text" id="celular" name="celular" value="{{ celular }}">
             </div>
         </div>
 
         <div class="fila">
             <div class="campo">
                 <label for="direccion">Dirección</label>
-                <input type="text" id="direccion" name="direccion" value="{{ usuario.direccion }}">
+                <input type="text" id="direccion" name="direccion" value="{{ direccion }}">
             </div>
         </div>
 

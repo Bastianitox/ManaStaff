@@ -1170,16 +1170,21 @@ def inicio_perfil(request):
     correo_usu = request.session.get('correo_usu')
     cargo_usu = request.session.get('cargo_usu')
     rol_usu = request.session.get('rol_usu')
-    telefono = request.session.get('telefono')
-    direccion = request.session.get('direccion')
+    roldatabase = database.child('Rol').child(rol_usu).get().val()
+    nombrerol = roldatabase.get('nombre')
+    idusu = request.session.get('usuario_id')
+    usuariodatabase = database.child('Usuario').child(idusu).get().val()
+    celular = usuariodatabase.get('Telefono')
+    direccion = usuariodatabase.get('Direccion')
+
 
     contexto = {
         'nombre_usu': nombre_usu,
         'apellido_usu': apellido_usu,
         'correo_usu': correo_usu,
         'cargo_usu': cargo_usu,
-        'rol_usu': rol_usu,
-        'telefono': telefono,
+        'rol_usu': nombrerol,
+        'celular': celular,
         'direccion': direccion
     }
     return render(request, 'staffweb/inicio_perfil.html', contexto)
@@ -1202,9 +1207,9 @@ def perfil(request):
         else:
             actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion)
             messages.success(request, "Datos guardados correctamente.")
-            return redirect('perfil')
+            return redirect('inicio_perfil')
 
-    return render(request, "staffweb/perfil.html", {"usuario": usuario, "usuario_id": usuario_id})
+    return redirect('inicio_perfil')
 
 
 
