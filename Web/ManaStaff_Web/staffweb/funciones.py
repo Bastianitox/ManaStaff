@@ -311,6 +311,24 @@ def crear_usuario_funcion(request):
     if not all([nombre, segundo_nombre,apellido_paterno, apellido_materno, rut,celular, direccion,cargo,rol, imagen_base64, pin, email, password]):
         return JsonResponse({"status": "false", "message": "Los campos no pueden estar vacíos."})
 
+    # VALIDAR LONGITUD DE CAMPOS
+    campos_max = {
+        "nombre": (2, 25),
+        "segundo_nombre": (2, 25),
+        "apellido_paterno": (2, 50),
+        "apellido_materno": (2, 50),
+        "direccion": (5, 150),
+        "email": (5, 100),
+    }
+
+    for campo, (min_len, max_len) in campos_max.items():
+        valor = data.get(campo, "").strip()
+        if len(valor) < min_len:
+            return JsonResponse({"status": "false", "message": f"El campo '{campo}' debe tener al menos {min_len} caracteres."})
+        if len(valor) > max_len:
+            return JsonResponse({"status": "false", "message": f"El campo '{campo}' no puede superar {max_len} caracteres."})
+
+
     # Validación de RUT (simple)
     import re
     patron_rut = r"^\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]$"
@@ -483,6 +501,24 @@ def modificar_usuario_funcion(request, rut):
     if not all([nombre, segundo_nombre,apellido_paterno, apellido_materno,celular, direccion, cargo, rol, email]):
         return JsonResponse({"status": "false", "message": "Los campos obligatorios no pueden estar vacíos."})
     
+    # VALIDAR LONGITUD DE CAMPOS
+    campos_max = {
+        "nombre": (2, 25),
+        "segundo_nombre": (2, 25),
+        "apellido_paterno": (2, 50),
+        "apellido_materno": (2, 50),
+        "direccion": (5, 150),
+        "email": (5, 100)
+    }
+
+    for campo, (min_len, max_len) in campos_max.items():
+        valor = data.get(campo, "").strip()
+        if len(valor) < min_len:
+            return JsonResponse({"status": "false", "message": f"El campo '{campo}' debe tener al menos {min_len} caracteres."})
+        if len(valor) > max_len:
+            return JsonResponse({"status": "false", "message": f"El campo '{campo}' no puede superar {max_len} caracteres."})
+
+
     # Validación de correo
     patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if not re.match(patron_email, email):

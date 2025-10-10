@@ -231,6 +231,8 @@ function validarFormulario() {
   return esValido
 }
 
+
+
 // Mensaje de éxito
 function mostrarMensajeExito() {
   const mensaje = document.getElementById("successMessage")
@@ -261,6 +263,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     this.value = valor.trim();
+  });
+
+  const camposMaximos = {
+    nombre: 25,
+    Segundo_nombre: 25,
+    apellido_paterno: 50,
+    apellido_materno: 50,
+    email: 100,
+    direccion: 150,
+    rut: 12
+  };
+
+  Object.keys(camposMaximos).forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      field.addEventListener("input", function () {
+          if (this.value.length > camposMaximos[fieldId]) {
+              this.value = this.value.slice(0, camposMaximos[fieldId]);
+          }
+      });
   });
 
   const form = document.getElementById("createUserForm");
