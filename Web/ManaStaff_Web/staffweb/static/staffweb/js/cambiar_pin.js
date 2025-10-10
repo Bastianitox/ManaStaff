@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
   
-    const actual = document.getElementById("password_actual").value.trim();
-    const nueva = document.getElementById("nueva_password").value.trim();
-    const confirmar = document.getElementById("confirmar_password").value.trim();
+    const actual = document.getElementById("pin_actual").value.trim();
+    const nueva = document.getElementById("pin_nueva").value.trim();
+    const confirmar = document.getElementById("pin_confirmar").value.trim();
 
     if (!actual || !nueva || !confirmar) {
       alert("⚠️ Completa todos los campos.");
@@ -18,12 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (nueva !== confirmar) {
-      alert("⚠️ Las contraseñas no coinciden.");
+      alert("⚠️ Los pin no coinciden.");
       return;
     }
     loadingOverlay.classList.add("show");
 
-  const url = `/cambiar_contrasena_funcion/${currentUserRut}`;
+  const url = `/cambiar_pin_funcion/${currentUserRut}`;
   const formData = new FormData(form);
    try {
       const response = await fetch(url, {
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (result.status === "success") {
         mostrarMensajeExito();
       } else {
-        alert(result.message || "Error al modificar contraseña");
+        alert(result.message || "Error al modificar pin");
       }
     } catch (error) {
       submitBtn.disabled = false;

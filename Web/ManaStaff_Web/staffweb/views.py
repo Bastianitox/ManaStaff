@@ -1267,3 +1267,42 @@ def cambiar_contrasena_funcion(request, rut):
         return JsonResponse({"status": "false", "message": f"Error al cambiar contraseña: {e}"})
 
     return JsonResponse({"status": "success", "message": "Contraseña actualizada correctamente."})
+
+#----------------------------------------------------------------------------------------------------#
+
+def cambiar_pin_funcion(request, rut):
+    pin_actual = request.POST.get("pin_actual", "").strip()
+    pin_nueva = request.POST.get("pin_nueva", "").strip()
+    pin_confirmar = request.POST.get("pin_confirmar", "").strip()
+
+    if not all([pin_actual, pin_nueva, pin_confirmar]):
+        return JsonResponse({"status": "false", "message": "Todos los campos son obligatorios."})
+
+    if pin_nueva != pin_confirmar:
+        return JsonResponse({"status": "false", "message": "Los nuevos pin no coinciden."})
+
+    if len(pin_nueva) !=4:
+        return JsonResponse({"status": "false", "message": "El nuevo pin debe tener 4 números."})
+
+    # Obtener email del usuario según su RUT
+    usuario_ref = database.child(f"Usuario/{rut}").get().val()
+    if not usuario_ref:
+        return JsonResponse({"status": "false", "message": "Usuario no encontrado."})
+
+    email = usuario_ref.get("correo")
+
+
+    try:
+        pin_usuario_actual=usuario_ref.get("PIN")
+        if pin_actual != pin_usuario_actual:
+            return JsonResponse({"status": "false", "message": "El pin actual es incorrecto."})
+        
+        ref= db.reference("/Usuario/"+rut)
+        ref.update({
+            "PIN":pin_nueva
+        })
+
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al cambiar pin: {e}"})
+
+    return JsonResponse({"status": "success", "message": "Pin actualizado correctamente."})

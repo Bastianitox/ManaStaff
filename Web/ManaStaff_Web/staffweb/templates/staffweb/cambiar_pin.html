@@ -22,10 +22,10 @@
       {% csrf_token %}
       
       <div class="campo">
-        <label for="password_actual">Pin Actual</label>
+        <label for="pin_actual">Pin Actual</label>
         <div class="input-grupo">
-          <input type="password" id="password_actual" name="password_actual" placeholder="Ingresa tu pin actual" required>
-          <button type="button" class="toggle-password" data-target="password_actual" aria-label="Mostrar contraseña">
+          <input type="password" id="pin_actual" name="pin_actual" placeholder="Ingresa tu pin actual" required>
+          <button type="button" class="toggle-password" data-target="pin_actual" aria-label="Mostrar pin">
             <span class="icono-ojo">👁</span>
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
           </button>
@@ -33,10 +33,10 @@
       </div>
 
       <div class="campo">
-        <label for="nueva_password">Nuevo Pin </label>
+        <label for="pin_nueva">Nuevo Pin </label>
         <div class="input-grupo">
-          <input type="password" id="nueva_password" name="nueva_password" placeholder="Ingresa un nuevo pin" required>
-          <button type="button" class="toggle-password" data-target="nueva_password" aria-label="Mostrar contraseña">
+          <input type="password" id="pin_nueva" name="pin_nueva" placeholder="Ingresa un nuevo pin" required>
+          <button type="button" class="toggle-password" data-target="pin_nueva" aria-label="Mostrar pin">
             <span class="icono-ojo">👁</span>
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
           </button>
@@ -44,10 +44,10 @@
       </div>
 
       <div class="campo">
-        <label for="confirmar_password">Confirmar Nuevo Pin</label>
+        <label for="pin_confirmar">Confirmar Nuevo Pin</label>
         <div class="input-grupo">
-          <input type="password" id="confirmar_password" name="confirmar_password" placeholder="Repite el nuevo pin" required>
-          <button type="button" class="toggle-password" data-target="confirmar_password" aria-label="Mostrar contraseña">
+          <input type="password" id="pin_confirmar" name="pin_confirmar" placeholder="Repite el nuevo pin" required>
+          <button type="button" class="toggle-password" data-target="pin_confirmar" aria-label="Mostrar pin">
             <span class="icono-ojo">👁</span>
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
           </button>
@@ -78,5 +78,5 @@
 <script>
     const currentUserRut = "{{ usuario_id|escapejs }}";
 </script>
-<script src="{% static 'staffweb/js/cambiar_contrasena.js' %}"></script>
+<script src="{% static 'staffweb/js/cambiar_pin.js' %}"></script>
 {% endblock js %}
