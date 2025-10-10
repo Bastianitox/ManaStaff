@@ -511,8 +511,17 @@ def modificar_usuario_funcion(request, rut):
         "email": (5, 100)
     }
 
+    valores_campo = {
+        "nombre": nombre,
+        "segundo_nombre": segundo_nombre,
+        "apellido_paterno": apellido_paterno,
+        "apellido_materno": apellido_materno,
+        "direccion": direccion,
+        "email": email
+    }
+
     for campo, (min_len, max_len) in campos_max.items():
-        valor = data.get(campo, "").strip()
+        valor = valores_campo[campo]
         if len(valor) < min_len:
             return JsonResponse({"status": "false", "message": f"El campo '{campo}' debe tener al menos {min_len} caracteres."})
         if len(valor) > max_len:

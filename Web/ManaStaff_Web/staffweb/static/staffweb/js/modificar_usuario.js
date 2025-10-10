@@ -388,9 +388,9 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
 
     if (!validarFormulario()) return;
+    // Mostrar overlay de carga
+    loadingOverlay.classList.add("show");
 
-    // Mostrar overlay y deshabilitar botón
-    loadingOverlay.classList.remove("hidden");
     submitBtn.disabled = true;
 
     // Forzar redraw para asegurar que la animación se muestre
@@ -412,7 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       // Ocultar overlay y habilitar botón
-      loadingOverlay.classList.add("hidden");
       submitBtn.disabled = false;
 
       if (result.status === "success") {
@@ -421,10 +420,11 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(result.message || "Error al modificar usuario");
       }
     } catch (error) {
-      loadingOverlay.classList.add("hidden");
       submitBtn.disabled = false;
       console.error(error);
       alert("Error al enviar el formulario");
+    }finally{
+      loadingOverlay.classList.remove("show");
     }
   });
 
