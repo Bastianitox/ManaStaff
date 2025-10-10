@@ -85,6 +85,9 @@
 {% endblock principal %}
 
 {% block js %}
+<script>
+    const currentUserRut = "{{ usuario_id|escapejs }}";
+</script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'staffweb/js/administrar_usuarios.js' %}"></script>
 {% endblock js %}

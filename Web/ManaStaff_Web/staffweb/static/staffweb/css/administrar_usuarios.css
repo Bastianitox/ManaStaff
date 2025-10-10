@@ -172,11 +172,19 @@
   gap: 4px;
 }
 
-.action-btn:hover {
+.action-btn:not(:disabled):hover {
   background: var(--primary-blue);
   color: var(--white);
   transform: translateY(-1px);
 }
+
+.action-btn:disabled{
+  border: 2px solid var(--gray-700);
+  color: var(--gray-700);
+  opacity: 0.5;
+  cursor: default;
+}
+
 
 /* Paginación */
 .pagination-container {
@@ -228,7 +236,7 @@
   color: #ef4444;
 }
 
-.delete-btn:hover {
+.delete-btn:not(:disabled):hover {
   background: #ef4444;
   color: #fff;
 }

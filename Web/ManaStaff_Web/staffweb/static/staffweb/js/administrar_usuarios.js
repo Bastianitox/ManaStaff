@@ -38,6 +38,8 @@ function renderTable() {
   tableBody.innerHTML = ""
 
   usersToShow.forEach((user) => {
+    const isCurrentUser = user.rut.toString() === currentUserRut.toString();
+    const disabledAttr = isCurrentUser ? "disabled" : "";
     const row = document.createElement("tr")
     row.innerHTML = `
             <td>${user.rut_normal}</td>
@@ -46,13 +48,13 @@ function renderTable() {
             <td>${user.position}</td>
             <td>${user.createdDate}</td>
             <td>
-                <button class="action-btn" onclick="editUser(${user.rut})" title="Modificar usuario">
+                <button class="action-btn" onclick="editUser(${user.rut})" title="Modificar usuario" ${disabledAttr}>
                     <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
                     </svg>
                     Modificar
                 </button>
-                <button class="action-btn delete-btn" onclick="deleteUser(${user.rut})" title="Eliminar usuario">
+                <button class="action-btn delete-btn" onclick="deleteUser(${user.rut})" title="Eliminar usuario" ${disabledAttr}>
                     <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.79,
                         3.29C14.61,3.11 14.35,3 14.09,3H9.91C9.65,3 9.39,

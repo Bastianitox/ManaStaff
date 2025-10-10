@@ -284,8 +284,8 @@ def obtener_usuario_actual(request):
         }
     })
 
-@admin_required
 @require_POST
+@admin_required
 def crear_usuario_funcion(request):
     try:
         data = json.loads(request.body)
@@ -394,44 +394,40 @@ def crear_usuario_funcion(request):
 
     return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
 
-@admin_required
 @require_POST
+@admin_required
 def eliminar_usuario(request, rut):
     try:
-        #Obtener el correo del usuario a traves del rut
         usuario = database.child(f"Usuario/{rut}").get().val()
         correo = usuario["correo"]
-
-        #Obtener el uid del usuario en autenthication a traves de su correo
+        
+        usuario_id_en_sesion = request.session.get("usuario_id")
+        
+        if usuario_id_en_sesion == rut:
+            return JsonResponse({"status": "false", "message": "No puede eliminar su propio usuario."})
         uid = auth.get_user_by_email(correo).uid
 
-        #Eliminar el usuario de AUTENTHICATION
         auth.delete_user(uid)
 
-        #Eliminar el usuario de Firebase (por su RUT)
         database.child(f"Usuario/{rut}").remove()
 
-        #Eliminar los archivos del usuario
         eliminar_archivos_usuario(rut)
 
-        # Eliminar solicitudes del usuario
         solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(rut).get()
         if solicitudes.each():
             for solicitud in solicitudes.each():
                 database.child("Solicitudes").child(solicitud.key()).remove()
 
-        # Eliminar documentos del usuario
         documentos = database.child("Documentos").order_by_child("id_rut").equal_to(rut).get()
         if documentos.each():
             for doc in documentos.each():
                 database.child("Documentos").child(doc.key()).remove()
 
-
         return JsonResponse({"status": "success", "message": "Usuario eliminado junto con sus Solicitudes y Documentos correctamente."})
+
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
-@admin_required
 def eliminar_archivos_usuario(rut):
     # Validación de entrada
     if not rut or not isinstance(rut, str):
@@ -455,8 +451,8 @@ def eliminar_archivos_usuario(rut):
     except Exception as e:
         return {"status": "error", "mensaje": f"Ocurrió un error al eliminar los archivos: {str(e)}"}
 
-@admin_required
 @require_POST
+@admin_required
 def modificar_usuario_funcion(request, rut):
     #OBTENER CAMPOS MENOS EL RUT (RUT NO SE DEBE EDITAR YA QUE ES UNICO)
     nombre = request.POST.get('nombre', None)
@@ -476,8 +472,11 @@ def modificar_usuario_funcion(request, rut):
     usuario_a_modificar = database.child(f"Usuario/{rut}").get().val()
     correo_actual = usuario_a_modificar.get("correo")
     usuarioAUTH = auth.get_user_by_email(correo_actual)
-    uid = usuarioAUTH.uid
 
+    usuario_id_en_sesion = request.session.get("usuario_id")
+    
+    if usuario_id_en_sesion == rut:
+        return JsonResponse({"status": "false", "message": "No puede modificar su propio usuario."})
     #VALIDACIONES
 
     # VALIDAR CAMPOS VACIOS
@@ -820,6 +819,8 @@ def asignarme_solicitud(request, id_solicitud):
 
     #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
     solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    if solicitud == {}:
+        return JsonResponse({'status': 'false', 'mensaje': 'La solicitud no pudo ser encontrada.'})
     solicitud_fecha_inicio =solicitud.get("Fecha_inicio")
 
     solicitud_id_rut = solicitud.get("id_rut")
