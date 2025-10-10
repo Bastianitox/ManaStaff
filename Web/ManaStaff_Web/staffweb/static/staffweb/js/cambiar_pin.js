@@ -1,7 +1,6 @@
-
 // --- Lógica del formulario ---
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("form-cambiar-contrasena");
+  const form = document.getElementById("form-cambiar-contrasena"); 
   const loadingOverlay = document.getElementById("loadingOverlay");
   const submitBtn = document.getElementById("submitBtn");
 
@@ -12,20 +11,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const nueva = document.getElementById("pin_nueva").value.trim();
     const confirmar = document.getElementById("pin_confirmar").value.trim();
 
+    // --- VALIDACIONES PERSONALIZADAS ---
     if (!actual || !nueva || !confirmar) {
       alert("⚠️ Completa todos los campos.");
       return;
     }
 
-    if (nueva !== confirmar) {
-      alert("⚠️ Los pin no coinciden.");
+    // Verifica que sean solo números
+    const soloNumeros = /^[0-9]+$/;
+    if (!soloNumeros.test(nueva) || !soloNumeros.test(confirmar)) {
+      alert("⚠️ El PIN solo puede contener números.");
       return;
     }
+
+    // Verifica que tenga exactamente 4 dígitos
+    if (nueva.length !== 4 || confirmar.length !== 4) {
+      alert("⚠️ El PIN debe tener exactamente 4 dígitos numéricos.");
+      return;
+    }
+
+    // Verifica que coincidan
+    if (nueva !== confirmar) {
+      alert("⚠️ Los PIN no coinciden.");
+      return;
+    }
+
+    // --- Envío al servidor ---
     loadingOverlay.classList.add("show");
 
-  const url = `/cambiar_pin_funcion/${currentUserRut}`;
-  const formData = new FormData(form);
-   try {
+    const url = `/cambiar_pin_funcion/${currentUserRut}`;
+    const formData = new FormData(form);
+
+    try {
       const response = await fetch(url, {
         method: "POST",
         body: formData,
@@ -36,19 +53,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await response.json();
 
-      // Ocultar overlay y habilitar botón
       submitBtn.disabled = false;
 
       if (result.status === "success") {
         mostrarMensajeExito();
       } else {
-        alert(result.message || "Error al modificar pin");
+        alert(result.message || "Error al modificar PIN.");
       }
     } catch (error) {
       submitBtn.disabled = false;
       console.error(error);
-      alert("Error al enviar el formulario");
-    }finally{
+      alert("Error al enviar el formulario.");
+    } finally {
       loadingOverlay.classList.remove("show");
     }
   });
@@ -74,13 +90,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Mostrar mensaje de éxito
+// --- Mostrar mensaje de éxito y redirigir ---
 function mostrarMensajeExito() {
-  const mensaje = document.getElementById("successMessage")
-  mensaje.classList.add("show")
+  const mensaje = document.getElementById("successMessage");
+  mensaje.classList.add("show");
+
   setTimeout(() => {
-    setTimeout(() => {
-      window.location.href = "/inicio_perfil"
-    }, 500)
-  }, 300)
+    window.location.href = "/inicio_perfil";
+  }, 1000);
 }
