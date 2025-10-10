@@ -1,30 +1,13 @@
-// --- Firebase ---
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import {
-  getAuth,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-
-// --- Configuración de Firebase (usa la misma que tu proyecto) ---
-const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID"
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 // --- Lógica del formulario ---
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector("form");
+  const form = document.getElementById("form-cambiar-contrasena");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const submitBtn = document.getElementById("submitBtn");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+  
     const actual = document.getElementById("password_actual").value.trim();
     const nueva = document.getElementById("nueva_password").value.trim();
     const confirmar = document.getElementById("confirmar_password").value.trim();
@@ -38,32 +21,35 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("⚠️ Las contraseñas no coinciden.");
       return;
     }
+    loadingOverlay.classList.add("show");
 
-    const user = auth.currentUser;
-    if (!user) {
-      alert("⚠️ No hay usuario autenticado. Inicia sesión nuevamente.");
-      return;
-    }
+  const url = `/cambiar_contrasena_funcion/${currentUserRut}`;
+  const formData = new FormData(form);
+   try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+      });
 
-    try {
-      // Reautenticar al usuario
-      const credenciales = EmailAuthProvider.credential(user.email, actual);
-      await reauthenticateWithCredential(user, credenciales);
+      const result = await response.json();
 
-      // Actualizar la contraseña
-      await updatePassword(user, nueva);
+      // Ocultar overlay y habilitar botón
+      submitBtn.disabled = false;
 
-      alert("✅ Contraseña cambiada correctamente.");
-      window.location.href = "/inicio_perfil"; // redirige al perfil
-    } catch (error) {
-      console.error("Error al cambiar contraseña:", error);
-      if (error.code === "auth/wrong-password") {
-        alert("❌ Contraseña actual incorrecta.");
-      } else if (error.code === "auth/weak-password") {
-        alert("⚠️ La nueva contraseña es muy débil (mínimo 6 caracteres).");
+      if (result.status === "success") {
+        mostrarMensajeExito();
       } else {
-        alert("⚠️ Error: " + error.message);
+        alert(result.message || "Error al modificar usuario");
       }
+    } catch (error) {
+      submitBtn.disabled = false;
+      console.error(error);
+      alert("Error al enviar el formulario");
+    }finally{
+      loadingOverlay.classList.remove("show");
     }
   });
 
@@ -87,3 +73,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// Mostrar mensaje de éxito
+function mostrarMensajeExito() {
+  const mensaje = document.getElementById("successMessage")
+  mensaje.classList.add("show")
+  setTimeout(() => {
+    setTimeout(() => {
+      window.location.href = "/inicio_perfil"
+    }, 500)
+  }, 300)
+}

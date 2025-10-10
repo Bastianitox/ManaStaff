@@ -11,6 +11,8 @@ from django.utils.safestring import mark_safe
 from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
 
+import requests
+
 from .funciones_dos import verificar_contrasena_actual, actualizar_contrasena, obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
 from .decorators import admin_required
 #IMPORTS DE FIREBASE
@@ -1219,33 +1221,49 @@ def error_403(request, exception=None):
 
 #----------------------------------------------------------------------------------------------------#
 
-def cambiar_contrasena_funcion(request):
-    usuario_id = request.session.get("usuario_id")
+def cambiar_contrasena_funcion(request, rut):
+    password_actual = request.POST.get("password_actual", "").strip()
+    password_nueva = request.POST.get("nueva_password", "").strip()
+    password_repetir = request.POST.get("confirmar_password", "").strip()
 
-    if not usuario_id:
-        messages.error(request, "No se encontró la sesión del usuario.")
-        return redirect("login")
+    if not all([password_actual, password_nueva, password_repetir]):
+        return JsonResponse({"status": "false", "message": "Todos los campos son obligatorios."})
 
-    if request.method == "POST":
-        password_actual = request.POST.get("password_actual", "").strip()
-        nueva_password = request.POST.get("nueva_password", "").strip()
-        confirmar_password = request.POST.get("confirmar_password", "").strip()
+    if password_nueva != password_repetir:
+        return JsonResponse({"status": "false", "message": "Las nuevas contraseñas no coinciden."})
 
-        if not password_actual or not nueva_password or not confirmar_password:
-            messages.warning(request, "Por favor, completa todos los campos.")
-            return redirect("cambiar_contrasena")
+    if len(password_nueva) < 6:
+        return JsonResponse({"status": "false", "message": "La nueva contraseña debe tener al menos 6 caracteres."})
 
-        if not verificar_contrasena_actual(usuario_id, password_actual):
-            messages.error(request, "La contraseña actual es incorrecta.")
-            return redirect("cambiar_contrasena")
+    # Obtener email del usuario según su RUT
+    usuario_ref = database.child(f"Usuario/{rut}").get().val()
+    if not usuario_ref:
+        return JsonResponse({"status": "false", "message": "Usuario no encontrado."})
 
-        if nueva_password != confirmar_password:
-            messages.warning(request, "Las contraseñas no coinciden.")
-            return redirect("cambiar_contrasena")
+    email = usuario_ref.get("correo")
 
-        # ✅ Actualizar contraseña usando la función del módulo
-        actualizar_contrasena(usuario_id, nueva_password)
-        messages.success(request, "Contraseña cambiada correctamente.")
-        return redirect('inicio_perfil')
 
-    return redirect('inicio_perfil')
+    try:
+
+        api_key = "AIzaSyDrogTFQNg_BNb1qmkIhJ6cpppzPw-DLOo"
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
+        payload = {
+            "email": email,
+            "password": password_actual,
+            "returnSecureToken": True
+        }
+        r = requests.post(url, json=payload)
+        resp = r.json()
+
+        if "error" in resp:
+            # Firebase retorna algo así: {"error":{"code":400,"message":"INVALID_PASSWORD","errors":[...]}}
+            return JsonResponse({"status": "false", "message": "La contraseña actual es incorrecta."})
+
+        # Actualizar contraseña
+        user = auth.get_user_by_email(email)
+        auth.update_user(user.uid, password=password_nueva)
+
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al cambiar contraseña: {e}"})
+
+    return JsonResponse({"status": "success", "message": "Contraseña actualizada correctamente."})

@@ -52,13 +52,29 @@
         </div>
       </div>
 
-      <div class="acciones-seguridad">
-        <button type="submit" class="btn-guardar">Guardar Cambios</button>
+      <div class="acciones-seguridad" >
+        <button id="submitBtn" type="submit" class="btn-guardar">Guardar Cambios</button>
         <a href="{% url 'inicio_perfil' %}" class="btn-cancelar">Cancelar</a>
       </div>
     </form>
   </div>
 </div>
 
-<script type="module" src="{% static 'staffweb/js/cambiar_contrasena.js' %}"></script>
+<!-- Mensaje de éxito -->
+<div id="successMessage" class="success-message">
+    Contraseña modificada con éxito
+</div>
+<!-- Overlay de carga -->
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
 {% endblock principal %}
+
+{% block js %}
+
+<script>
+    const currentUserRut = "{{ usuario_id|escapejs }}";
+</script>
+<script src="{% static 'staffweb/js/cambiar_contrasena.js' %}"></script>
+{% endblock js %}
