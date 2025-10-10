@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
-
+from django.utils.safestring import mark_safe
 from urllib.parse import urlparse, unquote, quote
 from collections import Counter, defaultdict
 
@@ -1111,12 +1111,12 @@ def administrar_noticiasyeventos(request):
             "titulo": val.get("titulo", ""),
             "contenido": val.get("contenido", ""),
             "fecha": val.get("fecha_emitida", ""),
-            "autor": val.get("id_empleador", ""),
-            "tipo": val.get("TipoAnuncio", "")
+            "autor": f"{database.child('Usuario').child(val.get('id_empleador', '')).get().val().get('Nombre', '')} {database.child('Usuario').child(val.get('id_empleador', '')).get().val().get('ApellidoPaterno', '')}",
+            "tipo": database.child('TipoAnuncio').child((val.get("TipoAnuncio", ""))).get().val().get('nombre')
         }
 
     return render(request, "staffweb/administrar_noticiasyeventos.html", {
-        "publicaciones": publicaciones
+        "publicaciones": mark_safe(json.dumps(list(publicaciones.values())))
     })
 
 # Crear

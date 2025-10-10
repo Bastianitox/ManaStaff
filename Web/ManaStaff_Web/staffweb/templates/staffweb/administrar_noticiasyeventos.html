@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'staffweb/css/administrar_noticiasyeventos.css' %}">
 <link rel="stylesheet" href="{% static 'staffweb/css/solicitudes.css' %}">
+<link rel="stylesheet" href="{% static 'staffweb/css/administrar_noticiasyeventos.css' %}">
 <link rel="stylesheet" href="{% static 'staffweb/css/detalle_solicitud.css' %}">
 <title>Administrar noticias y eventos</title>
 {% endblock head %}
@@ -11,88 +11,69 @@
 {% block principal %}
 <div class="header">
     <h1>Administrar noticias y eventos</h1>
-    <p>Aquí puedes modificar, crear, eliminar noticias y eventos</p>
+    <p>Aquí puedes modificar, crear o eliminar noticias y avisos.</p>
 </div>
 
-<!-- Search and Filter -->
+<!-- 🔍 Buscador y filtro -->
 <div class="search-filter-section">
     <div class="search-container">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <input type="text" class="search-input" placeholder="Buscar noticias o avisos..." id="searchNoticias">
     </div>
 
     <div class="sort-container">
-        <select id="sortNoticias">
+        <select id="sortSelect">
             <option value="recientes">Más recientes</option>
             <option value="antiguas">Más antiguas</option>
         </select>
     </div>
 </div>
 
-<!-- Tabs -->
+<!-- 🧭 Filtros (Tabs) -->
 <div class="status-tabs">
-  <button class="status-tab active" data-status="all">Todas</button>
-  <button class="status-tab" data-status="noticia">Noticias</button>
-  <button class="status-tab" data-status="aviso">Avisos</button>
+    <button class="status-tab active" data-status="all">Todas</button>
+    <button class="status-tab" data-status="noticia">Noticias</button>
+    <button class="status-tab" data-status="aviso">Avisos</button>
 </div>
 
-<!-- Noticias / Avisos Grid -->
+<!-- 📢 Sección de publicaciones -->
 <div class="documents-section">
-  <div class="section-header">
-    <h2>Publicaciones</h2>
-    <a href="{% url 'crear_publicacion' %}" class="btn-create-document" style="text-decoration: none;">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor" width="20" height="20">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 4v16m8-8H4"/>
-        </svg>
-        Crear publicacion
-    </a>
-  </div>
-  <div id="usersContainer"></div>
-</div>
-
-
-<div class="requests-section">
-  <h2>Novedades recientes</h2>
-  <div class="requests-grid" id="requestsGrid">
-      {% for pub_id, pub in publicaciones.items %}
-      <div class="noticia-card">
-          <h3>{{ pub.titulo }}</h3>
-          <p class="fecha">Publicado el {{ pub.fecha }}</p>
-          <p class="autor">Por: {{ pub.autor }}</p>
-          <p class="contenido">{{ pub.contenido }}</p>
-            <div class="acciones-card">
-                <a href="{% url 'editar_publicacion' pub_id %}" class="btn btn-editar">Editar</a>
-                <a href="{% url 'eliminar_publicacion' pub_id %}" class="btn btn-eliminar" 
-                   onclick="return confirm('¿Seguro que deseas eliminar esta publicación?');"> Eliminar
-                </a>
-            </div>     
-        </div>
+    <div class="section-header">
+        <h2>Publicaciones</h2>
+        <a href="{% url 'crear_publicacion' %}" class="btn-create-document" style="text-decoration: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v16m8-8H4"/>
+            </svg>
+            Crear publicación
+        </a>
     </div>
-      {% empty %}
-      <div class="no-results" id="noResults">
-          <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          <h3>No se encontraron noticias/eventos</h3>
-          <p>Intenta ajustar tus filtros de búsqueda</p>
-      </div>
-      {% endfor %}
-  </div>
 </div>
 
-<!-- JSON con anuncios para JS -->
-<script id="announcements-data" type="application/json">
-  {{ announcements_json|default:"[]"|safe }}
-</script>
+<!-- 📰 Grid de publicaciones (se rellena dinámicamente por JS) -->
+<div class="requests-section">
+    <h2 class="title-section">Novedades recientes</h2>
+    <div class="requests-grid" id="requestsGrid"></div>
 
+    <!-- Mensaje si no hay resultados -->
+    <div class="no-results" id="noResults" style="display:none;">
+        <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3>No se encontraron noticias o avisos</h3>
+        <p>Intenta ajustar tus filtros de búsqueda.</p>
+    </div>
+</div>
 {% endblock principal %}
 
 {% block js %}
 <script src="{% static 'staffweb/js/administrar_noticiasyeventos.js' %}"></script>
+<script id="publicaciones-data" type="application/json">
+    {{ publicaciones|default:"[]"|safe }}
+</script>
 {% endblock js %}
