@@ -53,6 +53,10 @@
     background: #062a54;
 }
 
+.hidden{
+    display: none;
+}
+
 /* Campos */
 .fila {
     display: flex;

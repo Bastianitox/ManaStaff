@@ -120,10 +120,11 @@ def obtener_datos_usuario(usuario_id):
         "rol": datos.get("Rol", "Sin rol asignado")
     }
 
-def actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion):
+def actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion, imagen_nueva):
     database.child("Usuario").child(usuario_id).update({
         "Telefono": nuevo_celular,
-        "Direccion": nueva_direccion
+        "Direccion": nueva_direccion,
+        "imagen": imagen_nueva
     })
 
 

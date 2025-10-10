@@ -1,8 +1,6 @@
 {% extends 'staffweb/plantilla.html' %}
 {% load static %}
 
-{% block title %}Perfil{% endblock %}
-
 {% block head %}
   <link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
   <script src="{% static 'staffweb/js/inicio_perfil.js' %}"></script>
@@ -16,14 +14,17 @@
 </div>
 
 <div class="perfil-formulario">
-   <!-- Foto de perfil -->
-    <div class="foto-seccion">
-        <img src="{{url_imagen_usuario}}" alt="Foto de perfil" class="foto">
-        <button type="button" class="btn-foto">Cambiar foto</button>
-    </div>
-
-    <form method="post" action= "{% url 'perfil' %}" >
+    <form method="post" action= "{% url 'perfil' %}" enctype="multipart/form-data">
         {% csrf_token %}
+        <!-- Foto de perfil -->
+        <button type="button" class="btn_cancelar_imagen" id="btn_cancelar_imagen">Cancelar cambio</button>
+        <div class="foto-seccion">
+            <img alt="Foto de perfil" class="foto hidden" id="imagen_nueva">
+            <img src="{{url_imagen_usuario}}" alt="Foto de perfil" class="foto" id="imagen_actual">
+            <label class="btn-foto" for="imagen_input">Cambiar Imagen</label>
+            <input type="file" name="imagen" id="imagen_input" class="hidden" accept="image/*"></input>
+        </div>
+
         <div class="fila">
             <div class="campo">
                 <label for="nombres">Nombres</label>
@@ -53,7 +54,7 @@
             </div>
             <div class="campo">
                 <label for="rol">Rol</label>
-                <input type="text" id="rol" value="{{ rol_usu }}" readonly>
+                <input type="text" id="rol" value="{{ nombrerol }}" readonly>
             </div>
             <div class="campo">
                 <label for="celular">Número de Celular</label>

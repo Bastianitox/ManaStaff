@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from django.utils.safestring import mark_safe
-from urllib.parse import urlparse, unquote, quote
+from urllib.parse import urlparse, unquote, quote, unquote_plus
 from collections import Counter, defaultdict
 
 import requests
@@ -1185,7 +1185,8 @@ def inicio_perfil(request):
         'apellido_usu': apellido_usu,
         'correo_usu': correo_usu,
         'cargo_usu': cargo_usu,
-        'rol_usu': nombrerol,
+        'rol_usu': rol_usu,
+        'nombrerol': nombrerol,
         'celular': celular,
         'direccion': direccion
     }
@@ -1198,16 +1199,54 @@ def perfil(request):
         messages.error(request, "No se encontró la sesión del usuario.")
         return redirect('login')
 
-    usuario = obtener_datos_usuario(usuario_id)
-
     if request.method == "POST":
         nuevo_celular = request.POST.get("celular", "").strip()
         nueva_direccion = request.POST.get("direccion", "").strip()
+        nueva_imagen = request.FILES.get("imagen", None)
+
 
         if not nuevo_celular or not nueva_direccion:
             messages.warning(request, "Por favor completa ambos campos.")
         else:
-            actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion)
+            
+            usuario_actual = database.child("Usuario").child(usuario_id).get().val()
+            imagen_actual = usuario_actual.get('imagen')
+
+            if nueva_imagen and nueva_imagen != imagen_actual:
+                #VALIDACION DE IMAGEN
+
+
+                ext_permitidas = ["jpg", "jpeg", "png", "gif"]
+                ext = nueva_imagen.name.split(".")[-1].lower()
+                if ext not in ext_permitidas:
+                    return redirect('inicio_perfil', {'mensaje': "Imagen no permitida (JPG, JPEG, PNg, GIF)."})
+
+                #ELIMINAR IMAGEN ACTUAL DE STORAGE
+
+                bucket = storage.bucket()
+
+                nombre_archivo = imagen_actual.split("/")[-1]
+                nombre_archivo = str(nombre_archivo.split("?")[0])
+                nombre_archivo = unquote_plus(nombre_archivo)
+
+                blob = bucket.blob(f"{usuario_id}/Imagen/{nombre_archivo}")
+                blob.delete()
+
+
+                # SUBIR NUEVA IMAGEN A STORAGE
+                bucket = storage.bucket()
+                blob = bucket.blob(f"{usuario_id}/Imagen/{nueva_imagen.name}")
+                blob.upload_from_file(nueva_imagen, content_type=nueva_imagen.content_type)
+                blob.cache_control = "public, max-age=3600, s-maxage=86400"
+                blob.patch()
+
+                imagen_actual = blob.generate_signed_url(
+                    expiration=timedelta(weeks=150),
+                    method="GET"
+                )
+
+            actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion, imagen_actual)
+            request.session['url_imagen_usuario'] = imagen_actual
             messages.success(request, "Datos guardados correctamente.")
             return redirect('inicio_perfil')
 
