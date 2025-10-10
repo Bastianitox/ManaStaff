@@ -207,7 +207,11 @@ document.getElementById("confirmBtn").addEventListener("click", () => {
     .then((data) => {
       if (data.status === "success") {
         alert("Solicitud cancelada con éxito");
-        obtener_solicitudes_usuario();
+
+        requests = requests.filter(r => r.id_solicitud !== requestToDelete);
+
+        filterRequests();
+
       } else {
         alert("Error: " + data.message);
       }
@@ -220,6 +224,7 @@ document.getElementById("confirmBtn").addEventListener("click", () => {
       document.getElementById("loadingSpinner").classList.add("hidden");
     });
 });
+
 
 
 // Helper para CSRF
