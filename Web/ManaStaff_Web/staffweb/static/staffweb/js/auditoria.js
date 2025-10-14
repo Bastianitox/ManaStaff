@@ -4,8 +4,8 @@ const actividadesPorDia = {{ actividades_por_dia|safe }};
 const descargasPorDocumento = {{ descargas_por_documento|safe }};
 
 // === Gráfico de actividades por tipo ===
-if (document.getElementById('actividadesTipoChart')) {
-    new Chart(document.getElementById('actividadesTipoChart'), {
+if (document.getElementById('actividades_por_tipo')) {
+    new Chart(document.getElementById('actividades_por_tipo'), {
         type: 'doughnut',
         data: {
             labels: ['Descargas', 'Cambios Admin', 'Accesos', 'Creaciones', 'Eliminaciones', 'Actualizaciones'],
@@ -22,8 +22,8 @@ if (document.getElementById('actividadesTipoChart')) {
 }
 
 // === Gráfico de actividades en el tiempo ===
-if (document.getElementById('actividadesTiempoChart')) {
-    new Chart(document.getElementById('actividadesTiempoChart'), {
+if (document.getElementById('actividades_por_dia')) {
+    new Chart(document.getElementById('actividades_por_dia'), {
         type: 'line',
         data: {
             labels: actividadesPorDia.labels,
@@ -47,8 +47,8 @@ if (document.getElementById('actividadesTiempoChart')) {
 }
 
 // === Gráfico de descargas por documento ===
-if (document.getElementById('descargasDocumentosChart')) {
-    new Chart(document.getElementById('descargasDocumentosChart'), {
+if (document.getElementById('descargas_por_documento')) {
+    new Chart(document.getElementById('descargas_por_documento'), {
         type: 'bar',
         data: {
             labels: descargasPorDocumento.labels,
