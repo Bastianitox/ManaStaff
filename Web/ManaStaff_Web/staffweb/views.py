@@ -1110,6 +1110,7 @@ def administrar_noticiasyeventos(request):
 
     for key, val in anuncios.items():
         publicaciones[key] = {
+            "id": key,
             "titulo": val.get("titulo", ""),
             "contenido": val.get("contenido", ""),
             "fecha": val.get("fecha_emitida", ""),
