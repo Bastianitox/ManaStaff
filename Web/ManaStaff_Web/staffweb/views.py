@@ -1346,3 +1346,8 @@ def cambiar_pin_funcion(request, rut):
         return JsonResponse({"status": "false", "message": f"Error al cambiar pin: {e}"})
 
     return JsonResponse({"status": "success", "message": "Pin actualizado correctamente."})
+
+
+@admin_required
+def auditoria(request):
+    return render(request, "staffweb/auditoria.html")

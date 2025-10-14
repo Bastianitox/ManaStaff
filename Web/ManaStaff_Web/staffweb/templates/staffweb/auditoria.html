@@ -2,19 +2,19 @@
 {% load static %}
 
 {% block head %}
+ STATIC CSS 
 <link rel="stylesheet" href="{% static 'staffweb/css/auditoria.css' %}">
 <script src="{% static 'staffweb/js/auditoria.js' %}"></script>
 <title>Auditoría del Sistema</title>
 {% endblock head %}
 
-{% block principal %}
+
 <div class="header">
-    <h1>Administrar logs</h1>
-    <p>¡Aquí puedes ver toda la actividad de ManaStaff!</p>
+    <h1>Auditoría del Sistema</h1>
+    <p>Registro completo de actividades de usuarios y administradores</p>
 </div>
 
-
-
+ Cards de métricas rápidas 
 <div class="dashboard-cards">
   <div class="card">
     <h3>Total de Acciones</h3>
@@ -36,6 +36,7 @@
 
 <div class="dashboard">
 
+    Filtros de auditoría 
   <div class="card" style="grid-column: 1 / -1;">
     <h3>Filtros de Búsqueda</h3>
     <form method="GET" class="filtros-auditoria">
@@ -77,17 +78,19 @@
     </form>
   </div>
 
- 
+   Gráfico de actividades por tipo 
   <div class="card">
     <h3>Actividades por Tipo</h3>
     <canvas id="actividades_por_tipo"></canvas>
   </div>
 
+   Gráfico de actividades en el tiempo 
   <div class="card">
     <h3>Actividades por Día (Últimos 7 días)</h3>
     <canvas id="actividades_por_dia"></canvas>
   </div>
 
+   Top usuarios más activos 
   <div class="card">
     <h3>Usuarios Más Activos</h3>
     <table class="user-table">
@@ -110,13 +113,13 @@
     </table>
   </div>
 
-  
+   Descargas por documento 
   <div class="card">
     <h3>Documentos Más Descargados</h3>
     <canvas id="descargas_por_documento"></canvas>
   </div>
 
-  
+   Tabla de auditoría detallada 
   <div class="card" style="grid-column: 1 / -1;">
     <h3>Registro de Auditoría Detallado</h3>
     <div class="tabla-auditoria-container">
@@ -154,7 +157,7 @@
       </table>
     </div>
     
-  
+     Paginación 
     {% if logs_auditoria.has_other_pages %}
       <div class="paginacion">
         {% if logs_auditoria.has_previous %}
@@ -172,7 +175,7 @@
 
 </div>
 
-
+ Modal para detalles 
 <div id="modalDetalles" class="modal">
   <div class="modal-content">
     <span class="close" onclick="cerrarModal()">&times;</span>
@@ -182,4 +185,3 @@
 </div>
 
 {% endblock principal %}
-
