@@ -1351,3 +1351,140 @@ def cambiar_pin_funcion(request, rut):
     return JsonResponse({"status": "success", "message": "Pin actualizado correctamente."})
 
 
+
+# def auditoria_view(request):
+#     """Vista principal de auditoría"""
+    
+#     # Obtener parámetros de filtro
+#     tipo_accion = request.GET.get('tipo_accion', '')
+#     usuario_id = request.GET.get('usuario', '')
+#     fecha_inicio = request.GET.get('fecha_inicio', '')
+#     fecha_fin = request.GET.get('fecha_fin', '')
+    
+#     # Query base
+#     logs = LogAuditoria.objects.select_related('usuario').all().order_by('-fecha_hora')
+    
+#     # Aplicar filtros
+#     if tipo_accion:
+#         logs = logs.filter(tipo_accion=tipo_accion)
+    
+#     if usuario_id:
+#         logs = logs.filter(usuario_id=usuario_id)
+    
+#     if fecha_inicio:
+#         fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+#         logs = logs.filter(fecha_hora__gte=fecha_inicio_dt)
+    
+#     if fecha_fin:
+#         fecha_fin_dt = datetime.strptime(fecha_fin, '%Y-%m-%d')
+#         fecha_fin_dt = fecha_fin_dt.replace(hour=23, minute=59, second=59)
+#         logs = logs.filter(fecha_hora__lte=fecha_fin_dt)
+    
+#     # Métricas rápidas
+#     total_acciones = LogAuditoria.objects.count()
+#     total_descargas = LogAuditoria.objects.filter(tipo_accion='descarga').count()
+#     total_cambios_admin = LogAuditoria.objects.filter(tipo_accion='cambio').count()
+    
+#     hoy = datetime.now().date()
+#     usuarios_activos_hoy = LogAuditoria.objects.filter(
+#         fecha_hora__date=hoy
+#     ).values('usuario').distinct().count()
+    
+#     # Top usuarios más activos
+#     top_usuarios_activos = Usuario.objects.annotate(
+#         total_acciones=Count('logauditoria')
+#     ).order_by('-total_acciones')[:5]
+    
+#     # Actividades por tipo
+#     actividades_tipo = LogAuditoria.objects.values('tipo_accion').annotate(
+#         total=Count('id')
+#     ).order_by('-total')
+    
+#     actividades_por_tipo = [0, 0, 0, 0, 0, 0]  # [descargas, cambios, accesos, creaciones, eliminaciones, actualizaciones]
+#     for act in actividades_tipo:
+#         if act['tipo_accion'] == 'descarga':
+#             actividades_por_tipo[0] = act['total']
+#         elif act['tipo_accion'] == 'cambio':
+#             actividades_por_tipo[1] = act['total']
+#         elif act['tipo_accion'] == 'acceso':
+#             actividades_por_tipo[2] = act['total']
+#         elif act['tipo_accion'] == 'creacion':
+#             actividades_por_tipo[3] = act['total']
+#         elif act['tipo_accion'] == 'eliminacion':
+#             actividades_por_tipo[4] = act['total']
+#         elif act['tipo_accion'] == 'actualizacion':
+#             actividades_por_tipo[5] = act['total']
+    
+#     # Actividades por día (últimos 7 días)
+#     fecha_hace_7_dias = datetime.now() - timedelta(days=7)
+#     actividades_dias = []
+#     labels_dias = []
+    
+#     for i in range(7):
+#         dia = fecha_hace_7_dias + timedelta(days=i)
+#         count = LogAuditoria.objects.filter(
+#             fecha_hora__date=dia.date()
+#         ).count()
+#         actividades_dias.append(count)
+#         labels_dias.append(dia.strftime('%d/%m'))
+    
+#     actividades_por_dia = {
+#         'labels': labels_dias,
+#         'data': actividades_dias
+#     }
+    
+#     # Descargas por documento (top 5)
+#     descargas_docs = LogAuditoria.objects.filter(
+#         tipo_accion='descarga'
+#     ).values('descripcion').annotate(
+#         total=Count('id')
+#     ).order_by('-total')[:5]
+    
+#     descargas_por_documento = {
+#         'labels': [d['descripcion'][:30] + '...' if len(d['descripcion']) > 30 else d['descripcion'] for d in descargas_docs],
+#         'data': [d['total'] for d in descargas_docs]
+#     }
+    
+#     # Paginación
+#     paginator = Paginator(logs, 20)  # 20 registros por página
+#     page_number = request.GET.get('page')
+#     logs_paginados = paginator.get_page(page_number)
+    
+#     # Lista de usuarios para el filtro
+#     usuarios_lista = Usuario.objects.all().order_by('nombre')
+    
+#     context = {
+#         'total_acciones': total_acciones,
+#         'total_descargas': total_descargas,
+#         'total_cambios_admin': total_cambios_admin,
+#         'usuarios_activos_hoy': usuarios_activos_hoy,
+#         'top_usuarios_activos': top_usuarios_activos,
+#         'actividades_por_tipo': json.dumps(actividades_por_tipo),
+#         'actividades_por_dia': json.dumps(actividades_por_dia),
+#         'descargas_por_documento': json.dumps(descargas_por_documento),
+#         'logs_auditoria': logs_paginados,
+#         'usuarios_lista': usuarios_lista,
+#         'fecha_inicio': fecha_inicio,
+#         'fecha_fin': fecha_fin,
+#     }
+    
+#     return render(request, 'staffweb/auditoria.html', context)
+
+
+# @login_required
+# def auditoria_detalles(request, log_id):
+#     """Vista para obtener detalles de un log específico"""
+#     try:
+#         log = LogAuditoria.objects.select_related('usuario').get(id=log_id)
+#         data = {
+#             'usuario': log.usuario.nombre,
+#             'fecha_hora': log.fecha_hora.strftime('%d/%m/%Y %H:%M:%S'),
+#             'tipo_accion': log.get_tipo_accion_display(),
+#             'descripcion': log.descripcion,
+#             'ip_address': log.ip_address,
+#             'user_agent': log.user_agent,
+#             'datos_adicionales': log.datos_adicionales if hasattr(log, 'datos_adicionales') else None
+#         }
+#         return JsonResponse(data)
+#     except LogAuditoria.DoesNotExist:
+#         return JsonResponse({'error': 'Log no encontrado'}, status=404)
