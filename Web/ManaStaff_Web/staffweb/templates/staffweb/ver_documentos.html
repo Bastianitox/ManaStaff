@@ -32,8 +32,12 @@
 
         <div class="document-actions">
             {% if documento and documento.downloadPath %}
-                <a class="action-btn download-btn" id="downloadBtn"
-                   href="{% url 'descargar_documento' documento.id %}">
+                <a
+                    class="action-btn download-btn"
+                    id="downloadBtn"
+                    data-doc-id="{{ documento.id }}"
+                    href="{% url 'descargar_documento' documento.id %}"
+                >
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
                     </svg>
