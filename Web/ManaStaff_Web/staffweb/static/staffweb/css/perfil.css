@@ -170,3 +170,19 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+.btn_cancelar_imagen {
+  background: #0A3C7D;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;       
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;     
+}
+
+.btn_cancelar_imagen:hover {
+  background: #062a54;     
+}

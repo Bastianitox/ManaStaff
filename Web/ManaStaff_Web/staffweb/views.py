@@ -1171,18 +1171,34 @@ def eliminar_publicacion(request, pub_id):
 
 #--------------------------------------------------------------------------------#
 def inicio_perfil(request):
-    nombre_usu = request.session.get('nombre_usu')
-    apellido_usu = request.session.get('apellido_usu')
-    correo_usu = request.session.get('correo_usu')
-    cargo_usu = request.session.get('cargo_usu')
-    rol_usu = request.session.get('rol_usu')
-    roldatabase = database.child('Rol').child(rol_usu).get().val()
-    nombrerol = roldatabase.get('nombre')
-    idusu = request.session.get('usuario_id')
-    usuariodatabase = database.child('Usuario').child(idusu).get().val()
-    celular = usuariodatabase.get('Telefono')
-    direccion = usuariodatabase.get('Direccion')
+    # Datos básicos desde sesión
+    nombre_usu = (request.session.get('nombre_usu') or '').strip()
+    apellido_usu_sesion = (request.session.get('apellido_usu') or '').strip()
+    correo_usu = (request.session.get('correo_usu') or '').strip()
+    cargo_usu = (request.session.get('cargo_usu') or '').strip()
+    rol_usu = (request.session.get('rol_usu') or '').strip()
+    idusu = (request.session.get('usuario_id') or '').strip()
 
+    # Rol (tolerante a None)
+    roldatabase = database.child('Rol').child(rol_usu).get().val() or {}
+    nombrerol = (roldatabase.get('nombre') or rol_usu or '').strip()
+
+    # Usuario en Firebase
+    usuariodatabase = database.child('Usuario').child(idusu).get().val() or {}
+    celular = (usuariodatabase.get('Telefono') or '').strip()
+    direccion = (usuariodatabase.get('Direccion') or '').strip()
+
+    # Apellidos combinados desde Firebase 
+    ap_paterno = (usuariodatabase.get('ApellidoPaterno') or '').strip()
+    ap_materno = (usuariodatabase.get('ApellidoMaterno') or '').strip()
+    apellido_usu = (f"{ap_paterno} {ap_materno}".strip() or apellido_usu_sesion)
+
+    # Imagen 
+    url_imagen_usuario = (
+        request.session.get('url_imagen_usuario')
+        or usuariodatabase.get('imagen')
+        or ''
+    )
 
     contexto = {
         'nombre_usu': nombre_usu,
@@ -1192,10 +1208,10 @@ def inicio_perfil(request):
         'rol_usu': rol_usu,
         'nombrerol': nombrerol,
         'celular': celular,
-        'direccion': direccion
+        'direccion': direccion,
+        'url_imagen_usuario': url_imagen_usuario,
     }
     return render(request, 'staffweb/inicio_perfil.html', contexto)
-
 
 def perfil(request):
     usuario_id = request.session.get('usuario_id')
@@ -1203,60 +1219,69 @@ def perfil(request):
         messages.error(request, "No se encontró la sesión del usuario.")
         return redirect('login')
 
-    if request.method == "POST":
-        nuevo_celular = request.POST.get("celular", "").strip()
-        nueva_direccion = request.POST.get("direccion", "").strip()
-        nueva_imagen = request.FILES.get("imagen", None)
+    if request.method != "POST":
+        return redirect('inicio_perfil')
 
+    nuevo_celular = (request.POST.get("celular") or "").strip()
+    nueva_direccion = (request.POST.get("direccion") or "").strip()
+    nueva_imagen = request.FILES.get("imagen", None)
 
-        if not nuevo_celular or not nueva_direccion:
-            messages.warning(request, "Por favor completa ambos campos.")
-        else:
-            
-            usuario_actual = database.child("Usuario").child(usuario_id).get().val()
-            imagen_actual = usuario_actual.get('imagen')
+    if not nuevo_celular or not nueva_direccion:
+        messages.warning(request, "Por favor completa ambos campos.")
+        return redirect('inicio_perfil')
 
-            if nueva_imagen and nueva_imagen != imagen_actual:
-                #VALIDACION DE IMAGEN
+    usuario_actual = database.child("Usuario").child(usuario_id).get().val() or {}
+    imagen_actual_url = (usuario_actual.get('imagen') or '').strip()
 
-
-                ext_permitidas = ["jpg", "jpeg", "png", "gif"]
-                ext = nueva_imagen.name.split(".")[-1].lower()
-                if ext not in ext_permitidas:
-                    return redirect('inicio_perfil', {'mensaje': "Imagen no permitida (JPG, JPEG, PNg, GIF)."})
-
-                #ELIMINAR IMAGEN ACTUAL DE STORAGE
-
-                bucket = storage.bucket()
-
-                nombre_archivo = imagen_actual.split("/")[-1]
-                nombre_archivo = str(nombre_archivo.split("?")[0])
-                nombre_archivo = unquote_plus(nombre_archivo)
-
-                blob = bucket.blob(f"{usuario_id}/Imagen/{nombre_archivo}")
-                blob.delete()
-
-
-                # SUBIR NUEVA IMAGEN A STORAGE
-                bucket = storage.bucket()
-                blob = bucket.blob(f"{usuario_id}/Imagen/{nueva_imagen.name}")
-                blob.upload_from_file(nueva_imagen, content_type=nueva_imagen.content_type)
-                blob.cache_control = "public, max-age=3600, s-maxage=86400"
-                blob.patch()
-
-                imagen_actual = blob.generate_signed_url(
-                    expiration=timedelta(weeks=150),
-                    method="GET"
-                )
-
-            actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion, imagen_actual)
-            request.session['url_imagen_usuario'] = imagen_actual
-            messages.success(request, "Datos guardados correctamente.")
+    if nueva_imagen:
+        # Validación
+        ext = nueva_imagen.name.split(".")[-1].lower()
+        if ext not in {"jpg", "jpeg", "png", "gif"}:
+            messages.error(request, "Imagen no permitida (JPG, JPEG, PNG, GIF).")
             return redirect('inicio_perfil')
 
+        bucket = storage.bucket()
+
+        # Borrar imagen anterior si existe 
+        if imagen_actual_url:
+            try:
+                parsed = urlparse(imagen_actual_url)
+                last_segment = (parsed.path.split('/')[-1] if parsed.path else '').split('?')[0]
+                nombre_archivo_viejo = unquote_plus(last_segment) if last_segment else None
+                if nombre_archivo_viejo:
+                    old_blob = bucket.blob(f"{usuario_id}/Imagen/{nombre_archivo_viejo}")
+                    if old_blob.exists():
+                        old_blob.delete()
+            except Exception:
+                pass
+
+        #Subir la nueva imagen
+        try:
+            new_blob = bucket.blob(f"{usuario_id}/Imagen/{nueva_imagen.name}")
+            new_blob.upload_from_file(nueva_imagen, content_type=nueva_imagen.content_type)
+            new_blob.cache_control = "public, max-age=3600, s-maxage=86400"
+            new_blob.patch()
+
+            imagen_actual_url = new_blob.generate_signed_url(
+                expiration=timedelta(weeks=150),
+                method="GET"
+            )
+        except Exception as e:
+            messages.error(request, "No se pudo subir la nueva imagen.")
+            return redirect('inicio_perfil')
+
+    # Actualizar datos en Firebase 
+    try:
+        actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion, imagen_actual_url)
+    except Exception:
+        messages.error(request, "No se pudieron actualizar los datos.")
+        return redirect('inicio_perfil')
+
+    # Refrescar URL de imagen en sesión para que el template la tome
+    request.session['url_imagen_usuario'] = imagen_actual_url
+
+    messages.success(request, "Datos guardados correctamente.")
     return redirect('inicio_perfil')
-
-
 
 #ERROR 403 (ACCESO DENEGADO)
 def error_403(request, exception=None):

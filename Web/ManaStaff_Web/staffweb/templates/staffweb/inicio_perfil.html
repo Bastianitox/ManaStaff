@@ -17,7 +17,7 @@
     <form method="post" action= "{% url 'perfil' %}" enctype="multipart/form-data">
         {% csrf_token %}
         <!-- Foto de perfil -->
-        <button type="button" class="btn_cancelar_imagen" id="btn_cancelar_imagen">Cancelar cambio</button>
+        <button type="button" class="btn_cancelar_imagen" id="btn_cancelar_imagen">Cancelar cambio de imagen</button>
         <div class="foto-seccion">
             <img alt="Foto de perfil" class="foto hidden" id="imagen_nueva">
             <img src="{{url_imagen_usuario}}" alt="Foto de perfil" class="foto" id="imagen_actual">
