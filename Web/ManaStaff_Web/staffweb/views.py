@@ -680,14 +680,15 @@ def crear_documento(request):
         }
         if fecha_venc:
             data["fecha_vencimiento"] = fecha_venc
+            
 
         try:
             db.reference("Documentos").child(doc_id).set(data)
             messages.success(request, "Documento creado correctamente.")
+            return redirect("administrar_documentos")
         except Exception:
             messages.error(request, "Hubo un problema guardando el documento.")
-
-        return redirect(reverse("crear_documento"))
+            return redirect("crear_documento")
 
     # GET 
     usuarios_raw = database.child("Usuario").get().val() or {}
@@ -1117,24 +1118,45 @@ def editar_noticiasyeventos(request):
 def crear_publicacion(request):
     return render(request, "staffweb/crear_publicacion.html")
 
-@admin_required
 def administrar_noticiasyeventos(request):
-    anuncios = listar_publicaciones()
-    publicaciones = {}
+    anuncios = listar_publicaciones() or {}
+    publicaciones = []
 
     for key, val in anuncios.items():
-        publicaciones[key] = {
-            "id": key,
-            "titulo": val.get("titulo", ""),
-            "contenido": val.get("contenido", ""),
-            "fecha": val.get("fecha_emitida", ""),
-            "autor": f"{database.child('Usuario').child(val.get('id_empleador', '')).get().val().get('Nombre', '')} {database.child('Usuario').child(val.get('id_empleador', '')).get().val().get('ApellidoPaterno', '')}",
-            "tipo": database.child('TipoAnuncio').child((val.get("TipoAnuncio", ""))).get().val().get('nombre')
-        }
+        val = val or {}
 
-    return render(request, "staffweb/administrar_noticiasyeventos.html", {
-        "publicaciones": mark_safe(json.dumps(list(publicaciones.values())))
-    })
+        # --- autor  ---
+        id_emp = str(val.get("id_empleador") or "").strip()
+        try:
+            u = database.child("Usuario").child(id_emp).get().val() or {}
+        except Exception:
+            u = {}
+        nombre = (u.get("Nombre") or "").strip()
+        ap_pat = (u.get("ApellidoPaterno") or "").strip()
+        autor = f"{nombre} {ap_pat}".strip() or "Sin autor"
+
+        # --- tipo ---
+        tipo_code = str(val.get("TipoAnuncio") or "").strip()
+        try:
+            t = database.child("TipoAnuncio").child(tipo_code).get().val() or {}
+        except Exception:
+            t = {}
+        tipo = (t.get("nombre") or "").strip().lower() or "aviso"   # noticia/aviso
+
+        publicaciones.append({
+            "id": key,
+            "titulo": val.get("titulo", "") or "",
+            "contenido": val.get("contenido", "") or "",
+            "fecha": val.get("fecha_emitida", "") or "",
+            "autor": autor,
+            "tipo": tipo,
+        })
+
+    return render(
+        request,
+        "staffweb/administrar_noticiasyeventos.html",
+        {"publicaciones": mark_safe(json.dumps(publicaciones, ensure_ascii=False))}
+    )
 
 # Crear
 @admin_required

@@ -105,22 +105,6 @@
 <script id="usuarios-data" type="application/json">{{ usuarios_json|default:"[]"|safe }}</script>
 <script id="estados-data" type="application/json">{{ estados_json|default:"{}"|safe }}</script>
 
-<script>
-(function () {
-  const hasError = !!document.querySelector('.success-message.is-error');
-  const success  = document.querySelector('.success-message.is-success');
-
-  if (success && !hasError) {
-    setTimeout(() => {
-      success.classList.remove('show');
-    }, 1800);
-
-    setTimeout(() => {
-      window.location.href = "{% url 'administrar_documentos' %}";
-    }, 2000);
-  }
-})();
-</script>
 
 <script src="{% static 'staffweb/js/crear_documento.js' %}"></script>
 {% endblock %}
