@@ -449,30 +449,24 @@ def _safe_filename(filename: str) -> str:
     base = base.lstrip(".") or "archivo"
     return base
 
-def _normalize_rut(value):
-    #Limpia el rut y devuelve solo los dígitos
-    return ''.join(ch for ch in str(value or '') if ch.isdigit())
-
-def _ext_to_type(filename):
-    #Obtiene el tipo de documento a partir de la extensión del archivo
-    ext = os.path.splitext(filename or '')[1].lower().replace('.', '')
-    #Devolvemos la extensión en mayúsculas, por defecto PDF
-    return (ext or 'pdf').upper()
-
-
-def _size_to_mb_str(django_file):
-    #Convierte el tamaño del archivo a una cadena en MB con el formato 'Nmb'
-    #- Redondea al entero más cercano y nunca baja de 1mb
-    #- Si no hay archivo (None), devuelve ''
-    #Si no se envió archivo, no hay tamaño que mostrar
-    if not django_file:
-        return ""
-    #lo pasamos a megabytes
-    mb = django_file.size / (1024 * 1024)
-    return f"{max(1, round(mb))}mb"
+def _parse_date_multi(s: str):
+    if not s:
+        return None
+    s = str(s).strip()
+    fmts = (
+        "%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y",
+        "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M",
+        "%Y-%m-%d %H:%M:%S.%f"
+    )
+    for fmt in fmts:
+        try:
+            dt = datetime.strptime(s, fmt)
+            return dt.date()
+        except ValueError:
+            continue
+    return None
 
 def _tipoestado_codes():
-    #Lee Tipoestado
     try:
         raw = database.child("Tipoestado").get().val() or {}
     except Exception:
@@ -498,9 +492,31 @@ def _tipoestado_codes():
     name_to_code.setdefault("caducado", "Tres")
     return name_to_code, code_to_name
 
+def _normalize_rut(value):
+    #Limpia el rut y devuelve solo los dígitos
+    return ''.join(ch for ch in str(value or '') if ch.isdigit())
+
+def _ext_to_type(filename):
+    #Obtiene el tipo de documento a partir de la extensión del archivo
+    ext = os.path.splitext(filename or '')[1].lower().replace('.', '')
+    #Devolvemos la extensión en mayúsculas, por defecto PDF
+    return (ext or 'pdf').upper()
+
+
+def _size_to_mb_str(django_file):
+    #Convierte el tamaño del archivo a una cadena en MB con el formato 'Nmb'
+    #- Redondea al entero más cercano y nunca baja de 1mb
+    #- Si no hay archivo (None), devuelve ''
+    #Si no se envió archivo, no hay tamaño que mostrar
+    if not django_file:
+        return ""
+    #lo pasamos a megabytes
+    mb = django_file.size / (1024 * 1024)
+    return f"{max(1, round(mb))}mb"
+
 @admin_required
 def administrar_documentos(request):
-    # Usar los helpers comunes
+    # Mapeos de Tipoestado
     name_to_code, code_to_name = _tipoestado_codes()
 
     # Usuarios
@@ -516,6 +532,8 @@ def administrar_documentos(request):
 
     # Indexar documentos por RUT
     docs_por_rut = {}
+    AUTO_FIX_CADUCADO = True  
+
     for doc_id, data in documentos_raw.items():
         if not isinstance(data, dict):
             continue
@@ -524,40 +542,50 @@ def administrar_documentos(request):
         if not rut_doc:
             continue
 
-        fecha_str = str(data.get('Fecha_emitida') or data.get('fecha_emitida') or '').strip()
-        fecha_show = fecha_str or ""
-
+        # Base de estado desde Tipoestado/url
         tipoestado_code = str(data.get('Tipoestado') or data.get('tipoestado') or '').strip()
-        estado = code_to_name.get(tipoestado_code) 
-
+        url_archivo = str(data.get('url') or '').strip()
+        estado = code_to_name.get(tipoestado_code)
         if not estado:
-            estado = 'pendiente' if not data.get('url') else 'activo'
+            estado = 'pendiente' if not url_archivo else 'activo'
 
-        try:
-            f = None
-            for fmt in ("%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S",
-                        "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S.%f"):
+        # Fechas
+        fecha_emitida_raw = str(data.get('Fecha_emitida') or data.get('fecha_emitida') or '').strip()
+        fe_date = _parse_date_multi(fecha_emitida_raw)
+        fecha_show = fe_date.strftime("%d/%m/%Y") if fe_date else ""
+
+        fv_raw = str(data.get("fecha_vencimiento") or "").strip()
+        fv_date = _parse_date_multi(fv_raw)
+        hoy = datetime.now().date()
+
+        # Caducidad por vencimiento
+        if fv_date and fv_date < hoy:
+            estado = 'caducado'
+            if AUTO_FIX_CADUCADO:
                 try:
-                    f = datetime.strptime(fecha_str, fmt)
-                    break
-                except ValueError:
-                    continue
-            if f:
-                if f < datetime.now() - timedelta(days=550):
-                    estado = 'caducado'
-                fecha_show = f.strftime("%d/%m/%Y")
-        except Exception:
-            pass
+                    code_cad = name_to_code.get("caducado", "Tres")
+                    if tipoestado_code != code_cad:
+                        db.reference("Documentos").child(doc_id).update({"Tipoestado": code_cad})
+                except Exception:
+                    pass
+        else:
+            # Fallback: sin vencimiento y muy antiguo => caducado (~18 meses)
+            if not fv_date and fe_date:
+                try:
+                    if fe_date < (hoy - timedelta(days=550)):
+                        estado = 'caducado'
+                except Exception:
+                    pass
 
         # Objeto para el front
         doc = {
             "id": doc_id,
             "titulo": data.get('nombre') or data.get('titulo') or 'Documento',
             "tipo": (data.get('tipo_documento') or 'PDF').upper(),
-            "fecha": fecha_show if fecha_str else "",
+            "fecha": fecha_show,
             "tamano": str(data.get('tamano_archivo') or data.get('size') or ''),
             "estado": estado,
-            "url": data.get('url') or "",
+            "url": url_archivo,
         }
         docs_por_rut.setdefault(rut_doc, []).append(doc)
 
@@ -566,21 +594,15 @@ def administrar_documentos(request):
     for rut, usu in usuarios_raw.items():
         if not isinstance(usu, dict):
             continue
-
-        nombre = f"{usu.get('Nombre','').strip()} {usu.get('ApellidoPaterno','').strip()}".strip() or "Usuario"
-        rut_visible = rut
-
-        bloque = {
+        nombre = f"{(usu.get('Nombre','') or '').strip()} {(usu.get('ApellidoPaterno','') or '').strip()}".strip() or "Usuario"
+        bloques.append({
             "rut": rut,
-            "rut_visible": rut_visible,
+            "rut_visible": rut,
             "nombre": nombre,
             "documentos": docs_por_rut.get(rut, []),
-        }
-        bloques.append(bloque)
+        })
 
-    context = {
-        "users_docs_json": json.dumps(bloques, ensure_ascii=False)
-    }
+    context = {"users_docs_json": json.dumps(bloques, ensure_ascii=False)}
     return render(request, "staffweb/administrar_documentos.html", context)
 
 @admin_required
@@ -701,51 +723,40 @@ def documentos_usuarios(request):
     rut_norm = _normalize_rut(rut_qs)
 
     # Usuario
-    usuario = {}
+    usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
     try:
         user_raw = database.child("Usuario").child(rut_norm).get().val()
         if not isinstance(user_raw, dict):
-            user_raw = None
-        if not user_raw:
             todos_users = database.child("Usuario").get().val() or {}
             if isinstance(todos_users, dict):
                 user_raw = todos_users.get(rut_norm)
         if isinstance(user_raw, dict):
-            nombre = f"{(user_raw.get('Nombre') or '').strip()} {(user_raw.get('ApellidoPaterno') or '').strip()}".strip()
-            usuario = {
-                "nombre": nombre or "Usuario",
-                "rut": rut_norm,
-                "rut_visible": rut_norm,
-                "imagen": user_raw.get("imagen") or "",
-            }
-        else:
-            usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
+            nombre = f"{(user_raw.get('Nombre') or '').strip()} {(user_raw.get('ApellidoPaterno') or '').strip()}".strip() or "Usuario"
+            usuario["nombre"] = nombre
+            usuario["imagen"] = user_raw.get("imagen") or ""
     except Exception:
-        usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
+        pass
 
-    # Documentos del RUT 
-    def calcular_estado_y_fecha(fecha_emitida_str, url, tipoestado_code):
+    def _calcular_estado_y_fecha(fecha_emitida_str, url, tipoestado_code, fecha_vencimiento_str):
         estado = code_to_name.get(str(tipoestado_code or '').strip())
         if not estado:
             estado = 'pendiente' if not url else 'activo'
 
-        fecha_show = fecha_emitida_str or ""
-        try:
-            f = None
-            for fmt in ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y",
-                        "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M",
-                        "%Y-%m-%d %H:%M:%S.%f"):
+        fe_date = _parse_date_multi(fecha_emitida_str)
+        fecha_show = fe_date.strftime("%d/%m/%Y") if fe_date else ""
+
+        fv_date = _parse_date_multi(fecha_vencimiento_str)
+        hoy = datetime.now().date()
+
+        if fv_date and fv_date < hoy:
+            estado = 'caducado'
+        else:
+            if not fv_date and fe_date:
                 try:
-                    f = datetime.strptime(str(fecha_emitida_str).strip(), fmt)
-                    break
-                except ValueError:
-                    continue
-            if f:
-                if f < datetime.now() - timedelta(days=550):
-                    estado = 'caducado'
-                fecha_show = f.strftime("%d/%m/%Y")
-        except Exception:
-            pass
+                    if fe_date < (hoy - timedelta(days=550)):
+                        estado = 'caducado'
+                except Exception:
+                    pass
         return estado, fecha_show
 
     documentos = []
@@ -760,15 +771,15 @@ def documentos_usuarios(request):
         if not isinstance(data, dict):
             continue
 
-        # Filtrar por dueño
         rut_doc = _normalize_rut(data.get('id_rut') or data.get('Rut') or data.get('rut'))
         if rut_doc != rut_norm:
             continue
 
-        estado, fecha_show = calcular_estado_y_fecha(
+        estado, fecha_show = _calcular_estado_y_fecha(
             data.get('Fecha_emitida') or data.get('fecha_emitida'),
             data.get('url'),
-            data.get('Tipoestado') or data.get('tipoestado')
+            data.get('Tipoestado') or data.get('tipoestado'),
+            data.get('fecha_vencimiento') or ""
         )
 
         documentos.append({
