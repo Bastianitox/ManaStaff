@@ -204,8 +204,21 @@ def obtener_usuarios(request):
     # OBTENER LOS USUARIOS DE LA BASE DE DATOS
     usuarios = database.child("Usuario").get().val() or {}
 
+    
     usuarios_lista = []
     for id_usu, usuario in usuarios.items():
+        # Obtener el UID del usuario en Firebase Authentication
+        email = usuario.get("correo")
+        email_verificado = False
+        try:
+            # Buscar usuario por correo
+            user_record = auth.get_user_by_email(email)
+            email_verificado = user_record.email_verified
+        except auth.UserNotFoundError:
+            email_verificado = False
+        except Exception as e:
+            email_verificado = False
+
         # OBTENER EL NOMBRE DEL CARGO
         cargo_id = usuario.get("Cargo")
         cargo_data = database.child("Cargo").child(cargo_id).get()
@@ -224,7 +237,21 @@ def obtener_usuarios(request):
                 created_date = fecha_creacion.strftime("%d %B, %Y")  # Ej: "15 Enero, 2024"
                 sort_date = fecha_creacion.date().isoformat()        # Ej: "2024-01-15"
             except ValueError:
-                created_date = fecha_creacion_str  # Dejar como viene si no es ISO
+                created_date = fecha_creacion_str
+
+        # ÚLTIMO LOGIN DESDE BD
+        fecha_login_str = usuario.get("Ultimo_login")
+        sort_login_date = None
+
+        if fecha_login_str:
+            try:
+                # Convertir a datetime
+                fecha_login_dt = datetime.fromisoformat(fecha_login_str)
+                # Fecha legible para mostrar
+                fecha_login_date = fecha_login_dt.strftime("%d %B, %Y")  # Ej: "15 Enero, 2024"
+
+            except ValueError:
+                fecha_login_date = fecha_login_str
 
         usuarios_lista.append({
             "rut": id_usu,
@@ -232,7 +259,9 @@ def obtener_usuarios(request):
             "name": nombre_completo,
             "email": usuario.get("correo", ""),
             "position": cargo_nombre,
+            "email_verificado": email_verificado,
             "createdDate": created_date,
+            "Ultimo_login": fecha_login_date,
             "sortDate": sort_date or fecha_creacion_str
         })
 
@@ -403,7 +432,7 @@ def crear_usuario_funcion(request):
         send_mail(
             subject="Verifica tu cuenta",
             message=f"Por favor verifica tu cuenta haciendo clic en el siguiente enlace:\n\n{verification_link}",
-            from_email="no-reply@tuempresa.com",
+            from_email="manastaffnoreply@gmail.com",
             recipient_list=[email],
             fail_silently=False,
         )
@@ -510,6 +539,7 @@ def modificar_usuario_funcion(request, rut):
     usuario_a_modificar = database.child(f"Usuario/{rut}").get().val()
     correo_actual = usuario_a_modificar.get("correo")
     usuarioAUTH = auth.get_user_by_email(correo_actual)
+    uid = usuarioAUTH.uid
 
     usuario_id_en_sesion = request.session.get("usuario_id")
     
@@ -615,6 +645,13 @@ def modificar_usuario_funcion(request, rut):
         #SI NO EXISTE CAMBIAR EL CORREO ACTUAL POR EL NUEVO CORREO
         correo_actual = email
         auth.update_user(uid = uid, email = correo_actual)
+        verification_link = auth.generate_email_verification_link(email)
+        send_mail(
+            subject="Verifica tu nuevo correo",
+            message=f"Por favor confirma tu nuevo correo aquí:\n{verification_link}",
+            from_email="manastaffnoreply@gmail.com",
+            recipient_list=[email],
+        )
 
     #CAMBIAR LOS NUEVOS VALORES AL USUARIO
     ref = db.reference('/Usuario/'+rut)

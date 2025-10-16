@@ -67,7 +67,11 @@ function renderTable() {
       <td>${user.name || ""}</td>
       <td>${user.email || ""}</td>
       <td>${user.position || ""}</td>
+      <td title="${user.email_verificado ? 'Verificado' : 'Sin verificar'}">
+          ${user.email_verificado ? "✔" : "✖"}
+      </td>
       <td>${user.createdDate || ""}</td>
+      <td>${user.Ultimo_login || ""}</td>
       <td>
         <button class="action-btn" onclick="editUser(${onlyDigits(user.rut || user.rut_normal)})" title="Modificar usuario" ${disabledAttr}>
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
