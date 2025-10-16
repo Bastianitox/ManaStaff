@@ -136,7 +136,8 @@ def inicio_documentos(request):
     context = {'documents': documents}
     return render(request, "staffweb/inicio_documentos.html", context)
 
-
+def recuperar_pin(request):
+    return render(request, 'staffweb/recuperar_pin.html')
 
     
 #---------------------------------------------------------------------------

@@ -1,0 +1,33 @@
+{% extends 'staffweb/plantilla.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'staffweb/css/recuperar_PIN.css' %}">
+<title>Recuperar PIN</title>
+{% endblock head %}
+
+{% block principal %}
+<div class="header">
+  <h1>Recuperar PIN</h1>
+  <p>Aquí puedes recuperar tu PIN</p>
+</div>
+
+<h1>Recuperar PIN 🔒</h1>
+
+  <label for="telefono">Número de teléfono (con código de país):</label><br>
+  <input id="telefono" type="tel" placeholder="+56912345678"><br><br>
+
+  <div id="recaptcha-container"></div>
+  <button id="btnEnviarCodigo" onclick="enviarCodigo()" disabled>Enviar código</button>
+
+  <div id="codigoContainer" style="display:none; margin-top:20px;">
+    <label for="codigo">Código recibido por SMS:</label><br>
+    <input id="codigo" type="text" placeholder="123456"><br><br>
+    <button onclick="verificarCodigo()">Verificar código</button>
+  </div>
+
+  <p id="resultado" style="margin-top:20px; font-weight:bold;"></p>
+{% endblock principal %}
+
+{% block js %}
+{% endblock js %}
