@@ -59,7 +59,7 @@ function renderTable() {
   tableBody.innerHTML = "";
 
   usersToShow.forEach((user) => {
-    const isCurrentUser = (user.rut || user.rut_normal || "").toString() === (window.currentUserRut || "").toString();
+    const isCurrentUser = (user.rut || user.rut_normal || "").toString() === (currentUserRut || "").toString();
     const disabledAttr = isCurrentUser ? "disabled" : "";
     const row = document.createElement("tr");
     row.innerHTML = `
