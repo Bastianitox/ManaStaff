@@ -13,6 +13,7 @@ import mimetypes
 from .firebase import authP, auth, database, storage, db
 from .decorators import admin_required
 import locale
+from django.core.mail import send_mail
 
 MAX_INTENTOS = 5
 TIEMPO_BLOQUEO = timedelta(minutes=10)
@@ -45,7 +46,6 @@ def iniciarSesion(request):
     #CERRAR SESION
     request.session.flush()
 
-
     # VERIFICAR QUE EL CORREO EXISTA EN REALTIME DATABASE
     usuario = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
 
@@ -53,6 +53,16 @@ def iniciarSesion(request):
     if not usuarioDATABASE:
         return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
 
+    #VALIDAR VERIFICACION DE CORREO
+    try:
+        user = auth.get_user_by_email(email)
+        if not user.email_verified:
+            return JsonResponse({"status": "false","message": "Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada."})
+    except auth.UserNotFoundError:
+        return JsonResponse({"status": "false","message": "Correo no encontrado."})
+
+
+    # VARIABLES DE HORA PARA BLOQUEO
     id_usu, usuario = next(iter(usuario.items()))
 
     try:
@@ -388,6 +398,16 @@ def crear_usuario_funcion(request):
     # CREAR USUARIO EN AUTHENTICATION
     try:
         userFIREBASE = auth.create_user(email=email, password=password)
+        verification_link = auth.generate_email_verification_link(email)
+
+        send_mail(
+            subject="Verifica tu cuenta",
+            message=f"Por favor verifica tu cuenta haciendo clic en el siguiente enlace:\n\n{verification_link}",
+            from_email="no-reply@tuempresa.com",
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
     except Exception as e:
         return JsonResponse({"status": "false", "message": f"Error al crear usuario en Base de Datos: {e}"})
 
@@ -988,6 +1008,9 @@ def correo_ya_existe(email):
     except auth.UserNotFoundError:
         return False
 
-
-
-
+def verificar_correo(email):
+    try:
+        user = auth.get_user_by_email(email)
+        return user.email_verified
+    except auth.UserNotFoundError:
+        return False
