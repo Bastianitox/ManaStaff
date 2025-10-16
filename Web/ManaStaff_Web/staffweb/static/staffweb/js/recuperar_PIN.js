@@ -81,6 +81,8 @@ async function cambiarPIN() {
         if(res.status === "success") {
             document.getElementById("nuevoPinContainer").style.display = "none";
             mostrarMensajeExito('PIN modificado con éxito', 3);
+        }else{
+            mostrarMensajeExito(res.message, 2);
         }
     } catch (error) {
         console.error(error);
