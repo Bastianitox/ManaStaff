@@ -137,9 +137,10 @@ def inicio_documentos(request):
     return render(request, "staffweb/inicio_documentos.html", context)
 
 def recuperar_pin(request):
-    return render(request, 'staffweb/recuperar_pin.html')
+    idusu = (request.session.get('usuario_id') or '').strip()
+    correo = database.child("Usuario").child(idusu).get().val().get('correo')
+    return render(request, 'staffweb/recuperar_pin.html', {'correo': correo})
 
-    
 #---------------------------------------------------------------------------
 def inicio_noticias_eventos(request):
     raw = database.child("Anuncio").get().val() or {}

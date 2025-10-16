@@ -8,26 +8,48 @@
 
 {% block principal %}
 <div class="header">
+    <a href="{% url 'inicio_perfil' %}" class="back-btn">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+        </svg>
+        Volver a Perfil
+    </a>
   <h1>Recuperar PIN</h1>
   <p>Aquí puedes recuperar tu PIN</p>
 </div>
 
-<h1>Recuperar PIN 🔒</h1>
+<div class="contenedor_recuperar">
+    <!-- Solicitar Codigo -->
+    <div class="campo">
+        <input type="email" id="email" placeholder="Correo" readonly value="{{correo}}">
+    </div>
+    <button onclick="solicitarCodigo()" class="btn-solicitar">Solicitar código</button>
 
-  <label for="telefono">Número de teléfono (con código de país):</label><br>
-  <input id="telefono" type="tel" placeholder="+56912345678"><br><br>
+    <!-- Ingresar código -->
+    <div id="codigoContainer" style="display:none; margin-top: 15px;" class="campo">
+        <input type="text" id="codigo" placeholder="Código recibido">
+    </div>
+    <button onclick="verificarCodigo()" class="btn-solicitar" style="display:none; margin: 15px auto;" id="btn-verificar">Verificar código</button>
 
-  <div id="recaptcha-container"></div>
-  <button id="btnEnviarCodigo" onclick="enviarCodigo()" disabled>Enviar código</button>
+    <!-- Cambiar PIN -->
+    <div id="nuevoPinContainer" style="display:none; margin-top: 15px;" class="campo">
+        <input type="text" id="nuevoPin" placeholder="Nuevo PIN (4 dígitos)">
+        <button onclick="cambiarPIN()" class="btn-solicitar">Actualizar PIN</button>
+    </div>
+</div>
 
-  <div id="codigoContainer" style="display:none; margin-top:20px;">
-    <label for="codigo">Código recibido por SMS:</label><br>
-    <input id="codigo" type="text" placeholder="123456"><br><br>
-    <button onclick="verificarCodigo()">Verificar código</button>
-  </div>
 
-  <p id="resultado" style="margin-top:20px; font-weight:bold;"></p>
+
+<!-- Mensaje de éxito -->
+<div id="successMessage" class="success-message">
+    PIN modificado con éxito
+</div>
+<!-- Overlay de carga -->
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
 {% endblock principal %}
 
 {% block js %}
+<script src="{% static 'staffweb/js/recuperar_PIN.js' %}" defer></script>
 {% endblock js %}

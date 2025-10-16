@@ -14,6 +14,9 @@ from .firebase import authP, auth, database, storage, db
 from .decorators import admin_required
 import locale
 from django.core.mail import send_mail
+import random
+import string
+
 
 MAX_INTENTOS = 5
 TIEMPO_BLOQUEO = timedelta(minutes=10)
@@ -1019,6 +1022,132 @@ def descargar_documento(request, doc_id):
     resp['Content-Disposition'] = f'attachment; filename="{ultimo_segmento}"'
     return resp
 
+
+
+# Paso 1: Enviar código por correo
+@require_POST
+def solicitar_recuperacion_pin(request):
+    email = request.POST.get('email')
+    if not email:
+        return JsonResponse({"status": "false", "message": "Debes ingresar un correo."})
+
+    # Validar que el usuario actual y el correo a cambiar coincidan
+    
+    idusu = (request.session.get('usuario_id') or '').strip()
+    correo_actual = database.child("Usuario").child(idusu).get().val().get('correo')
+
+    if not correo_actual or not idusu:
+        return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
+
+    if email != correo_actual:
+        return JsonResponse({"status": "false", "message": "El correo actual no coincide con el del envío."})
+
+    # Generar código temporal
+    codigo = generar_codigo()
+    expiracion = (datetime.now() + timedelta(minutes=10)).isoformat()
+
+    # Guardar OTP en Firebase
+    db.reference(f"RecuperacionPIN/{idusu}").set({
+        "codigo": codigo,
+        "expira": expiracion
+    })
+
+    # Enviar correo
+    send_mail(
+        subject="Recuperación de PIN",
+        message=f"Tu código de recuperación es: {codigo}. Válido por 10 minutos.",
+        from_email="no-reply@tuempresa.com",
+        recipient_list=[email],
+        fail_silently=False,
+    )
+
+    return JsonResponse({"status": "success", "message": "Código enviado a tu correo."})
+
+# Paso 2: Verificar código y devolver PIN
+@require_POST
+def verificar_codigo_recuperacion(request):
+    email = request.POST.get("email")
+    codigo_ingresado = request.POST.get("codigo")
+
+    if not email or not codigo_ingresado:
+        return JsonResponse({"status": "false", "message": "Faltan datos."})
+
+    # Validar que el usuario actual y el correo a cambiar coincidan
+    
+    idusu = (request.session.get('usuario_id') or '').strip()
+    correo_actual = database.child("Usuario").child(idusu).get().val().get('correo')
+
+    if not correo_actual or not idusu:
+        return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
+
+    if email != correo_actual:
+        return JsonResponse({"status": "false", "message": "El correo actual no coincide con el cuál se le envio el codigo."})
+
+    # Obtener código guardado
+    otp_ref = db.reference(f"RecuperacionPIN/{idusu}").get()
+    if not otp_ref:
+        return JsonResponse({"status": "false", "message": "No hay código generado. Solicita uno."})
+
+    codigo_valido = otp_ref.get("codigo")
+    expiracion = datetime.fromisoformat(otp_ref.get("expira"))
+
+    if datetime.now() > expiracion:
+        return JsonResponse({"status": "false", "message": "El código ha expirado."})
+
+    if codigo_ingresado != codigo_valido:
+        return JsonResponse({"status": "false", "message": "Código incorrecto."})
+
+    return JsonResponse({"status": "success", "message": "Codigo validado, cambie su PIN"})
+
+@require_POST
+def cambiar_PIN_verificado(request):
+    email = request.POST.get("email")
+    nuevo_pin = request.POST.get("nuevo_pin")
+    codigo = request.POST.get("codigo") # Para doble validacion
+
+    if not email or not nuevo_pin:
+        return JsonResponse({"status": "false", "message": "Faltan datos."})
+
+    # Validar formato del PIN (mínimo 4 dígitos)
+    if not nuevo_pin.isdigit() or len(nuevo_pin) != 4:
+        return JsonResponse({"status": "false", "message": "El PIN debe tener 4 dígitos numéricos."})
+
+    # Validar que el usuario actual y el correo a cambiar coincidan
+    
+    idusu = (request.session.get('usuario_id') or '').strip()
+    correo_actual = database.child("Usuario").child(idusu).get().val().get('correo')
+
+    if not correo_actual or not idusu:
+        return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
+
+    if email != correo_actual:
+        return JsonResponse({"status": "false", "message": "El correo actual no coincide con el cuál se le envio el codigo."})
+
+    # Verificar que exista un OTP válido para este usuario
+    otp_ref = db.reference(f"RecuperacionPIN/{idusu}").get()
+    if not otp_ref:
+        return JsonResponse({"status": "false", "message": "No hay código válido. Solicita uno primero."})
+
+    codigo_valido = otp_ref.get("codigo")
+    expiracion = datetime.fromisoformat(otp_ref.get("expira"))
+
+    if datetime.now() > expiracion:
+        return JsonResponse({"status": "false", "message": "El código ha expirado."})
+
+    if codigo != codigo_valido:
+        return JsonResponse({"status": "false", "message": "Código incorrecto."})
+
+    # Todo correcto, actualizar PIN
+    db.reference(f"Usuario/{idusu}").update({
+        "PIN": nuevo_pin
+    })
+
+    # Borrar OTP después de usar
+    db.reference(f"RecuperacionPIN/{idusu}").delete()
+
+    return JsonResponse({"status": "success", "message": "PIN actualizado correctamente."})
+
+
 #FUNCIONES DE AYUDA
 def formatear_rut(rut_limpio):
     """
@@ -1051,3 +1180,6 @@ def verificar_correo(email):
         return user.email_verified
     except auth.UserNotFoundError:
         return False
+
+def generar_codigo(length=6):
+    return ''.join(random.choices(string.digits, k=length))
