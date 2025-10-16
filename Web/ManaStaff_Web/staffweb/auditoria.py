@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from staffweb.firebase import database
 
-def registrar_auditoria_manual(request, accion, descripcion=""):
+def registrar_auditoria_manual(request, accion, resultado, descripcion=""):
     usuario_id = request.session.get("usuario_id", "anonimo")
     ip_origen = request.META.get("REMOTE_ADDR", "")
     navegador = request.META.get("HTTP_USER_AGENT", "")
@@ -16,7 +16,7 @@ def registrar_auditoria_manual(request, accion, descripcion=""):
         "fecha_hora": ahora,
         "ip_origen": ip_origen,
         "navegador": navegador,
-        "resultado": "exito"
+        "resultado": resultado
     }
 
     try:
