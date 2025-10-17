@@ -368,7 +368,9 @@ function createDetailedViewHTML(request) {
         timelinePhases.push({
             title: "Solicitud Rechazada",
             date: request.fecha_inicio,
-            description: "Tu solicitud no pudo ser aprobada en esta ocasión.",
+            description: request.razon && request.razon.trim() !== "" 
+                ? request.razon 
+                : "Tu solicitud no pudo ser aprobada en esta ocasión.",
             status: "rejected",
             icon: "❌"
         });

@@ -886,6 +886,11 @@ def obtener_solicitudes_administrar(request):
             if fecha_fin != "null":
                 estado_asignacion = "cerrada"
 
+            razon = solicitud.get("Razon")
+
+            if razon and razon == "null":
+                razon = None
+
             solicitudes_lista.append({
                 "id_solicitud": id_solicitud,
                 "asunto": solicitud.get("Asunto"),
@@ -903,7 +908,8 @@ def obtener_solicitudes_administrar(request):
                 "tipo_solicitud_nombre": tipo_solicitud_nombre,
                 "estado_asignacion": estado_asignacion,
                 "rut_usuario_solicitud_nombre": rut_usuario_solicitud_nombre,
-                "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre
+                "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre,
+                "razon": razon
             })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
