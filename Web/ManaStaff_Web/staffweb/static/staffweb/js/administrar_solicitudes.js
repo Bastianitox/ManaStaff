@@ -475,10 +475,23 @@ function createDetailedViewHTML(request) {
                         <div class="modal-content">
                             <p id="modalMessage">¿Estás seguro?</p>
                             <div class="modal-buttons">
-                                <button id="modalConfirmBtn">Confirmar</button>
-                                <button id="modalCancelBtn">Cancelar</button>
+                                <button id="modalConfirmBtn" class="modalConfirmBtn">Confirmar</button>
+                                <button id="modalCancelBtn" class="modalCancelBtn">Cancelar</button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Modal de razón -->
+                    <div id="reasonModal" class="confirm-modal" style="display:none;">
+                      <div class="modal-content">
+                        <h3>Escribe la razón</h3>
+                        <textarea id="reasonInput" placeholder="Escribe la razón aquí..." rows="4" style="width:100%; resize:none;"></textarea>
+                        <div id="charCounter" style="font-size: 12px; color: gray; text-align: right;">0 / 10</div>
+                        <div class="modal-buttons">
+                          <button id="reasonConfirmBtn" class="modalConfirmBtn" disabled>Enviar</button>
+                          <button id="reasonCancelBtn" class="modalCancelBtn">Cancelar</button>
+                        </div>
+                      </div>
                     </div>
                     
                 ` : ''}
@@ -555,34 +568,15 @@ function openConfirmModal(action, requestId) {
 
     confirmBtn.onclick = async () => {
         modal.style.display = "none";
-        showLoaderCerrar("Cerrando solicitud...");
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        try{
-            const response = await fetch(`/cerrar_solicitud/${requestId}/${action}`);
-            if (!response.ok) throw new Error("Error HTTP " + response.status)
 
-            const data = await response.json();
-
-            if (data.status === "success") {
-                request.estado = action;
-                request.estado_asignacion = 'cerrada';
-                request.fecha_inicio = new Date().toISOString().split('T')[0];
-                request.fecha_fin = new Date().toISOString().split('T')[0];
-
-                modal.style.display = "none";
-                aplicarFiltrosYRender()
-            }else{
-                alert("⚠️ " + (data.mensaje || "Error desconocido al cerrar la solicitud."));
-                modal.style.display = "none";
-            }
-        }catch(error){
-            console.error("Error cerrando solicitud:", error);
-            alert("Error de conexión al cerrar la solicitud.");
-        }finally{
-            hideLoaderCerrar();
-            goBackToList();
+        // Si es RECHAZAR → pedir razón
+        if (action === 'rechazada') {
+            openReasonModal(requestId, action);
+            return;
         }
 
+        // Si es aprobar, cerrar directamente
+        await cerrarSolicitud(requestId, action);
     };
 
     cancelBtn.onclick = () => {
@@ -591,6 +585,87 @@ function openConfirmModal(action, requestId) {
     };
 
 }
+
+function openReasonModal(requestId, action) {
+    const modal = document.getElementById('reasonModal');
+    const reasonInput = document.getElementById('reasonInput');
+    const confirmBtn = document.getElementById('reasonConfirmBtn');
+    const cancelBtn = document.getElementById('reasonCancelBtn');
+    const counter = document.getElementById('charCounter');
+
+    
+    reasonInput.value = "";
+    confirmBtn.disabled = true;
+    counter.textContent = "0 / 10";
+    modal.style.display = 'flex';
+
+    // Evento para contar caracteres y validar
+    reasonInput.oninput = () => {
+        const length = reasonInput.value.trim().length;
+        counter.textContent = `${length} / 10`;
+
+        if (length >= 10) {
+            confirmBtn.disabled = false;
+        } else {
+            confirmBtn.disabled = true;
+        }
+    };
+
+    // Confirmar acción
+    confirmBtn.onclick = async () => {
+        const razon = reasonInput.value.trim();
+        if (razon.length < 10) {
+            alert("⚠️ La razón debe tener al menos 10 caracteres.");
+            return;
+        }
+        modal.style.display = "none";
+        await cerrarSolicitud(requestId, action, razon);
+    };
+
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('vanish');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('vanish');
+        }, 300);
+    };
+}
+
+async function cerrarSolicitud(requestId, action, razon = null) {
+    showLoaderCerrar("Cerrando solicitud...");
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    try {
+        const url = `/cerrar_solicitud/${requestId}/${action}/${razon}` 
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Error HTTP " + response.status);
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+            const request = requests.find(r => r.id_solicitud === requestId);
+            if (request) {
+                request.estado = action;
+                request.estado_asignacion = 'cerrada';
+                request.fecha_inicio = new Date().toISOString().split('T')[0];
+                request.fecha_fin = new Date().toISOString().split('T')[0];
+            }
+            aplicarFiltrosYRender();
+        } else {
+            alert("⚠️ " + (data.mensaje || "Error desconocido al cerrar la solicitud."));
+        }
+    } catch (error) {
+        console.error("Error cerrando solicitud:", error);
+        alert("Error de conexión al cerrar la solicitud.");
+    } finally {
+        hideLoaderCerrar();
+        goBackToList();
+    }
+}
+
+
 // ------------------ Inicio ------------------
 document.addEventListener("DOMContentLoaded", async () => {
   await obtener_usuario_actual();

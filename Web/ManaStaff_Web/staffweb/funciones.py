@@ -701,6 +701,11 @@ def obtener_solicitudes_usuario(request):
         tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
         tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
 
+        razon = solicitud.get("Razon")
+
+        if razon and razon == "null":
+            razon = None
+
         solicitudes_lista.append({
             "id_solicitud": id_solicitud,
             "asunto": solicitud.get("Asunto"),
@@ -714,7 +719,8 @@ def obtener_solicitudes_usuario(request):
             "sortDate": sort_date or created_date,
             "archivo": solicitud.get("archivo"),
             "archivo_name": solicitud.get("archivo_name"),
-            "tipo_solicitud_nombre": tipo_solicitud_nombre
+            "tipo_solicitud_nombre": tipo_solicitud_nombre,
+            "razon": razon
         })
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
@@ -947,7 +953,7 @@ def asignarme_solicitud(request, id_solicitud):
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
 
 @admin_required
-def cerrar_solicitud(request, id_solicitud, estado):
+def cerrar_solicitud(request, id_solicitud, estado, razon = None):
     #OBTENER EL USUARIO ACTUAL
     usuario_actual_rut = request.session.get("usuario_id")
 
@@ -984,10 +990,18 @@ def cerrar_solicitud(request, id_solicitud, estado):
     #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
     if solicitud_fecha_fin != "null":
         return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya cerrada.'})
+    
+    if razon != "null":
+        if len(razon) > 150:
+            return JsonResponse({'status': 'false', 'mensaje': 'La razón no puede ser mayor a 150 caracteres.'})
+        if len(razon) < 10:
+            return JsonResponse({'status': 'false', 'mensaje': 'La razón debe ser mayor a 10 caracteres.'})
+
 
     ref.update({
         "Fecha_fin": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "Estado": str(estado)
+        "Estado": str(estado),
+        "Razon": razon
     })
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud cerrada.'})
