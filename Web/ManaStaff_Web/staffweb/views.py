@@ -1228,6 +1228,11 @@ def inicio_perfil(request):
     ap_materno = (usuariodatabase.get('ApellidoMaterno') or '').strip()
     apellido_usu = (f"{ap_paterno} {ap_materno}".strip() or apellido_usu_sesion)
 
+    # Nombre combinados desde Firebase
+    nombre_usu = (usuariodatabase.get('Nombre') or '').strip()
+    segundo_nombre_usu = (usuariodatabase.get('Segundo_nombre') or '').strip()
+    nombre_usu = (f"{nombre_usu} {segundo_nombre_usu}".strip())
+
     # Imagen 
     url_imagen_usuario = (
         request.session.get('url_imagen_usuario')
@@ -1236,8 +1241,8 @@ def inicio_perfil(request):
     )
 
     contexto = {
-        'nombre_usu': nombre_usu,
-        'apellido_usu': apellido_usu,
+        'nombres_usu': nombre_usu,
+        'apellidos_usu': apellido_usu,
         'correo_usu': correo_usu,
         'cargo_usu': cargo_usu,
         'rol_usu': rol_usu,
