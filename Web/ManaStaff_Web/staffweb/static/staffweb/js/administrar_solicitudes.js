@@ -54,7 +54,7 @@ async function obtener_solicitudes_administrar() {
     requestsGrid.style.display = "none";
     noResults.style.display = "none";
 
-    const resp = await fetch("obtener_solicitudes_administrar");
+    const resp = await fetch("/obtener_solicitudes_administrar");
     if (!resp.ok) throw new Error("HTTP " + resp.status);
     const data = await resp.json();
 
@@ -251,7 +251,7 @@ async function assignRequest(id_solicitud) {
     showLoader("Asignando solicitud...");
     await new Promise((r) => requestAnimationFrame(r));
     try {
-      const resp = await fetch("asignarme_solicitud/" + id_solicitud);
+      const resp = await fetch(`/asignarme_solicitud/${id_solicitud}`);
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       const data = await resp.json();
 
@@ -298,12 +298,299 @@ function viewDetails(requestId) {
   showDetailedView(request);
 }
 
-function showDetailedView(request) {}
-function goBackToList() {}
-function openConfirmModal(action, requestId) {}
-function showLoaderCerrar(message) {}
-function hideLoaderCerrar() {}
+// Added function to show detailed view
+function showDetailedView(request) {
+    // Hide main content
+    const main_content_div = document.querySelector('.main-content')
+    // Create detailed view
+    const detailView = document.createElement('div');
+    detailView.className = 'detail-view';
+    detailView.innerHTML = createDetailedViewHTML(request);
+    
+    // Add to container
+    main_content_div.insertAdjacentElement('afterend',detailView);
+    main_content_div.style.display = 'none';
+}
 
+// Added function to create detailed view HTML
+function createDetailedViewHTML(request) {
+    // Create timeline phases based on status
+    let timelinePhases = [];
+    
+    // Phase 1: Always present
+    timelinePhases.push({
+        title: "Solicitud Enviada",
+        date: request.fecha_solicitud,
+        description: "Tu solicitud ha sido enviada y está en cola para revisión.",
+        status: "completed",
+        icon: "📤"
+    });
+    
+    // Phase 2: Based on status
+    if (request.estado === 'pendiente') {
+        timelinePhases.push({
+            title: "Solicitud en Revisión",
+            date: request.fecha_vista || "En proceso",
+            description: "Tu solicitud está siendo revisada por el equipo de recursos humanos.",
+            status: "current",
+            icon: "👀"
+        });
+        timelinePhases.push({
+            title: "Decisión Pendiente",
+            date: "Por determinar",
+            description: "Esperando decisión final sobre tu solicitud.",
+            status: "pending",
+            icon: "⏳"
+        });
+    } else if (request.estado === 'aprobada') {
+        timelinePhases.push({
+            title: "Solicitud Revisada",
+            date: request.fecha_vista || request.fecha_solicitud,
+            description: "Tu solicitud ha sido revisada completamente.",
+            status: "completed",
+            icon: "👀"
+        });
+        timelinePhases.push({
+            title: "Solicitud Aprobada",
+            date: request.fecha_inicio,
+            description: "¡Felicidades! Tu solicitud ha sido aprobada.",
+            status: "completed",
+            icon: "✅"
+        });
+    } else if (request.estado === 'rechazada') {
+        timelinePhases.push({
+            title: "Solicitud Revisada",
+            date: request.fecha_vista || request.fecha_solicitud,
+            description: "Tu solicitud ha sido revisada completamente.",
+            status: "completed",
+            icon: "👀"
+        });
+        timelinePhases.push({
+            title: "Solicitud Rechazada",
+            date: request.fecha_inicio,
+            description: "Tu solicitud no pudo ser aprobada en esta ocasión.",
+            status: "rejected",
+            icon: "❌"
+        });
+    }
+
+    return `
+        <div class="detail-main-content">
+            <!-- Header with back button -->
+            <div class="detail-header">
+                <button class="back-btn" onclick="goBackToList()">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+                    </svg>
+                    Volver a requests
+                </button>
+                <h1>Detalles de Solicitud</h1>
+            </div>
+
+            <!-- Request Details Card -->
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <div class="detail-icon">
+                        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z"/>
+                        </svg>
+                    </div>
+                    <div class="detail-title-section">
+                        <h2>${request.asunto}</h2>
+                        <div class="status-badge-large ${request.estado}">
+                            ${request.estado === 'aprobada' ? '✓' : request.estado === 'rechazada' ? '✗' : '⏳'}
+                            ${request.estado.charAt(0).toUpperCase() + request.estado.slice(1)}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-info-grid">
+                    <div class="detail-section">
+                        <h3>Descripción</h3>
+                        <div class="detail-description">
+                            ${request.descripcion}
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Usuario que solicita</h3>
+                        <span class="type-badge">${request.rut_usuario_solicitud_nombre}</span>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Tipo de Solicitud</h3>
+                        <span class="type-badge">${request.tipo_solicitud_nombre}</span>
+                    </div>
+
+                    ${request.archivo ? `
+                    <div class="detail-section">
+                        <h3>Archivos subidos</h3>
+                        <div id="uploadedFile" class="uploaded-file">
+                            <svg class="file-icon" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+                            </svg>
+                            <div class="file-info">
+                                <a href="${request.archivo}" target="_blank" class="file-name">${request.archivo_name}</a>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+
+
+
+                    <div class="detail-section">
+                        <h3>Fechas</h3>
+                        <div class="dates-grid">
+                            <div class="date-item">
+                                <div class="date-label">Fecha de Solicitud</div>
+                                <div class="date-value">${request.fecha_solicitud}</div>
+                            </div>
+                            ${request.fecha_vista && request.fecha_vista !== "null" ? `
+                                <div class="date-item">
+                                    <div class="date-label">Fecha de Revisión</div>
+                                    <div class="date-value">${request.fecha_vista}</div>
+                                </div>
+                            ` : ''}
+                            <div class="date-item">
+                                <div class="date-label">Fecha de Inicio</div>
+                                <div class="date-value">${request.fecha_inicio && request.fecha_inicio !== "null" ? request.fecha_inicio : "En espera"}</div>
+                            </div>
+                            <div class="date-item">
+                                <div class="date-label">Fecha de Fin</div>
+                                <div class="date-value">${request.fecha_fin && request.fecha_fin !== "null" ? request.fecha_fin : "En espera"}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${request.estado === 'pendiente' ? `
+                    <div class="detail-actions" style="margin-top: 16px;">
+                        <button class="approve-btn" onclick="openConfirmModal('aprobada', '${request.id_solicitud}')">Aprobar</button>
+                        <button class="reject-btn" onclick="openConfirmModal('rechazada', '${request.id_solicitud}')">Rechazar</button>
+                    </div>
+
+                    <!-- Modal de confirmación -->
+                    <div id="confirmModal" class="confirm-modal" style="display:none;">
+                        <div class="modal-content">
+                            <p id="modalMessage">¿Estás seguro?</p>
+                            <div class="modal-buttons">
+                                <button id="modalConfirmBtn">Confirmar</button>
+                                <button id="modalCancelBtn">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                ` : ''}
+
+                </div>
+            </div>
+
+            <!-- Timeline Section -->
+            <div class="timeline-section">
+                <h2>Historial de la Solicitud</h2>
+                <div class="timeline">
+                    ${timelinePhases.map((phase, index) => `
+                        <div class="timeline-item ${phase.status}">
+                            <div class="timeline-marker">
+                                <span class="timeline-icon">${phase.icon}</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h3>${phase.title}</h3>
+                                    <span class="timeline-date">${phase.date}</span>
+                                </div>
+                                <p>${phase.description}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        <!-- Overlay de carga -->
+        <div id="loadingOverlayCerrar" class="loadingOverlay">
+            <div class="spinnerGlobal"></div>
+            <p class="loading-text">Procesando solicitud...</p>
+        </div>
+    `;
+}
+
+// Added function to go back to main list
+function goBackToList() {
+    const detailView = document.querySelector('.detail-view');
+    if (detailView) {
+        detailView.remove();
+    }
+    document.querySelector('.main-content').style.display = 'block';
+}
+
+
+
+
+function showLoaderCerrar(message = "Procesando solicitud...") {
+    const overlay = document.getElementById("loadingOverlayCerrar");
+    const text = overlay.querySelector(".loading-text");
+    text.textContent = message;
+    overlay.classList.add("show");
+}
+
+function hideLoaderCerrar() {
+    document.getElementById("loadingOverlayCerrar").classList.remove("show");
+}
+
+function openConfirmModal(action, requestId) {
+    const modal = document.getElementById('confirmModal');
+    const message = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    
+    modal.classList.remove('vanish');
+
+    const request = requests.find(r => r.id_solicitud === requestId);
+    if (!request) return;
+
+    message.textContent = `¿Deseas ${action === 'aprobada' ? 'aprobar' : 'rechazar'} la solicitud "${request.asunto}"?`;
+
+    modal.style.display = 'flex';
+
+    confirmBtn.onclick = async () => {
+        modal.style.display = "none";
+        showLoaderCerrar("Cerrando solicitud...");
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        try{
+            const response = await fetch(`/cerrar_solicitud/${requestId}/${action}`);
+            if (!response.ok) throw new Error("Error HTTP " + response.status)
+
+            const data = await response.json();
+
+            if (data.status === "success") {
+                request.estado = action;
+                request.estado_asignacion = 'cerrada';
+                request.fecha_inicio = new Date().toISOString().split('T')[0];
+                request.fecha_fin = new Date().toISOString().split('T')[0];
+
+                modal.style.display = "none";
+                aplicarFiltrosYRender()
+            }else{
+                alert("⚠️ " + (data.mensaje || "Error desconocido al cerrar la solicitud."));
+                modal.style.display = "none";
+            }
+        }catch(error){
+            console.error("Error cerrando solicitud:", error);
+            alert("Error de conexión al cerrar la solicitud.");
+        }finally{
+            hideLoaderCerrar();
+            goBackToList();
+        }
+
+    };
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('vanish');
+        setTimeout(() => modal.style.display = 'none', 300);
+    };
+
+}
 // ------------------ Inicio ------------------
 document.addEventListener("DOMContentLoaded", async () => {
   await obtener_usuario_actual();
