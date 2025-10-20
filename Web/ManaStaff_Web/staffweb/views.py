@@ -35,9 +35,6 @@ def recuperar_contrasena(request):
 def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
 
-def administrar_logs(request):
-    return render(request, 'staffweb/administrar_logs.html')
-
 def inicio_documentos(request):
     """Muestra los documentos que le pertenecen al usuario autenticado"""
     user_role = (request.session.get('rol_usu') or '').strip().lower()
