@@ -1553,3 +1553,154 @@ def cambiar_pin_funcion(request, rut):
 #         return JsonResponse(data)
 #     except LogAuditoria.DoesNotExist:
 #         return JsonResponse({'error': 'Log no encontrado'}, status=404)
+
+def _parse_iso(dt_str):
+    try:
+        return datetime.fromisoformat(dt_str)
+    except Exception:
+        return None
+
+def _fmt_fecha(dt_str):
+    dt = _parse_iso(dt_str)
+    return dt.strftime("%d/%m/%Y %H:%M:%S") if dt else (dt_str or "")
+
+def administrar_logs(request):
+    # 1) Traer los logs desde Realtime DB
+    raw = database.child("Auditoria").get().val() or {}
+    if not isinstance(raw, dict):
+        raw = {}
+
+    # 2) Cache simple de usuarios para mapear nombre/rol
+    usuarios = database.child("Usuario").get().val() or {}
+    if not isinstance(usuarios, dict):
+        usuarios = {}
+
+    def _nombre_rol(uid):
+        u = usuarios.get(uid, {}) if isinstance(usuarios, dict) else {}
+        nombre = f"{u.get('Nombre','') or ''} {u.get('ApellidoPaterno','') or ''}".strip() or uid
+        rol = u.get('rol') or 'usuario'
+        return nombre, rol
+
+    # 3) Normalizar logs + métricas
+    logs = []
+    por_tipo = Counter()
+    por_dia  = Counter()
+    hoy = datetime.now().date()
+
+    for _, log in raw.items():
+        if not isinstance(log, dict):
+            continue
+        uid = str(log.get("id_rut") or "").strip()
+        nombre, rol = _nombre_rol(uid)
+        accion = (log.get("accion") or "").strip().lower()
+        fecha = log.get("fecha_hora") or ""
+        ip    = log.get("ip_origen") or ""
+        nav   = log.get("navegador") or ""
+        desc  = log.get("descripcion") or ""
+        res   = (log.get("resultado") or "").strip().lower()
+
+        # métricas
+        if fecha:
+            dt = _parse_iso(fecha)
+            if dt:
+                por_dia[dt.date().strftime("%d/%m")] += 1
+
+        por_tipo[accion] += 1
+
+        logs.append({
+            "fecha_hora": _fmt_fecha(fecha),
+            "usuario_nombre": nombre,
+            "rol": rol,
+            "accion": accion,
+            "descripcion": desc,
+            "ip_origen": ip,
+            "navegador": nav,
+            "resultado": res,
+        })
+
+    # ordenar del más nuevo al más antiguo (por cadena formateada no siempre sirve, así que reordenemos con la ISO si está)
+    def _key_order(l):
+        iso = l.get("fecha_hora")
+        # fecha_hora ya viene formateada; no la podemos parsear sin ISO, así que caemos al string
+        return l.get("fecha_hora"), l.get("usuario_nombre")
+    logs.sort(key=lambda l: l["fecha_hora"], reverse=True)
+
+    # 4) Métricas superiores
+    total_acciones = len(logs)
+    total_descargas = por_tipo.get("documento_descargar", 0) + por_tipo.get("descarga", 0)
+    total_cambios_admin = (
+        por_tipo.get("usuario_crear", 0) +
+        por_tipo.get("usuario_modificar", 0) +
+        por_tipo.get("usuario_eliminar", 0) +
+        por_tipo.get("publicacion_crear", 0) +
+        por_tipo.get("publicacion_modificar", 0) +
+        por_tipo.get("publicacion_eliminar", 0) +
+        por_tipo.get("documento_subir", 0) +
+        por_tipo.get("documento_modificar", 0) +
+        por_tipo.get("documento_eliminar", 0)
+    )
+
+    # usuarios activos hoy (distintos)
+    activos_hoy = set()
+    for _, log in raw.items():
+        dt = _parse_iso((log or {}).get("fecha_hora") or "")
+        if dt and dt.date() == hoy:
+            uid = str((log or {}).get("id_rut") or "").strip()
+            if uid:
+                activos_hoy.add(uid)
+    usuarios_activos_hoy = len(activos_hoy)
+
+    # 5) Datos para gráficos (con defaults válidos)
+    # Ordenar últimos 7 días
+    ultimos_labels = []
+    ultimos_data = []
+    base = datetime.now() - timedelta(days=6)
+    for i in range(7):
+        d = (base + timedelta(days=i)).strftime("%d/%m")
+        ultimos_labels.append(d)
+        ultimos_data.append(por_dia.get(d, 0))
+
+    actividades_por_tipo = [
+        por_tipo.get("documento_descargar", 0) + por_tipo.get("descarga", 0),  # Descargas
+        total_cambios_admin,                                                    # Cambios Admin (agregado)
+        por_tipo.get("acceso", 0),                                             # Accesos
+        por_tipo.get("creacion", 0) + por_tipo.get("solicitud_crear", 0),      # Creaciones
+        por_tipo.get("eliminacion", 0),                                         # Eliminaciones
+        por_tipo.get("actualizacion", 0),                                       # Actualizaciones
+    ]
+
+    descargas_por_documento = {
+        "labels": [],
+        "data": []
+    }  # lo dejaremos en 0 por ahora; luego lo llenamos cuando registremos doc_id en descripcion
+
+    # 6) Lista de usuarios para el filtro
+    usuarios_lista = []
+    for uid, u in usuarios.items():
+        if not isinstance(u, dict):
+            continue
+        usuarios_lista.append({
+            "id": uid,
+            "nombre": f"{u.get('Nombre','')} {u.get('ApellidoPaterno','')}".strip() or uid,
+            "rol": u.get("rol") or "usuario"
+        })
+
+    context = {
+        "total_acciones": total_acciones,
+        "total_descargas": total_descargas,
+        "total_cambios_admin": total_cambios_admin,
+        "usuarios_activos_hoy": usuarios_activos_hoy,
+        "usuarios_lista": usuarios_lista,
+
+        # IMPORTANTÍSIMO: mandamos JSON válidos para que auditoria.js no rompa
+        "actividades_por_tipo": json.dumps(actividades_por_tipo),
+        "actividades_por_dia": json.dumps({"labels": ultimos_labels, "data": ultimos_data}),
+        "descargas_por_documento": json.dumps(descargas_por_documento),
+
+        # listado de logs para la tabla
+        "logs_auditoria": logs,
+        # si más adelante quieres filtros por GET, los puedes pasar aquí también
+        "fecha_inicio": request.GET.get("fecha_inicio", ""),
+        "fecha_fin": request.GET.get("fecha_fin", ""),
+    }
+    return render(request, 'staffweb/administrar_logs.html', context)

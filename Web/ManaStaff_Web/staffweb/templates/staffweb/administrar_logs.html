@@ -3,7 +3,6 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'staffweb/css/auditoria.css' %}">
-<script src="{% static 'staffweb/js/auditoria.js' %}"></script>
 <title>Auditoría del Sistema</title>
 {% endblock head %}
 
@@ -135,12 +134,12 @@
         <tbody>
           {% for log in logs_auditoria %}
             <tr>
-              <td>{{ log.fecha_hora|date:"d/m/Y H:i:s" }}</td>
-              <td>{{ log.usuario.nombre }}</td>
-              <td><span class="badge badge-{{ log.usuario.rol }}">{{ log.usuario.rol }}</span></td>
-              <td><span class="tipo-accion tipo-{{ log.tipo_accion }}">{{ log.tipo_accion_display }}</span></td>
+              <td>{{ log.fecha_hora }}</td>
+              <td>{{ log.usuario_nombre }}</td>
+              <td><span class="badge badge-{{ log.usuario.rol }}">{{ log.rol }}</span></td>
+              <td><span class="tipo-accion tipo-{{ log.accion }}">{{ log.accion }}</span></td>
               <td>{{ log.descripcion }}</td>
-              <td>{{ log.ip_address }}</td>
+              <td>{{ log.ip_origen }}</td>
               <td>
                 <button class="btn-ver-detalles" onclick="verDetalles({{ log.id }})">Ver</button>
               </td>
@@ -153,7 +152,7 @@
         </tbody>
       </table>
     </div>
-    
+
   
     {% if logs_auditoria.has_other_pages %}
       <div class="paginacion">
@@ -183,3 +182,13 @@
 
 {% endblock principal %}
 
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // === Variables del contexto Django ===
+  const actividadesPorTipo = {{ actividades_por_tipo|safe }};
+  const actividadesPorDia = {{ actividades_por_dia|safe }};
+  const descargasPorDocumento = {{ descargas_por_documento|safe }};
+</script>
+<script src="{% static 'staffweb/js/auditoria.js' %}"></script>
+{% endblock js %}

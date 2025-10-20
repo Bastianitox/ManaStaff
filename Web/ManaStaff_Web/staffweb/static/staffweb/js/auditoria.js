@@ -1,8 +1,3 @@
-// === Variables del contexto Django ===
-const actividadesPorTipo = {{ actividades_por_tipo|safe }};
-const actividadesPorDia = {{ actividades_por_dia|safe }};
-const descargasPorDocumento = {{ descargas_por_documento|safe }};
-
 // === Gráfico de actividades por tipo ===
 if (document.getElementById('actividades_por_tipo')) {
     new Chart(document.getElementById('actividades_por_tipo'), {

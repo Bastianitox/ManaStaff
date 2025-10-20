@@ -22,7 +22,6 @@ urlpatterns = [
     path('cambiar_pin',cambiar_pin,name="cambiar_pin"),
     path('crear_documento',crear_documento,name="crear_documento"),
     path('modificar_documento/<str:doc_id>', modificar_documento, name='modificar_documento'),
-    path('administrar_logs', administrar_logs, name='administrar_logs'),
     path('recuperar_pin', recuperar_pin, name='recuperar_pin'),
 
     #ADMINISTRAR PAGINAS
