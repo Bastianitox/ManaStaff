@@ -17,6 +17,8 @@ from django.core.mail import send_mail
 import random
 import string
 
+from .auditoria import registrar_auditoria_manual
+
 
 MAX_INTENTOS = 5
 TIEMPO_BLOQUEO = timedelta(minutes=10)
@@ -784,6 +786,9 @@ def crear_solicitud_funcion(request):
         "archivo": urlArchivo,
         "archivo_name": archivoName
     })
+
+    registrar_auditoria_manual(request, "crear_solicitud", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
+
     return JsonResponse({"status": "success", "message": "Solicitud creada con éxito."})
 
 #PARA CANCELAR SOLICITUD SE ELIMINARA DE LA BASE DE DATOS JUNTO CON SUS RESPECTIVOS ARCHIVOS
