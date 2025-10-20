@@ -8,36 +8,33 @@ import uuid
 
 class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
     ACCIONES = {
-        "/iniciarSesion": "login",
+        "/": "Inicio de sesión",
         "/cerrarSesion": "logout",
-        "/recuperar_contrasena_funcion": "restablecer_contrasena",
-        "/crear_solicitud_funcion": "crear_solicitud",
-        "/cancelar_solicitud_funcion": "cancelar_solicitud",
-        "/crear_usuario_funcion": "crear_usuario",
-        "/modificar_usuario_funcion": "modificar_usuario",
-        "/eliminar_usuario": "eliminar_usuario",
-        "/crear_publicacion_funcion": "crear_publicacion",
-        "/modificar_publicacion": "modificar_publicacion",
-        "/eliminar_publicacion_funcion": "eliminar_publicacion",
-        "/obtener_usuarios": "obtener_usuarios",
-        "/obtener_usuario": "obtener_usuario",
-        "/obtener_solicitudes_usuario": "obtener_solicitudes_usuario",
-        "/obtener_solicitudes_administrar": "obtener_solicitudes_administrar",
-        "/asignarme_solicitud": "asignarme_solicitud",
-        "/cerrar_solicitud": "cerrar_solicitud",
-        "/descargar_documento": "descargar_documento",
-        "/crear_documento": "crear_documento",
-        "/documentos_usuarios": "documentos_usuarios",
-        "/administrar_logs": "administrar_logs",
-        "/administrar_documentos": "administrar_documentos",
-        "/administrar_solicitudes": "administrar_solicitudes",
-        "/administrar_usuarios": "administrar_usuarios",
-        "/administrar_noticiasyeventos": "administrar_noticiasyeventos",
-        "/panel_administrar": "panel_administrar",
-        "/crear_noticiasyeventos": "crear_noticiasyeventos",
-        "/editar_publicacion": "editar_publicacion",
-        "/eliminar_publicacion": "eliminar_publicacion",
-        "/validar_pin": "validar_pin",
+        "/recuperar_contrasena": "Recuperar Clave",
+        "/inicio_solicitudes": "Inicio solicitudes",
+        "/inicio_documentos": "Inicio solicitudes",
+        "/inicio_perfil": "Inicio solicitudes",
+        "/inicio_noticias_eventos": "Inicio solicitudes",
+        "/inicio_dashboard": "Inicio solicitudes",
+        "/crear_solicitud": "Inicio solicitudes",
+        "/ver_documentos": "Inicio solicitudes",
+        "/cambiar_contrasena": "Inicio solicitudes",
+        "/cambiar_pin": "Inicio solicitudes",
+        "/crear_documento": "Inicio solicitudes",
+        "/modificar_documento": "Inicio solicitudes",
+        "/recuperar_pin": "Inicio solicitudes",
+        "/panel_administrar": "Inicio solicitudes",
+        "/administrar_documentos": "Inicio solicitudes",
+        "/administrar_solicitudes": "Inicio solicitudes",
+        "/administrar_usuarios": "Inicio solicitudes",
+        "/crear_usuario": "Inicio solicitudes",
+        "/modificar_usuario": "Inicio solicitudes",
+        "/administrar_logs": "Inicio solicitudes",
+        "/administrar_noticiasyeventos": "Inicio solicitudes",
+        "/documentos_usuarios": "Inicio solicitudes",
+        "/editar_noticiasyeventos": "Inicio solicitudes",
+        "/crear_publicacion": "Inicio solicitudes",
+        "/eliminar_documento": "Inicio solicitudes"
     }
 
     def process_request(self, request):
@@ -113,17 +110,19 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
         # Auditoría automática
         path = request.path
         accion = None
-        for url_prefix, act in self.ACCIONES.items():
+        for url_prefix in self.ACCIONES.keys():
             if path.startswith(url_prefix):
-                accion = act
+                accion = "Página visitada"
                 break
 
         if accion:
-            self.registrar_auditoria(request, response, accion)
+            accion = "Página visitada"
+            detalle = f"Página visitada: {path}"
+            self.registrar_auditoria(request, response, accion, detalle)
 
         return response
 
-    def registrar_auditoria(self, request, response, accion):
+    def registrar_auditoria(self, request, response, accion, detalle):
         from staffweb.firebase import database
 
         usuario_rut = request.session.get("usuario_rut", "anonimo")
@@ -131,7 +130,6 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
         navegador = request.META.get("HTTP_USER_AGENT", "")
         ahora = datetime.now().isoformat()
         resultado = "exito"
-        detalle = f"Acción: {accion}"
 
         if accion == "login" and hasattr(response, 'status_code') and response.status_code == 200:
             try:
