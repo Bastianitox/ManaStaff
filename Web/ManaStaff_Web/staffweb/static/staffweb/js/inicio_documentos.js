@@ -229,24 +229,76 @@ function parseDateForSorting(sortDate, fallbackText) {
   return new Date(year, monthIndex, day)
 }
 
-// Normaliza la estructura recibida desde Django para que el resto del código se mantenga igual
+// Normaliza la estructura recibida desde Django
 function normalizeDocument(doc, index) {
-  const normalized = { ...doc }
+  const normalized = { ...doc };
 
-  normalized.id = doc.id || doc.firebaseId || `doc-${index + 1}`
-  normalized.title = (doc.title || doc.nombre || `Documento ${index + 1}`).trim()
-  normalized.format = (doc.format || doc.tipo || doc.tipo_documento || 'PDF').toUpperCase()
-  normalized.size = doc.size || doc.tamano_archivo || doc.tamano || '0MB'
+  normalized.id     = doc.id || doc.firebaseId || `doc-${index + 1}`;
+  normalized.title  = (doc.title || doc.nombre || `Documento ${index + 1}`).trim();
+  normalized.format = (doc.format || doc.tipo || doc.tipo_documento || 'PDF').toUpperCase();
+  normalized.size   = doc.size || doc.tamano_archivo || doc.tamano || '0MB';
 
-  const providedSize = Number.isFinite(doc.sizeInMb) ? doc.sizeInMb : parseSizeToMb(doc.size)
-  normalized.sizeInMb = Number.isFinite(providedSize) ? providedSize : null
+  const providedSize = Number.isFinite(doc.sizeInMb) ? doc.sizeInMb : parseSizeToMb(doc.size);
+  normalized.sizeInMb = Number.isFinite(providedSize) ? providedSize : null;
 
-  normalized.date = doc.date || doc.Fecha_emitida || doc.fecha_emitida || ''
-  normalized.sortDate = doc.sortDate || null
-  normalized.available = Boolean(doc.available && doc.filePath)
-  normalized.filePath = doc.filePath || null
+  normalized.date     = doc.date || doc.Fecha_emitida || doc.fecha_emitida || '';
+  normalized.sortDate = doc.sortDate || null;
+  normalized.available = Boolean(doc.available && doc.filePath);
+  normalized.filePath  = doc.filePath || null;
 
-  return normalized
+  // Traer el raw 
+  const raw = doc.raw || {};
+  const tipoestadoCode = String(raw.Tipoestado || raw.tipoestado || '').trim();
+  const urlRaw = String(normalized.filePath || raw.url || '').trim();
+  const fvRaw  = String(raw.fecha_vencimiento || '').trim();
+  const feRaw  = String(raw.Fecha_emitida || raw.fecha_emitida || '').trim();
+
+  function parseISOorDMY(s) {
+    if (!s) return null;
+    // ISO YYYY-MM-DD 
+    const iso = new Date(s);
+    if (!Number.isNaN(iso.getTime())) return iso;
+    // D/M/Y o DD-MM-YYYY
+    const m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+    if (m) {
+      const d = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, y = parseInt(m[3], 10);
+      const dt = new Date(y < 100 ? 2000 + y : y, mo, d);
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    }
+    return null;
+  }
+
+  function computeStatus() {
+    // Prioridad 1: mapear por código guardado
+    const code = tipoestadoCode.toLowerCase();
+    if (['uno','1','activo'].includes(code)) return 'activo';
+    if (['dos','2','pendiente'].includes(code)) return 'pendiente';
+    if (['tres','3','caducado'].includes(code)) return 'caducado';
+
+    // Prioridad 2: por vencimiento
+    const fv = parseISOorDMY(fvRaw);
+    if (fv && fv < new Date()) return 'caducado';
+
+    // Prioridad 3: por existencia de archivo
+    if (urlRaw) return 'activo';
+
+    // Fallback 4: por antigüedad extrema (≈18 meses)
+    const fe = parseISOorDMY(feRaw);
+    if (fe) {
+      try {
+        const hoy = new Date();
+        const diffMs = hoy - fe;
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        if (diffDays > 550) return 'caducado';
+      } catch {}
+    }
+
+    // Default
+    return 'pendiente';
+  }
+
+  normalized.status = computeStatus();
+  return normalized;
 }
 
 // Lee el JSON embebido en el template y lo transforma en un arreglo utilizable por el front
@@ -283,6 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const formatFilter = document.getElementById('formatFilter')
   const sortFilter = document.getElementById('sortFilter')
   const sizeFilter = document.getElementById('sizeFilter')
+  const statusFilter = document.getElementById('statusFilter')
 
 
   // Representa los filtros activos en la interfaz
@@ -291,6 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     format: '',
     sort: 'date-desc',
     size: '',
+    status: '',
   }
 
   function getDocumentsContainer() {
@@ -318,23 +372,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     documents.forEach((doc) => {
-      const card = document.createElement('div')
-      card.className = 'document-card'
-      card.dataset.docId = doc.id
-      card.dataset.title = doc.title.toLowerCase()
-      card.dataset.format = doc.format
-      card.dataset.available = String(doc.available)
-      if (doc.sortDate) {
-        card.dataset.sortDate = doc.sortDate
-      }
-      if (Number.isFinite(doc.sizeInMb)) {
-        card.dataset.sizeMb = String(doc.sizeInMb)
-      }
-      if (doc.filePath) {
-        card.dataset.fileUrl = doc.filePath
-      }
+      const card = document.createElement('div');
+      card.className = 'document-card';
+      card.dataset.docId = doc.id;
+      card.dataset.title = doc.title.toLowerCase();
+      card.dataset.format = doc.format;
+      card.dataset.available = String(doc.available);
+      if (doc.sortDate) card.dataset.sortDate = doc.sortDate;
+      if (Number.isFinite(doc.sizeInMb)) card.dataset.sizeMb = String(doc.sizeInMb);
+      if (doc.filePath) card.dataset.fileUrl = doc.filePath;
+
+      //preparar badge
+      const status = (doc.status || 'pendiente').toLowerCase();
+      const statusCap = status.charAt(0).toUpperCase() + status.slice(1);
+      const badgeHtml = `<span class="status-badge ${status} badge-corner" title="${statusCap}">${statusCap}</span>`;
+
+      //si está pendiente, bloquear botones
+      const isPending = status === 'pendiente';
 
       card.innerHTML = `
+        ${badgeHtml}
         <div class="document-content">
           <div class="document-icon">
             <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
@@ -351,20 +408,25 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         <div class="document-actions">
-          <button class="action-btn view-btn" data-doc-id="${doc.id}">
+          <button class="action-btn view-btn${isPending ? ' is-disabled' : ''}" data-doc-id="${doc.id}"
+                  ${isPending ? 'disabled aria-disabled="true" title="Disponible cuando el documento deje de estar pendiente"' : ''}>
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
             </svg>
             Ver
           </button>
-          <button class="action-btn download-btn" data-doc-id="${doc.id}">
+          <button class="action-btn download-btn${isPending ? ' is-disabled' : ''}" data-doc-id="${doc.id}"
+                  ${isPending ? 'disabled aria-disabled="true" title="Disponible cuando el documento deje de estar pendiente"' : ''}>
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
               <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
             </svg>
             Descargar
           </button>
         </div>
-      `
+      `;
+
+    // exponer el estado para filtros
+    card.dataset.status = status;  
 
       container.appendChild(card)
     })
@@ -375,23 +437,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Mantiene los botones Ver/Descargar funcionando con las URLs reales
   function bindCardActions(container) {
-    const viewButtons = container.querySelectorAll('.view-btn')
+    const viewButtons = container.querySelectorAll('.view-btn');
     viewButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const docId = button.dataset.docId
-        window.location.href = `/ver_documentos?docId=${docId}` 
-      })
-    })
+      button.addEventListener('click', (e) => {
+        if (button.disabled || button.classList.contains('is-disabled')) return; // <-- NUEVO
+        const docId = button.dataset.docId;
+        window.location.href = `/ver_documentos?docId=${docId}`;
+      });
+    });
 
-    
-    const downloadButtons = document.querySelectorAll(".download-btn");
-      
-    downloadButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const docId = btn.dataset.docId;
-            // Redirigir al endpoint de Django que descarga el documento
-            window.location.href = `/descargar_documento/${docId}`;
-        });
+    const downloadButtons = document.querySelectorAll('.download-btn');
+    downloadButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled || btn.classList.contains('is-disabled')) return; // <-- NUEVO
+        const docId = btn.dataset.docId;
+        window.location.href = `/descargar_documento/${docId}`;
+      });
     });
   }
 
@@ -416,6 +477,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ? sizeFromDataset
         : parseSizeToMb(sizeText)
 
+      const statusValue = (card.dataset.status || '').toLowerCase()
+
       let showCard = true
 
       if (searchTerms.length > 0) {
@@ -430,6 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.format && format !== state.format) {
         showCard = false
       }
+
+      if (state.status && statusValue !== state.status) showCard = false
 
       if (state.size && Number.isFinite(sizeValue)) {
         switch (state.size) {
@@ -564,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.format = formatFilter ? formatFilter.value : ''
         state.sort = sortFilter ? sortFilter.value : 'date-desc'
         state.size = sizeFilter ? sizeFilter.value : ''
+        state.status = statusFilter ? statusFilter.value : ''  
         applyAllFilters()
         closeModal()
       })
@@ -574,12 +640,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (formatFilter) formatFilter.value = ''
         if (sortFilter) sortFilter.value = 'date-desc'
         if (sizeFilter) sizeFilter.value = ''
+        if (statusFilter) statusFilter.value = ''   
         if (searchInput) searchInput.value = ''
 
         state.search = ''
         state.format = ''
         state.sort = 'date-desc'
         state.size = ''
+        state.status = ''    
 
         applyAllFilters()
         closeModal()

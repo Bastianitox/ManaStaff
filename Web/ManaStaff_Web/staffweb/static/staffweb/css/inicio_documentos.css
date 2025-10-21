@@ -250,9 +250,15 @@
   color: #6b7280;
 }
 
-.document-actions {
-  display: flex;
-  gap: 10px;
+.document-actions{
+  display:flex !important;
+  flex-direction: row !important;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  margin-top:12px;
+  /* evita que reglas globales cambien a columna en móviles */
+  flex-wrap: nowrap;
 }
 
 .action-btn {
@@ -350,11 +356,6 @@
     gap: 12px;
   }
 
-  .document-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
   .filter-content {
     width: 95%;
     padding: 20px;
@@ -384,6 +385,133 @@
   .no-results-message h3 {
     font-size: 16px !important;
   }
+}
+
+@media (max-width: 480px) {
+  .document-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .document-title {
+    font-size: 15px;
+  }
+
+  .filter-header h3 {
+    font-size: 16px;
+  }
+
+  .filter-content {
+    padding: 16px;
+  }
+}
+
+/* ---------------- BADGE DE ESTADO ---------------- */
+
+.document-card { position: relative; overflow: hidden; }
+
+.document-title { padding-right: 88px; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.activo    { background: #d1fae5; color: #065f46; }
+.status-badge.pendiente { background: #fed7aa; color: #92400e; }
+.status-badge.caducado  { background: #fee2e2; color: #991b1b; }
+
+.status-badge.badge-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+
+  
+@media (max-width: 640px) {
+  .status-badge.badge-corner {
+    position: static;
+    margin: 6px 0 8px auto;
+    display: inline-flex;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 16px;
+    letter-spacing: 0.4px;
+    max-width: 60vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .document-title { padding-right: 0; } 
+}
+
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .status-badge.badge-corner { top: 8px; right: 8px; }
+  .status-badge { font-size: 12px; padding: 5px 10px; }
+}
+
+
+@media (max-width: 360px) {
+  .status-badge.badge-corner {
+    position: static;      
+    margin: 6px 0 6px auto;
+  }
+  .status-badge {
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border-radius: 9999px;
+    display: inline-block;
+    font-size: 0;
+    line-height: 0;
+    text-indent: -9999px;
+  }
+}
+
+.document-actions{
+  display:flex !important;
+  flex-direction: row !important;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  margin-top:12px;
+  flex-wrap: nowrap;             
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  flex: 1 1 0;                      
+  justify-content: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .document-actions { flex-wrap: wrap; }
+  .action-btn { flex: 1 1 calc(50% - 5px); }
 }
 
 /* ----------------------------------------- PIN --------------------------------------------- */
@@ -475,23 +603,20 @@
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes lockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
-/* ------------------------------------------------------------------------------------------------------------------------------------- */
+/* Botones deshabilitados cuando el documento está pendiente */
+.action-btn:disabled,
+.action-btn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none; /* asegura que no reciban clicks ni hover */
+  filter: grayscale(6%);
+}
 
-@media (max-width: 480px) {
-  .document-details {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .document-title {
-    font-size: 15px;
-  }
-
-  .filter-header h3 {
-    font-size: 16px;
-  }
-
-  .filter-content {
-    padding: 16px;
-  }
+/* Evitar cambios de color en hover si están deshabilitados */
+.view-btn:disabled:hover,
+.download-btn:disabled:hover,
+.view-btn.is-disabled:hover,
+.download-btn.is-disabled:hover {
+  background: inherit;
+  color: inherit;
 }
