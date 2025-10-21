@@ -3,7 +3,7 @@ import re, json, uuid, os, re, mimetypes
 
 from django.conf import settings
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
@@ -1440,6 +1440,7 @@ def _fmt_fecha(dt_str):
     dt = _parse_iso(dt_str)
     return dt.strftime("%d/%m/%Y %H:%M:%S") if dt else (dt_str or "")
 
+@admin_required
 def administrar_logs(request):
     # 1) Traer los logs desde Realtime DB
     raw = database.child("Auditoria").get().val() or {}
@@ -1462,9 +1463,16 @@ def administrar_logs(request):
     por_tipo = Counter()
     por_dia  = Counter()
     hoy = datetime.now().date()
+    
 
     # OBTENER TIPOS DE AUDITORIA
     tipos_auditora_firebase = database.child("TipoAuditoria").get().val() or {}
+    tipos_auditoria_lista = []
+    for id_tipo, auditoria in tipos_auditora_firebase.items():
+        tipos_auditoria_lista.append({
+            "id_tipo": id_tipo,
+            "nombre": auditoria.get("nombre")
+        })
 
     # OBTENER ROLES
     roles_firebase = database.child("Rol").get().val() or {}
@@ -1472,14 +1480,8 @@ def administrar_logs(request):
     for _, log in raw.items():
         if not isinstance(log, dict):
             continue
-        uid = str(log.get("id_rut") or "").strip()
-        nombre, rol = _nombre_rol(uid)
         accion = (log.get("accion") or "").strip()
         fecha = log.get("fecha_hora") or ""
-        ip    = log.get("ip_origen") or ""
-        nav   = log.get("navegador") or ""
-        desc  = log.get("descripcion") or ""
-        res   = (log.get("resultado") or "").strip().lower()
 
         # métricas
         if fecha:
@@ -1489,49 +1491,14 @@ def administrar_logs(request):
 
         por_tipo[accion] += 1
 
-        # Nombre de tipo auditoria
-        for id_tipo, tipo in tipos_auditora_firebase.items():
-            if id_tipo == accion:
-                accion = tipo.get("nombre")
-
-        # Nombre de rol
-        for id_rol, rol_f in roles_firebase.items():
-            if rol == id_rol:
-                rol = rol_f.get("nombre")
-
-
         logs.append({
-            "fecha_hora": _fmt_fecha(fecha),
-            "usuario_nombre": nombre,
-            "rol": rol,
-            "accion": accion,
-            "descripcion": desc,
-            "ip_origen": ip,
-            "navegador": nav,
-            "resultado": res,
+            "id_rut": log.get("id_rut"),
+            "accion": accion
         })
-
-    # ordenar del más nuevo al más antiguo (por cadena formateada no siempre sirve, así que reordenemos con la ISO si está)
-    def _key_order(l):
-        iso = l.get("fecha_hora")
-        # fecha_hora ya viene formateada; no la podemos parsear sin ISO, así que caemos al string
-        return l.get("fecha_hora"), l.get("usuario_nombre")
-    logs.sort(key=lambda l: l["fecha_hora"], reverse=True)
 
     # 4) Métricas superiores
     total_acciones = len(logs)
-    total_descargas = por_tipo.get("documento_descargar", 0) + por_tipo.get("descarga", 0)
-    total_cambios_admin = (
-        por_tipo.get("usuario_crear", 0) +
-        por_tipo.get("usuario_modificar", 0) +
-        por_tipo.get("usuario_eliminar", 0) +
-        por_tipo.get("publicacion_crear", 0) +
-        por_tipo.get("publicacion_modificar", 0) +
-        por_tipo.get("publicacion_eliminar", 0) +
-        por_tipo.get("documento_subir", 0) +
-        por_tipo.get("documento_modificar", 0) +
-        por_tipo.get("documento_eliminar", 0)
-    )
+    total_descargas = por_tipo.get("Cinco", 0) + por_tipo.get("descarga", 0)
 
     # usuarios activos hoy (distintos)
     activos_hoy = set()
@@ -1554,18 +1521,14 @@ def administrar_logs(request):
         ultimos_data.append(por_dia.get(d, 0))
 
     actividades_por_tipo = [
-        por_tipo.get("documento_descargar", 0) + por_tipo.get("descarga", 0),  # Descargas
-        total_cambios_admin,                                                    # Cambios Admin (agregado)
-        por_tipo.get("acceso", 0),                                             # Accesos
-        por_tipo.get("creacion", 0) + por_tipo.get("solicitud_crear", 0),      # Creaciones
-        por_tipo.get("eliminacion", 0),                                         # Eliminaciones
-        por_tipo.get("actualizacion", 0),                                       # Actualizaciones
+        por_tipo.get("Cinco", 0) + por_tipo.get("descarga", 0),  # Descargas
+        por_tipo.get("Seis", 0),                                             # Accesos
+        por_tipo.get("Dos", 0) + por_tipo.get("solicitud_crear", 0),      # Creaciones
+        por_tipo.get("Cuatro", 0),                                         # Eliminaciones
+        por_tipo.get("Tres", 0),                                       # Actualizaciones
+        por_tipo.get("Ocho", 0),                                       # Solicitudes
+        por_tipo.get("Siete", 0),                                       # Otro
     ]
-
-    descargas_por_documento = {
-        "labels": [],
-        "data": []
-    }  # lo dejaremos en 0 por ahora; luego lo llenamos cuando registremos doc_id en descripcion
 
     # 6) Lista de usuarios para el filtro
     usuarios_lista = []
@@ -1577,23 +1540,183 @@ def administrar_logs(request):
             "nombre": f"{u.get('Nombre','')} {u.get('ApellidoPaterno','')}".strip() or uid,
             "rol": u.get("rol") or "usuario"
         })
+    
+    # 7) === Usuarios más activos ===
+    acciones_por_usuario = Counter()
+    for l in logs:
+        uid = l.get("id_rut")
+        if uid:
+            acciones_por_usuario[uid] += 1
+
+    top_usuarios_activos = []
+    for uid, total in acciones_por_usuario.most_common(5):  # top 5
+        nombre, rol = _nombre_rol(uid)
+        # Nombre de rol real desde Firebase (si existe)
+        for id_rol, rol_f in roles_firebase.items():
+            if rol == id_rol:
+                rol = rol_f.get("nombre")
+                if rol == "Recursos Humanos":
+                    rol = "admin"
+        top_usuarios_activos.append({
+            "id": uid,
+            "nombre": nombre,
+            "rol": rol,
+            "total_acciones": total
+        })
+    
+    
 
     context = {
         "total_acciones": total_acciones,
         "total_descargas": total_descargas,
-        "total_cambios_admin": total_cambios_admin,
         "usuarios_activos_hoy": usuarios_activos_hoy,
         "usuarios_lista": usuarios_lista,
+        "top_usuarios_activos": top_usuarios_activos,  
 
-        # IMPORTANTÍSIMO: mandamos JSON válidos para que auditoria.js no rompa
         "actividades_por_tipo": json.dumps(actividades_por_tipo),
         "actividades_por_dia": json.dumps({"labels": ultimos_labels, "data": ultimos_data}),
-        "descargas_por_documento": json.dumps(descargas_por_documento),
-
-        # listado de logs para la tabla
-        "logs_auditoria": logs,
-        # si más adelante quieres filtros por GET, los puedes pasar aquí también
-        "fecha_inicio": request.GET.get("fecha_inicio", ""),
-        "fecha_fin": request.GET.get("fecha_fin", ""),
+        "tipos_auditoria_lista": tipos_auditoria_lista,
     }
     return render(request, 'staffweb/administrar_logs.html', context)
+
+def api_logs_auditoria(request):
+    # Solo permitir rol 
+    rol_usuario = request.session.get("rol_usu", "")
+    if rol_usuario not in ["Uno", "uno", "admin"]:
+        return HttpResponseForbidden("No tienes permisos para acceder a esta información")
+
+    tipo_accion = request.GET.get("tipo_accion", "").strip()
+    usuario = request.GET.get("usuario", "").strip()
+    fecha_inicio = request.GET.get("fecha_inicio", "")
+    fecha_fin = request.GET.get("fecha_fin", "")
+    page = int(request.GET.get("page", 1))
+    per_page = 30  # registros por carga
+
+    raw = database.child("Auditoria").get().val() or {}
+    if not isinstance(raw, dict):
+        raw = {}
+
+    usuarios = database.child("Usuario").get().val() or {}
+    if not isinstance(usuarios, dict):
+        usuarios = {}
+
+    # OBTENER TIPOS DE AUDITORIA
+    tipos_auditora_firebase = database.child("TipoAuditoria").get().val() or {}
+    tipos_auditoria_lista = []
+    for id_tipo, auditoria in tipos_auditora_firebase.items():
+        tipos_auditoria_lista.append({
+            "id_tipo": id_tipo,
+            "nombre": auditoria.get("nombre")
+        })
+
+    # OBTENER ROLES
+    roles_firebase = database.child("Rol").get().val() or {}
+
+    logs_filtrados = []
+    for id_auditoria, log in raw.items():
+        if not isinstance(log, dict):
+            continue
+
+        uid = str(log.get("id_rut") or "").strip()
+        accion = (log.get("accion") or "").strip()
+        fecha_str = log.get("fecha_hora") or ""
+        ip    = log.get("ip_origen") or ""
+        nav   = log.get("navegador") or ""
+        desc  = log.get("descripcion") or ""
+        res   = (log.get("resultado") or "").strip().lower()
+        dt = _parse_iso(fecha_str)
+
+        #OBTENER NOMBRE Y ROL
+        u = usuarios.get(uid, {}) if isinstance(usuarios, dict) else {}
+        nombre = f"{u.get('Nombre','') or ''} {u.get('ApellidoPaterno','') or ''}".strip() or uid
+        rol = u.get('rol') or 'usuario'
+
+        # === FILTROS ===
+        if tipo_accion and tipo_accion not in accion:
+            continue
+        if usuario and uid != usuario:
+            continue
+        if fecha_inicio:
+            fi = datetime.fromisoformat(fecha_inicio)
+            if not dt or dt.date() < fi.date():
+                continue
+        if fecha_fin:
+            ff = datetime.fromisoformat(fecha_fin)
+            if not dt or dt.date() > ff.date():
+                continue
+
+
+        # Nombre de tipo auditoria
+        for auditoria in tipos_auditoria_lista:
+            if auditoria.get("id_tipo") == accion:
+                accion = auditoria.get("nombre")
+
+        # Nombre de rol
+        for id_rol, rol_f in roles_firebase.items():
+            if rol == id_rol:
+                rol = rol_f.get("nombre")
+
+        logs_filtrados.append({
+            "id": id_auditoria,
+            "fecha_hora": _fmt_fecha(fecha_str),
+            "id_rut": log.get("id_rut"),
+            "usuario_nombre": nombre,
+            "rol": rol,
+            "accion": accion,
+            "descripcion": desc,
+            "ip_origen": ip,
+            "navegador": nav,
+            "resultado": res,
+        })
+
+    # Ordenar del más nuevo al más antiguo
+    logs_filtrados.sort(key=lambda x: x["fecha_hora"], reverse=True)
+
+    # Paginación manual
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated = logs_filtrados[start:end]
+
+    return JsonResponse({
+        "logs": paginated,
+        "has_more": end < len(logs_filtrados)
+    })
+
+@admin_required
+def detalle_auditoria(request, log_id):
+    # Verificar permisos (igual que api_logs_auditoria)
+    rol_usuario = request.session.get("rol_usu", "")
+    if rol_usuario not in ["Uno", "uno", "admin"]:
+        return HttpResponseForbidden("No tienes permisos para acceder a esta información")
+
+    log = database.child("Auditoria").child(log_id).get().val()
+    if not log:
+        return HttpResponseNotFound("Registro no encontrado")
+
+    uid = log.get("id_rut", "")
+    usuarios = database.child("Usuario").get().val() or {}
+    u = usuarios.get(uid, {})
+
+    usuario_nombre = f"{u.get('Nombre','')} {u.get('ApellidoPaterno','')}".strip() or uid
+    tipo_accion = log.get("accion", "")
+    descripcion = log.get("descripcion", "")
+    ip_address = log.get("ip_origen", "")
+    user_agent = log.get("navegador", "")
+    fecha_hora = _fmt_fecha(log.get("fecha_hora", ""))
+
+    # Datos adicionales opcionales
+    datos_extra = {
+        "resultado": log.get("resultado"),
+        "detalle_raw": log
+    }
+
+    return JsonResponse({
+        "usuario": usuario_nombre,
+        "fecha_hora": fecha_hora,
+        "tipo_accion": tipo_accion,
+        "descripcion": descripcion,
+        "ip_address": ip_address,
+        "user_agent": user_agent,
+        "datos_adicionales": datos_extra,
+        "uid": uid
+    })

@@ -182,7 +182,7 @@ def iniciarSesion(request):
 
 @require_GET
 def cerrarSesion(request):
-    registrar_auditoria_manual(request, "Seis", "éxito", f"{obtener_correo_actual()} cerro su sesión.")
+    registrar_auditoria_manual(request, "Seis", "éxito", f"{obtener_correo_actual(request)} cerro su sesión.")
     request.session.flush()
     return redirect("index")
 

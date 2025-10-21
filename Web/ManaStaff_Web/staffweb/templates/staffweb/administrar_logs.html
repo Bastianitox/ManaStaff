@@ -24,59 +24,12 @@
     <p>{{ total_descargas }}</p>
   </div>
   <div class="card">
-    <h3>Cambios Administrativos</h3>
-    <p>{{ total_cambios_admin }}</p>
-  </div>
-  <div class="card">
     <h3>Usuarios Activos Hoy</h3>
     <p>{{ usuarios_activos_hoy }}</p>
   </div>
 </div>
 
 <div class="dashboard">
-
-  <div class="card" style="grid-column: 1 / -1;">
-    <h3>Filtros de Búsqueda</h3>
-    <form method="GET" class="filtros-auditoria">
-      <div class="filtro-grupo">
-        <label for="tipo_accion">Tipo de Acción:</label>
-        <select name="tipo_accion" id="tipo_accion">
-          <option value="">Todas</option>
-          <option value="descarga">Descarga de Documento</option>
-          <option value="cambio">Cambio Administrativo</option>
-          <option value="acceso">Acceso a Página</option>
-          <option value="creacion">Creación de Registro</option>
-          <option value="eliminacion">Eliminación de Registro</option>
-          <option value="actualizacion">Actualización de Registro</option>
-        </select>
-      </div>
-      
-      <div class="filtro-grupo">
-        <label for="usuario">Usuario:</label>
-        <select name="usuario" id="usuario">
-          <option value="">Todos</option>
-          {% for u in usuarios_lista %}
-            <option value="{{ usuario_id  }}">{{ nombre_usu }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      
-      <div class="filtro-grupo">
-        <label for="fecha_inicio">Fecha Inicio:</label>
-        <input type="date" name="fecha_inicio" id="fecha_inicio" value="{{ fecha_inicio }}">
-      </div>
-      
-      <div class="filtro-grupo">
-        <label for="fecha_fin">Fecha Fin:</label>
-        <input type="date" name="fecha_fin" id="fecha_fin" value="{{ fecha_fin }}">
-      </div>
-      
-      <button type="submit" class="btn-filtrar">Filtrar</button>
-      <a href="{% url 'administrar_logs' %}" class="btn-limpiar">Limpiar</a>
-    </form>
-  </div>
-
- 
   <div class="card">
     <h3>Actividades por Tipo</h3>
     <canvas id="actividades_por_tipo"></canvas>
@@ -109,17 +62,48 @@
     </table>
   </div>
 
-  
-  <div class="card">
-    <h3>Documentos Más Descargados</h3>
-    <canvas id="descargas_por_documento"></canvas>
+  <div class="card" style="grid-column: 1 / -1;">
+    <h3>Filtros de Búsqueda</h3>
+    <form method="GET" class="filtros-auditoria" id="form-filtros">
+      <div class="filtro-grupo">
+        <label for="tipo_accion">Tipo de Acción:</label>
+        <select name="tipo_accion" id="tipo_accion">
+          <option value="">Todas</option>
+          {% for aud in tipos_auditoria_lista %}
+            <option value="{{ aud.id_tipo }}">{{ aud.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="filtro-grupo">
+        <label for="usuario">Usuario:</label>
+        <select name="usuario" id="usuario">
+          <option value="">Todos</option>
+          {% for u in usuarios_lista %}
+            <option value="{{ u.id  }}">{{ u.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="filtro-grupo">
+        <label for="fecha_inicio">Fecha Inicio:</label>
+        <input type="date" name="fecha_inicio" id="fecha_inicio" value="{{ fecha_inicio }}">
+      </div>
+      
+      <div class="filtro-grupo">
+        <label for="fecha_fin">Fecha Fin:</label>
+        <input type="date" name="fecha_fin" id="fecha_fin" value="{{ fecha_fin }}">
+      </div>
+      
+      <button type="submit" class="btn-filtrar">Filtrar</button>
+      <button type="button" class="btn-limpiar" id="btnLimpiar">Limpiar</button>
+    </form>
   </div>
-
   
   <div class="card" style="grid-column: 1 / -1;">
     <h3>Registro de Auditoría Detallado</h3>
     <div class="tabla-auditoria-container">
-      <table class="user-table tabla-auditoria">
+      <table class="user-table tabla-auditoria" id="tablaLogs">
         <thead>
           <tr>
             <th>Fecha y Hora</th>
@@ -131,42 +115,14 @@
             <th>Detalles</th>
           </tr>
         </thead>
-        <tbody>
-          {% for log in logs_auditoria %}
-            <tr>
-              <td>{{ log.fecha_hora }}</td>
-              <td>{{ log.usuario_nombre }}</td>
-              <td><span class="badge badge-{{ log.usuario.rol }}">{{ log.rol }}</span></td>
-              <td><span class="tipo-accion tipo-{{ log.accion }}">{{ log.accion }}</span></td>
-              <td>{{ log.descripcion }}</td>
-              <td>{{ log.ip_origen }}</td>
-              <td>
-                <button class="btn-ver-detalles" onclick="verDetalles({{ log.id }})">Ver</button>
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="7" style="text-align: center;">No hay registros de auditoría</td>
-            </tr>
-          {% endfor %}
+        <tbody id="tablaLogsBody">
+          <tr><td colspan="7" style="text-align: center; display: inline-block;">Cargando...</td></tr>
         </tbody>
       </table>
     </div>
-
-  
-    {% if logs_auditoria.has_other_pages %}
-      <div class="paginacion">
-        {% if logs_auditoria.has_previous %}
-          <a href="?page={{ logs_auditoria.previous_page_number }}" class="btn-paginacion">Anterior</a>
-        {% endif %}
-        
-        <span class="pagina-actual">Página {{ logs_auditoria.number }} de {{ logs_auditoria.paginator.num_pages }}</span>
-        
-        {% if logs_auditoria.has_next %}
-          <a href="?page={{ logs_auditoria.next_page_number }}" class="btn-paginacion">Siguiente</a>
-        {% endif %}
-      </div>
-    {% endif %}
+    <div class="text-center">
+      <button id="btnCargarMas" class="btn-filtrar">Cargar más</button>
+    </div>
   </div>
 
 </div>
@@ -180,6 +136,11 @@
   </div>
 </div>
 
+<!-- Overlay de carga -->
+<div id="loadingOverlay">
+    <div class="spinner_grande"></div>
+</div>
+
 {% endblock principal %}
 
 {% block js %}
@@ -188,7 +149,6 @@
   // === Variables del contexto Django ===
   const actividadesPorTipo = {{ actividades_por_tipo|safe }};
   const actividadesPorDia = {{ actividades_por_dia|safe }};
-  const descargasPorDocumento = {{ descargas_por_documento|safe }};
 </script>
 <script src="{% static 'staffweb/js/auditoria.js' %}"></script>
 {% endblock js %}
