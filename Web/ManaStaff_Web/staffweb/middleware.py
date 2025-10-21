@@ -111,7 +111,7 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
         path = request.path
         accion = None
         for url_prefix in self.ACCIONES.keys():
-            if path.startswith(url_prefix):
+            if path == url_prefix:
                 accion = "Página visitada"
                 break
 
