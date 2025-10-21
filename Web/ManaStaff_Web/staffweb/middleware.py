@@ -145,7 +145,7 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
         log_data = {
             "id_auditoria": str(uuid.uuid4()),
             "id_rut": usuario_rut,
-            "accion": accion,
+            "accion": "Uno",
             "descripcion": detalle,
             "fecha_hora": ahora,
             "ip_origen": ip_origen,
