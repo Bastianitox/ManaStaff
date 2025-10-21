@@ -102,7 +102,7 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
             response.set_cookie(
                 "ultima_actividad",
                 request._actualizar_cookie_actividad,
-                max_age=settings.SESSION_COOKIE_AGE * 2,  # Cookie dura el doble para detectar expiración
+                max_age=settings.SESSION_COOKIE_AGE * 200,  # Cookie dura el doble para detectar expiración
                 httponly=True,
                 samesite='Lax'
             )
@@ -116,7 +116,6 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
                 break
 
         if accion:
-            accion = "Página visitada"
             detalle = f"Página visitada: {path}"
             self.registrar_auditoria(request, response, accion, detalle)
 

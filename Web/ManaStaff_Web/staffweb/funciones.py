@@ -62,6 +62,7 @@ def iniciarSesion(request):
     try:
         user = auth.get_user_by_email(email)
         if not user.email_verified:
+            registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con correo sin verificar.")
             return JsonResponse({"status": "false","message": "Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada."})
     except auth.UserNotFoundError:
         return JsonResponse({"status": "false","message": "Correo no encontrado."})
@@ -84,6 +85,7 @@ def iniciarSesion(request):
         bloqueado_dt = datetime.fromisoformat(bloqueado_hasta)
         if bloqueado_dt > datetime.now():
             fecha_formateada = bloqueado_dt.strftime("%d de %B del %Y a las %H:%Mhrs")
+            registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con cuenta bloqueada.")
             return JsonResponse({"status": "false", "message": f"Cuenta bloqueada hasta el {fecha_formateada}. Demasiados intentos fallidos de inicio de sesión."})
         else:
             # Reiniciar bloqueo si ya pasó el tiempo
@@ -126,17 +128,20 @@ def iniciarSesion(request):
             database.child("Usuario").child(id_usu).update(data_actualizar)
 
             if intentos >= MAX_INTENTOS:
+                registrar_auditoria_manual(request, "Seis", "false", f"{email} bloqueado por accesos de contraseña incorrecta.")
                 mensaje = f"Cuenta bloqueada tras {MAX_INTENTOS} intentos fallidos."
             else:
+                registrar_auditoria_manual(request, "Seis", "false", f"Acceso a {email} con contraseña incorrecta (Intento {intentos}).")
                 mensaje = f"Correo o contraseña incorrectos. Intentos restantes: {MAX_INTENTOS - intentos}"
       
         elif error_message == "EMAIL_NOT_FOUND":
-            mensaje = "Correo o contraseña incorreectos."
+            mensaje = "Correo o contraseña incorrectos."
         elif error_message == "TOO_MANY_ATTEMPTS_TRY_LATER":
             mensaje = "Demasiados intentos de inicio de sesión, intente más tarde."
         else:
             mensaje = "Error de autenticación: " + error_message
-
+        
+        registrar_auditoria_manual(request, "Seis", "false", f"Error de acceso al correo {email}. {mensaje}")
         return JsonResponse({"status": "false", "message": mensaje})
 
     except Exception:
@@ -172,10 +177,12 @@ def iniciarSesion(request):
         request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
         request.session['rol_usu'] = usuario.get('rol', '')
 
+        registrar_auditoria_manual(request, "Seis", "éxito", f"{email} inicio sesión correctamente.")
         return JsonResponse({"status": "success", "message": "Inicio de sesión correcto."})
 
 @require_GET
 def cerrarSesion(request):
+    registrar_auditoria_manual(request, "Seis", "éxito", f"{obtener_correo_actual()} cerro su sesión.")
     request.session.flush()
     return redirect("index")
 
@@ -199,6 +206,7 @@ def recuperar_contrasena_funcion(request):
         if not re.match(patron_correo, correo):
             return JsonResponse({'status': 'false', 'mensaje':"El correo tiene un formato inválido."})
         authP.send_password_reset_email(correo)
+        registrar_auditoria_manual(request, "Seis", "éxito", f"Se envió un link de restablecimiento al correo {correo}.")
         return JsonResponse({'status': 'success', 'mensaje':"Link de restablecimiento enviado a esa dirección."})
     except Exception as e:
         return JsonResponse({'status': 'false', 'mensaje':"Error al enviar el correo: "+str(e)})
@@ -270,6 +278,7 @@ def obtener_usuarios(request):
             "sortDate": sort_date or fecha_creacion_str
         })
 
+    registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} listo usuarios.")
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
 
 @admin_required
@@ -306,6 +315,7 @@ def obtener_usuario(request):
         "rut_normal": formatear_rut(rut),
     }
 
+    registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} listo al usuario {rut}.")
     return JsonResponse({"status": "success", "usuario": usuario_json})
 
 @admin_required
@@ -387,6 +397,7 @@ def crear_usuario_funcion(request):
         return JsonResponse({"status": "false", "message": "El correo electrónico no es válido."})
     email = str(email).lower()
     if correo_ya_existe(email):
+        registrar_auditoria_manual(request, "Dos", "False", f"El usuario {obtener_rut_actual(request)} intento crear usuario con un correo existente ({email}).")
         return JsonResponse({"status": "false", "message": "El correo electrónico ya existe."})
 
 
@@ -405,10 +416,9 @@ def crear_usuario_funcion(request):
     # VALIDAR QUE EL RUT NO EXISTA
     usuario_ref = database.child("Usuario").child(rut_limpio).get()
     if usuario_ref.val() is not None:
+        registrar_auditoria_manual(request, "Dos", "False", f"El usuario {obtener_rut_actual(request)} intento crear usuario con un rut existente ({rut}).")
         return JsonResponse({"status": "false", "message": "El RUT ya existe."})
 
-    #CACHE CONTROL
-    cache_control_header = "public, max-age=3600, s-maxage=86400"
     #VALIDACION DE IMAGEN
     try:
         formato, imgstr = imagen_base64.split(';base64,')
@@ -441,6 +451,7 @@ def crear_usuario_funcion(request):
             recipient_list=[email],
             fail_silently=False,
         )
+        registrar_auditoria_manual(request, "Seis", "éxito", f"Al correo {email} se le envió un link de verificación.")
 
     except Exception as e:
         return JsonResponse({"status": "false", "message": f"Error al crear usuario en Base de Datos: {e}"})
@@ -464,6 +475,8 @@ def crear_usuario_funcion(request):
         "bloqueado_hasta": None,
     })
 
+    registrar_auditoria_manual(request, "Dos", "éxito", f"Se creo al usuario de rut {rut}, correo {email} y nombre {nombre} {segundo_nombre} {apellido_paterno} {apellido_materno}")
+
     return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
 
 @require_POST
@@ -476,6 +489,7 @@ def eliminar_usuario(request, rut):
         usuario_id_en_sesion = request.session.get("usuario_id")
         
         if usuario_id_en_sesion == rut:
+            registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut} ({correo}) intento eliminarse a si mismo.")
             return JsonResponse({"status": "false", "message": "No puede eliminar su propio usuario."})
         uid = auth.get_user_by_email(correo).uid
 
@@ -495,6 +509,7 @@ def eliminar_usuario(request, rut):
             for doc in documentos.each():
                 database.child("Documentos").child(doc.key()).remove()
 
+        registrar_auditoria_manual(request, "Cuatro", "éxito", f"Se han eliminado el usuario {rut} ({correo}), junto a todas sus Solicitudes y Archivos.")
         return JsonResponse({"status": "success", "message": "Usuario eliminado junto con sus Solicitudes y Documentos correctamente."})
 
     except Exception as e:
@@ -549,6 +564,7 @@ def modificar_usuario_funcion(request, rut):
     usuario_id_en_sesion = request.session.get("usuario_id")
     
     if usuario_id_en_sesion == rut:
+        registrar_auditoria_manual(request, "Tres", "false", f"El usuario {rut} ({correo_actual}) intento modificarse a si mismo.")
         return JsonResponse({"status": "false", "message": "No puede modificar su propio usuario."})
     #VALIDACIONES
 
@@ -646,6 +662,7 @@ def modificar_usuario_funcion(request, rut):
     if correo_actual!=email:
         #VALIDAR QUE EL NUEVO CORREO NO EXISTA
         if correo_ya_existe(email):
+            registrar_auditoria_manual(request, "Tres", "false", f"El usuario {obtener_rut_actual(request)} intento modificar al usuario {rut} con un correo ya existente ({email}).")
             return JsonResponse({"status": "false", "message": "El correo electrónico ya existe."})
         #SI NO EXISTE CAMBIAR EL CORREO ACTUAL POR EL NUEVO CORREO
         correo_actual = email
@@ -657,6 +674,8 @@ def modificar_usuario_funcion(request, rut):
             from_email="manastaffnoreply@gmail.com",
             recipient_list=[email],
         )
+        registrar_auditoria_manual(request, "Seis", "éxito", f"Link de verificación nuevo a usuario {rut}, correo anterior: {correo_actual}, correo nuevo: {email}, modificado por el usuario {obtener_rut_actual(request)}")
+
 
     #CAMBIAR LOS NUEVOS VALORES AL USUARIO
     ref = db.reference('/Usuario/'+rut)
@@ -674,6 +693,7 @@ def modificar_usuario_funcion(request, rut):
         "PIN":pin_actual,
     })
 
+    registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario ({rut}) modificado exitosamente por el usuario {obtener_rut_actual(request)}")
     return JsonResponse({"status": "success", "message": "Usuario modificado correctamente."})
 
 #SOLICITUDES
@@ -724,7 +744,7 @@ def obtener_solicitudes_usuario(request):
             "tipo_solicitud_nombre": tipo_solicitud_nombre,
             "razon": razon
         })
-
+    registrar_auditoria_manual(request, "Siete", "éxito", f"Listado de solicitudes del usuario {obtener_rut_actual(request)}")
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
 
 @require_POST #SIGNIFICA QUE REQUIRE SER ENVIADO POR FORMULARIO EN METODO POST
@@ -787,7 +807,7 @@ def crear_solicitud_funcion(request):
         "archivo_name": archivoName
     })
 
-    registrar_auditoria_manual(request, "crear_solicitud", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
+    registrar_auditoria_manual(request, "Dos", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
 
     return JsonResponse({"status": "success", "message": "Solicitud creada con éxito."})
 
@@ -813,6 +833,7 @@ def cancelar_solicitud_funcion(request, id_solicitud):
     rut_usuario_solicitud = solicitud_a_cancelar.get("id_rut")
 
     if usuario_actual_rut != rut_usuario_solicitud:
+        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {usuario_actual_rut} intento eliminar una solicitud que no le pertenece {rut_usuario_solicitud}.")
         return JsonResponse({"status": "false", "message": "Esa no es su solicitud."})
     
     #VALIDAMOS QUE EXISTA UN ARCHIVO EN LA SOLICITUD (PARA ELIMINARLO DE STORAGE)
@@ -835,7 +856,7 @@ def cancelar_solicitud_funcion(request, id_solicitud):
 
     #AHORA SE ELIMINA DE FIREBASE
     db.reference('/Solicitudes/'+id_solicitud).delete()
-    
+    registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {usuario_actual_rut} ha eliminado su solicitud {solicitud_a_cancelar.get("Asunto")} con éxito.")
     return JsonResponse({"status": "success", "message": "Solicitud cancelada (eliminada)."})
 
 @admin_required
@@ -916,6 +937,7 @@ def obtener_solicitudes_administrar(request):
                 "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre,
                 "razon": razon
             })
+    registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} ha listado las solicitudes en administrar con éxito.")
 
     return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
 
@@ -936,6 +958,7 @@ def asignarme_solicitud(request, id_solicitud):
         return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
 
     if usuario_actual_rol != "Uno":
+        registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento asignarse una solicitud sin se de Recursos Humanos (admin).")
         return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
     
 
@@ -948,6 +971,7 @@ def asignarme_solicitud(request, id_solicitud):
     solicitud_id_rut = solicitud.get("id_rut")
     #VALIDAR QUE LA SOLICITUD NO SEA PROPIA
     if solicitud_id_rut == usuario_actual_rut:
+        registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento asignarse su propia solicitud.")
         return JsonResponse({'status': 'false', 'mensaje': 'No puede asignarse su propia solicitud.'})
 
     #OBTENER LA REF DE SOLICITUD A ASIGNAR
@@ -960,6 +984,8 @@ def asignarme_solicitud(request, id_solicitud):
         "Fecha_inicio": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "id_aprobador": usuario_actual_rut
     })
+
+    registrar_auditoria_manual(request, "Ocho", "éxito", f"El usuario {obtener_rut_actual(request)} se asigno la solicitud {solicitud.get("Asunto")} del usuario {solicitud_id_rut}")
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
 
@@ -980,6 +1006,7 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
         return JsonResponse({'status': 'false', 'mensaje': 'Ocurrio un error al obtener su rol.'})
 
     if usuario_actual_rol != "Uno":
+        registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento cerrar una solicitud sin ser de Recursos Humanos.")
         return JsonResponse({'status': 'false', 'mensaje': 'Usted no es de Recursos Humanos.'})
     
 
@@ -990,10 +1017,12 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
     solicitud_id_rut = solicitud.get("id_rut")
     #VALIDAR QUE LA SOLICITUD NO SEA PROPIA
     if solicitud_id_rut == usuario_actual_rut:
+        registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento cerrar su propia solicitud.")
         return JsonResponse({'status': 'false', 'mensaje': 'No puede cerrar su propia solicitud.'})
     
     #VALIDAR ESTADO
     if estado != "aprobada" and estado != "rechazada":
+        registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento cerrar una solicitud con un estado que no es 'aporbada' o 'rechazada'.")
         return JsonResponse({'status': 'false', 'mensaje': 'Solo puede aprobar o rechazar la solicitud.'})
 
     #OBTENER LA REF DE SOLICITUD A ASIGNAR
@@ -1002,6 +1031,9 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
     if solicitud_fecha_fin != "null":
         return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya cerrada.'})
     
+    if estado == "rechazada" and not razon:
+        return JsonResponse({'status': 'false', 'mensaje': 'Para rechazar una solicitud debe hacer una razón.'})
+
     if razon != "null":
         if len(razon) > 150:
             return JsonResponse({'status': 'false', 'mensaje': 'La razón no puede ser mayor a 150 caracteres.'})
@@ -1014,6 +1046,8 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
         "Estado": str(estado),
         "Razon": razon
     })
+
+    registrar_auditoria_manual(request, "Ocho", "éxito", f"El usuario {obtener_rut_actual(request)} cerro la solicitud {solicitud.get("Asunto")} del usuario {solicitud_id_rut} con estado '{estado}'.")
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud cerrada.'})
 
@@ -1045,6 +1079,8 @@ def descargar_documento(request, doc_id):
     # Devolver como descarga
     resp = HttpResponse(response.content, content_type=tipo_mime)
     resp['Content-Disposition'] = f'attachment; filename="{ultimo_segmento}"'
+    registrar_auditoria_manual(request, "Cinco", "éxito", f"El usuario {obtener_rut_actual(request)} descargo el documento {nombre_archivo}.")
+
     return resp
 
 
@@ -1065,6 +1101,7 @@ def solicitar_recuperacion_pin(request):
         return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
 
     if email != correo_actual:
+        registrar_auditoria_manual(request, "Seis", "false", f"El usuario {obtener_rut_actual} solicito recuperación de PIN con correo incorrecto.")
         return JsonResponse({"status": "false", "message": "El correo actual no coincide con el del envío."})
 
     # Generar código temporal
@@ -1085,7 +1122,7 @@ def solicitar_recuperacion_pin(request):
         recipient_list=[email],
         fail_silently=False,
     )
-
+    registrar_auditoria_manual(request, "Seis", "éxito", f"El usuario {obtener_rut_actual(request)} solicito un codigo de recuperación de PIN.")
     return JsonResponse({"status": "success", "message": "Código enviado a tu correo."})
 
 # Paso 2: Verificar código y devolver PIN
@@ -1106,6 +1143,7 @@ def verificar_codigo_recuperacion(request):
         return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
 
     if email != correo_actual:
+        registrar_auditoria_manual(request, "Seis", "false", f"El usuario {obtener_rut_actual(request)} intento verificar codigo de recuperación de PIN con un correo incorrecto.")
         return JsonResponse({"status": "false", "message": "El correo actual no coincide con el cuál se le envio el codigo."})
 
     # Obtener código guardado
@@ -1121,6 +1159,8 @@ def verificar_codigo_recuperacion(request):
 
     if codigo_ingresado != codigo_valido:
         return JsonResponse({"status": "false", "message": "Código incorrecto."})
+    
+    registrar_auditoria_manual(request, "Seis", "éxito", f"El usuario {obtener_rut_actual(request)} valido su código de recuperación de PIN.")
 
     return JsonResponse({"status": "success", "message": "Codigo validado, cambie su PIN"})
 
@@ -1146,6 +1186,7 @@ def cambiar_PIN_verificado(request):
         return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
 
     if email != correo_actual:
+        registrar_auditoria_manual(request, "Seis", "false", f"El usuario {obtener_rut_actual(request)} intento cambiar código de PIN con un correo incorrecto.")
         return JsonResponse({"status": "false", "message": "El correo actual no coincide con el cuál se le envio el codigo."})
 
     # Verificar que exista un OTP válido para este usuario
@@ -1157,9 +1198,11 @@ def cambiar_PIN_verificado(request):
     expiracion = datetime.fromisoformat(otp_ref.get("expira"))
 
     if datetime.now() > expiracion:
+        registrar_auditoria_manual(request, "Seis", "false", f"El usuario {obtener_rut_actual(request)} intento cambiar su PIN con un código expirado.")
         return JsonResponse({"status": "false", "message": "El código ha expirado."})
 
     if codigo != codigo_valido:
+        registrar_auditoria_manual(request, "Seis", "false", f"El usuario {obtener_rut_actual(request)} intento cambiar su PIN con un código incorrecto.")
         return JsonResponse({"status": "false", "message": "Código incorrecto."})
 
     # Todo correcto, actualizar PIN
@@ -1170,6 +1213,7 @@ def cambiar_PIN_verificado(request):
     # Borrar OTP después de usar
     db.reference(f"RecuperacionPIN/{idusu}").delete()
 
+    registrar_auditoria_manual(request, "Seis", "éxito", f"El usuario {obtener_rut_actual(request)} cambio su PIN a través de 'Código de Recuperación de PIN' exitosamente.")
     return JsonResponse({"status": "success", "message": "PIN actualizado correctamente."})
 
 
@@ -1208,3 +1252,9 @@ def verificar_correo(email):
 
 def generar_codigo(length=6):
     return ''.join(random.choices(string.digits, k=length))
+
+def obtener_correo_actual(request):
+    return request.session.get("correo_usu")
+
+def obtener_rut_actual(request):
+    return request.session.get("usuario_id")

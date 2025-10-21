@@ -15,6 +15,8 @@ import requests
 
 from .funciones_dos import verificar_contrasena_actual, actualizar_contrasena, obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
 from .decorators import admin_required
+from .auditoria import registrar_auditoria_manual
+from .funciones import obtener_rut_actual, obtener_correo_actual
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
 from .firebase import firebase, db, storage, database
@@ -683,9 +685,11 @@ def crear_documento(request):
 
         try:
             db.reference("Documentos").child(doc_id).set(data)
+            registrar_auditoria_manual(request, "Dos", "éxito", f"El usuario {obtener_rut_actual(request)} subio el documento {nombre_doc} para el usuario {rut_sel}")
             messages.success(request, "Documento creado correctamente.")
             return redirect("administrar_documentos")
         except Exception:
+            registrar_auditoria_manual(request, "Dos", "false", f"El usuario {obtener_rut_actual(request)} tuvo un problema para subir un documento.")
             messages.error(request, "Hubo un problema guardando el documento.")
             return redirect("crear_documento")
 
@@ -947,9 +951,11 @@ def modificar_documento(request, doc_id):
         try:
             ref.update(update_payload)
         except Exception:
+            registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} tuvo problemas al modificar el documento {data.get("Nombre")} del usuario {data.get("id_rut")}.")
             return JsonResponse({"ok": False, "error": "No se pudo actualizar el documento."}, status=500)
 
         # a dónde volver
+        registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} modifico el documento (de nombre antes de modificación) {data.get("nombre")} del usuario {data.get("id_rut")}.")
         next_url = request.GET.get("next") or reverse("administrar_documentos")
         return JsonResponse({"ok": True, "redirect_url": next_url})
 
@@ -1062,8 +1068,10 @@ def eliminar_documento(request):
 
     # Borrar nodo en realtime
     try:
+        registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {obtener_rut_actual(request)} elimino el documento {data.get("nombre")} del usuario {data.get("id_rut")}")
         ref.delete()
     except Exception:
+        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {obtener_rut_actual(request)} tuvo problemas al eliminar el documento {data.get("nombre")} del usuario {data.get("id_rut")}")
         return JsonResponse({"ok": False, "error": "No se pudo eliminar en la base de datos."}, status=500)
 
     return JsonResponse({"ok": True, "storage_deleted": storage_deleted})
@@ -1169,6 +1177,8 @@ def crear_publicacion(request):
             "TipoAnuncio": request.POST.get("tipo")
         }
         crear_publicacion_funcion(data)
+        registrar_auditoria_manual(request, "Dos", "éxito", f"El usuario {obtener_rut_actual(request)} creo la publicación {request.POST.get("titulo")}.")
+
         return redirect("administrar_noticiasyeventos")
 
     return render(request, "staffweb/editar_noticiasyeventos.html")
@@ -1187,6 +1197,8 @@ def editar_publicacion(request, pub_id):
             "TipoAnuncio": request.POST.get("tipo")
         }
         modificar_publicacion(pub_id, data)
+        registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} modifico la publicación {request.POST.get("titulo")}.")
+
         return redirect("administrar_noticiasyeventos")
 
     return render(request, "staffweb/editar_noticiasyeventos.html", {
@@ -1198,6 +1210,7 @@ def editar_publicacion(request, pub_id):
 @admin_required
 def eliminar_publicacion(request, pub_id):
     eliminar_publicacion_funcion(pub_id)
+    registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {obtener_rut_actual(request)} elimino la publicación {request.POST.get("titulo")}.")
     return redirect("administrar_noticiasyeventos")
 
 
@@ -1310,6 +1323,7 @@ def perfil(request):
     # Actualizar datos en Firebase 
     try:
         actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion, imagen_actual_url)
+        registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} modifico información de su perfil (Telefono, Dirección y/o Imagen).")
     except Exception:
         messages.error(request, "No se pudieron actualizar los datos.")
         return redirect('inicio_perfil')
@@ -1362,6 +1376,7 @@ def cambiar_contrasena_funcion(request, rut):
 
         if "error" in resp:
             # Firebase retorna algo así: {"error":{"code":400,"message":"INVALID_PASSWORD","errors":[...]}}
+            registrar_auditoria_manual(request, "Tres", "false", f"El usuario {obtener_rut_actual(request)} intento cambiar su contraseña con la contraseña actual incorrecta.")
             return JsonResponse({"status": "false", "message": "La contraseña actual es incorrecta."})
 
         # Actualizar contraseña
@@ -1370,6 +1385,7 @@ def cambiar_contrasena_funcion(request, rut):
 
     except Exception as e:
         return JsonResponse({"status": "false", "message": f"Error al cambiar contraseña: {e}"})
+    registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} cambio su contraseña exitosamente.")
 
     return JsonResponse({"status": "success", "message": "Contraseña actualizada correctamente."})
 
@@ -1400,6 +1416,7 @@ def cambiar_pin_funcion(request, rut):
     try:
         pin_usuario_actual=usuario_ref.get("PIN")
         if pin_actual != pin_usuario_actual:
+            registrar_auditoria_manual(request, "Tres", "false", f"El usuario {obtener_rut_actual(request)} intento cambiar su PIN con el PIN actual incorrecto.")
             return JsonResponse({"status": "false", "message": "El pin actual es incorrecto."})
         
         ref= db.reference("/Usuario/"+rut)
@@ -1409,147 +1426,8 @@ def cambiar_pin_funcion(request, rut):
 
     except Exception as e:
         return JsonResponse({"status": "false", "message": f"Error al cambiar pin: {e}"})
-
+    registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} cambio su PIN exitosamente.")
     return JsonResponse({"status": "success", "message": "Pin actualizado correctamente."})
-
-
-
-# def auditoria_view(request):
-#     """Vista principal de auditoría"""
-    
-#     # Obtener parámetros de filtro
-#     tipo_accion = request.GET.get('tipo_accion', '')
-#     usuario_id = request.GET.get('usuario', '')
-#     fecha_inicio = request.GET.get('fecha_inicio', '')
-#     fecha_fin = request.GET.get('fecha_fin', '')
-    
-#     # Query base
-#     logs = LogAuditoria.objects.select_related('usuario').all().order_by('-fecha_hora')
-    
-#     # Aplicar filtros
-#     if tipo_accion:
-#         logs = logs.filter(tipo_accion=tipo_accion)
-    
-#     if usuario_id:
-#         logs = logs.filter(usuario_id=usuario_id)
-    
-#     if fecha_inicio:
-#         fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
-#         logs = logs.filter(fecha_hora__gte=fecha_inicio_dt)
-    
-#     if fecha_fin:
-#         fecha_fin_dt = datetime.strptime(fecha_fin, '%Y-%m-%d')
-#         fecha_fin_dt = fecha_fin_dt.replace(hour=23, minute=59, second=59)
-#         logs = logs.filter(fecha_hora__lte=fecha_fin_dt)
-    
-#     # Métricas rápidas
-#     total_acciones = LogAuditoria.objects.count()
-#     total_descargas = LogAuditoria.objects.filter(tipo_accion='descarga').count()
-#     total_cambios_admin = LogAuditoria.objects.filter(tipo_accion='cambio').count()
-    
-#     hoy = datetime.now().date()
-#     usuarios_activos_hoy = LogAuditoria.objects.filter(
-#         fecha_hora__date=hoy
-#     ).values('usuario').distinct().count()
-    
-#     # Top usuarios más activos
-#     top_usuarios_activos = Usuario.objects.annotate(
-#         total_acciones=Count('logauditoria')
-#     ).order_by('-total_acciones')[:5]
-    
-#     # Actividades por tipo
-#     actividades_tipo = LogAuditoria.objects.values('tipo_accion').annotate(
-#         total=Count('id')
-#     ).order_by('-total')
-    
-#     actividades_por_tipo = [0, 0, 0, 0, 0, 0]  # [descargas, cambios, accesos, creaciones, eliminaciones, actualizaciones]
-#     for act in actividades_tipo:
-#         if act['tipo_accion'] == 'descarga':
-#             actividades_por_tipo[0] = act['total']
-#         elif act['tipo_accion'] == 'cambio':
-#             actividades_por_tipo[1] = act['total']
-#         elif act['tipo_accion'] == 'acceso':
-#             actividades_por_tipo[2] = act['total']
-#         elif act['tipo_accion'] == 'creacion':
-#             actividades_por_tipo[3] = act['total']
-#         elif act['tipo_accion'] == 'eliminacion':
-#             actividades_por_tipo[4] = act['total']
-#         elif act['tipo_accion'] == 'actualizacion':
-#             actividades_por_tipo[5] = act['total']
-    
-#     # Actividades por día (últimos 7 días)
-#     fecha_hace_7_dias = datetime.now() - timedelta(days=7)
-#     actividades_dias = []
-#     labels_dias = []
-    
-#     for i in range(7):
-#         dia = fecha_hace_7_dias + timedelta(days=i)
-#         count = LogAuditoria.objects.filter(
-#             fecha_hora__date=dia.date()
-#         ).count()
-#         actividades_dias.append(count)
-#         labels_dias.append(dia.strftime('%d/%m'))
-    
-#     actividades_por_dia = {
-#         'labels': labels_dias,
-#         'data': actividades_dias
-#     }
-    
-#     # Descargas por documento (top 5)
-#     descargas_docs = LogAuditoria.objects.filter(
-#         tipo_accion='descarga'
-#     ).values('descripcion').annotate(
-#         total=Count('id')
-#     ).order_by('-total')[:5]
-    
-#     descargas_por_documento = {
-#         'labels': [d['descripcion'][:30] + '...' if len(d['descripcion']) > 30 else d['descripcion'] for d in descargas_docs],
-#         'data': [d['total'] for d in descargas_docs]
-#     }
-    
-#     # Paginación
-#     paginator = Paginator(logs, 20)  # 20 registros por página
-#     page_number = request.GET.get('page')
-#     logs_paginados = paginator.get_page(page_number)
-    
-#     # Lista de usuarios para el filtro
-#     usuarios_lista = Usuario.objects.all().order_by('nombre')
-    
-#     context = {
-#         'total_acciones': total_acciones,
-#         'total_descargas': total_descargas,
-#         'total_cambios_admin': total_cambios_admin,
-#         'usuarios_activos_hoy': usuarios_activos_hoy,
-#         'top_usuarios_activos': top_usuarios_activos,
-#         'actividades_por_tipo': json.dumps(actividades_por_tipo),
-#         'actividades_por_dia': json.dumps(actividades_por_dia),
-#         'descargas_por_documento': json.dumps(descargas_por_documento),
-#         'logs_auditoria': logs_paginados,
-#         'usuarios_lista': usuarios_lista,
-#         'fecha_inicio': fecha_inicio,
-#         'fecha_fin': fecha_fin,
-#     }
-    
-#     return render(request, 'staffweb/auditoria.html', context)
-
-
-# @login_required
-# def auditoria_detalles(request, log_id):
-#     """Vista para obtener detalles de un log específico"""
-#     try:
-#         log = LogAuditoria.objects.select_related('usuario').get(id=log_id)
-#         data = {
-#             'usuario': log.usuario.nombre,
-#             'fecha_hora': log.fecha_hora.strftime('%d/%m/%Y %H:%M:%S'),
-#             'tipo_accion': log.get_tipo_accion_display(),
-#             'descripcion': log.descripcion,
-#             'ip_address': log.ip_address,
-#             'user_agent': log.user_agent,
-#             'datos_adicionales': log.datos_adicionales if hasattr(log, 'datos_adicionales') else None
-#         }
-#         return JsonResponse(data)
-#     except LogAuditoria.DoesNotExist:
-#         return JsonResponse({'error': 'Log no encontrado'}, status=404)
 
 def _parse_iso(dt_str):
     try:
@@ -1584,12 +1462,18 @@ def administrar_logs(request):
     por_dia  = Counter()
     hoy = datetime.now().date()
 
+    # OBTENER TIPOS DE AUDITORIA
+    tipos_auditora_firebase = database.child("TipoAuditoria").get().val() or {}
+
+    # OBTENER ROLES
+    roles_firebase = database.child("Rol").get().val() or {}
+
     for _, log in raw.items():
         if not isinstance(log, dict):
             continue
         uid = str(log.get("id_rut") or "").strip()
         nombre, rol = _nombre_rol(uid)
-        accion = (log.get("accion") or "").strip().lower()
+        accion = (log.get("accion") or "").strip()
         fecha = log.get("fecha_hora") or ""
         ip    = log.get("ip_origen") or ""
         nav   = log.get("navegador") or ""
@@ -1603,6 +1487,17 @@ def administrar_logs(request):
                 por_dia[dt.date().strftime("%d/%m")] += 1
 
         por_tipo[accion] += 1
+
+        # Nombre de tipo auditoria
+        for id_tipo, tipo in tipos_auditora_firebase.items():
+            if id_tipo == accion:
+                accion = tipo.get("nombre")
+
+        # Nombre de rol
+        for id_rol, rol_f in roles_firebase.items():
+            if rol == id_rol:
+                rol = rol_f.get("nombre")
+
 
         logs.append({
             "fecha_hora": _fmt_fecha(fecha),
