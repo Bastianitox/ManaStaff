@@ -37,6 +37,8 @@ def recuperar_contrasena(request):
 def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
 
+#---------------------------------------------------------------------Inicio Usuarios ---------------------------------------------------------------------------------------
+
 def inicio_documentos(request):
     """Muestra los documentos que le pertenecen al usuario autenticado"""
     user_role = (request.session.get('rol_usu') or '').strip().lower()
@@ -140,7 +142,8 @@ def recuperar_pin(request):
     correo = database.child("Usuario").child(idusu).get().val().get('correo')
     return render(request, 'staffweb/recuperar_pin.html', {'correo': correo})
 
-#---------------------------------------------------------------------------
+#---------------------------------------------------------
+
 def inicio_noticias_eventos(request):
     raw = database.child("Anuncio").get().val() or {}
     if not isinstance(raw, dict):
@@ -193,7 +196,7 @@ def inicio_noticias_eventos(request):
         "announcements_json": json.dumps(items, ensure_ascii=False)
     }
     return render(request, 'staffweb/inicio_noticias_eventos.html', context)
-#---------------------------------------------------------------------------    
+#---------------------------------------------------------
 @admin_required
 def inicio_dashboard(request):
     solicitudes_ref = db.reference("Solicitudes").get() or {}
@@ -316,6 +319,7 @@ def inicio_dashboard(request):
     }
     return render(request, "staffweb/inicio_dashboard.html", context)
     
+#--------------------------------------------------------------------------Inicio Usuario Solicitud---------------------------------------------------------------------------
 
 def crear_solicitud(request):
     #TRAEMOS LOS TIPOS DE SOLICITUD
@@ -340,6 +344,7 @@ def crear_solicitud(request):
 
     return render(request, 'staffweb/crear_solicitud.html', contexto)
 
+#---------------------------------------------------------Ver documentos----------------------------------------------------------------
 def ver_documentos(request):
     doc_id = request.GET.get('docId')
     data = db.reference('Documentos').child(doc_id).get() if doc_id else None
@@ -373,6 +378,7 @@ def ver_documentos(request):
 
     return render(request, "staffweb/ver_documentos.html", {"documento": documento})
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------
 def cambiar_contrasena(request):
     return render(request, "staffweb/cambiar_contrasena.html")
 
@@ -384,6 +390,11 @@ def cambiar_pin(request):
 def panel_administrar(request):
     return render(request, "staffweb/panel_administrar.html")
 
+@admin_required
+def administrar_solicitudes(request):
+    return render(request, "staffweb/administrar_solicitudes.html")
+
+#---------------------------------------------------------------------Administración de usuarios ---------------------------------------------------------------------------------------
 @admin_required
 def administrar_usuarios(request):
     return render(request, "staffweb/administrar_usuarios.html")
@@ -437,13 +448,10 @@ def modificar_usuario(request):
         "cargos": cargos_lista
     }
     return render(request, "staffweb/modificar_usuario.html", valores)
-    
-@admin_required
-def administrar_solicitudes(request):
-    return render(request, "staffweb/administrar_solicitudes.html")
 
 
-#---------------------------------------------------------------------Administración de documentos ------------------------------------------   
+
+#---------------------------------------------------------------------Administración de documentos ---------------------------------------------------------------------------------------
 def _safe_filename(filename: str) -> str:
     base = os.path.basename(filename or "archivo")
     base = re.sub(r"[^A-Za-z0-9_.-]+", "_", base)
@@ -1075,16 +1083,9 @@ def eliminar_documento(request):
         return JsonResponse({"ok": False, "error": "No se pudo eliminar en la base de datos."}, status=500)
 
     return JsonResponse({"ok": True, "storage_deleted": storage_deleted})
-#---------------------------------------------------------------------------------------------------------------------------------------
 
-#def administrar_noticiasyeventos(request):
-#    return render(request, "staffweb/administrar_noticiasyeventos.html")
+#-------------------------------------------------------------------------------Problemas con la url------------------------------------------------------------------
 
-def administrar_logs(request):
-    return render(request, "staffweb/administrar_logs.html")
-
-
-# Problemas con url
 def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=None, lifetime_hours=6):
     """Acepta una URL cruda (de la BD) o un storage path y devuelve una URL firmada."""
     if not raw_url_or_path:
@@ -1115,7 +1116,7 @@ def _signed_url_from_raw(raw_url_or_path, *, as_attachment=False, filename_hint=
     except Exception:
         return None
 
-#--------------------------------------------------------------------------------#
+#----------------------------------------Administrar Noticias y eventos----------------------------------------#
 
 @admin_required
 def editar_noticiasyeventos(request):
@@ -1214,7 +1215,7 @@ def eliminar_publicacion(request, pub_id):
     return redirect("administrar_noticiasyeventos")
 
 
-#--------------------------------------------------------------------------------#
+#-------------------------------------------Perfil de usuario---------------------------------------------------------------------------------------------#
 def inicio_perfil(request):
     # Datos básicos desde sesión
     nombre_usu = (request.session.get('nombre_usu') or '').strip()
@@ -1338,7 +1339,7 @@ def perfil(request):
 def error_403(request, exception=None):
     return render(request, "staffweb/403.html", status=403)
 
-#----------------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------------------------------------------------------------------------#
 
 def cambiar_contrasena_funcion(request, rut):
     password_actual = request.POST.get("password_actual", "").strip()
