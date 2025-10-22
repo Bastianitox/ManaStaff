@@ -974,16 +974,10 @@ def asignarme_solicitud(request, id_solicitud):
         registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento asignarse su propia solicitud.")
         return JsonResponse({'status': 'false', 'mensaje': 'No puede asignarse su propia solicitud.'})
 
-    #OBTENER LA REF DE SOLICITUD A ASIGNAR
-    ref = database.child('Solicitudes/'+ id_solicitud)
     #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
     if solicitud_fecha_inicio != "null":
         return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya asignada.'})
 
-    ref.update({
-        "Fecha_inicio": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "id_aprobador": usuario_actual_rut
-    })
 
     # ENVIAR CORREO AL USUARIO QUE HIZO LA SOLICITUD
     usuario_solicitud = database.child("Usuario").child(solicitud_id_rut).get().val() or {}
@@ -991,7 +985,7 @@ def asignarme_solicitud(request, id_solicitud):
 
     if correo:
         asunto = "Tu solicitud ha sido asignada"
-        texto_plano = f"Hola {usuario_solicitud.get('nombre', '')},\n\nUn miembro de Recursos Humanos se ha asignado tu solicitud: {solicitud.get('Asunto', '')}.\n\nPuedes seguir el estado en tu portal ManaStaff."
+        texto_plano = f"Hola {usuario_solicitud.get('Nombre', '')},\n\nUn miembro de Recursos Humanos se ha asignado tu solicitud: {solicitud.get('Asunto', '')}.\n\nPuedes seguir el estado en tu portal ManaStaff."
         
         html_mensaje = format_html("""
         <div style="font-family: Arial, sans-serif; color: #333;">
@@ -1015,6 +1009,14 @@ def asignarme_solicitud(request, id_solicitud):
         )
         email.attach_alternative(html_mensaje, "text/html")
         email.send(fail_silently=False)
+
+    #OBTENER LA REF DE SOLICITUD A ASIGNAR
+    ref = db.reference('/Solicitudes/'+id_solicitud)
+    ref.update({
+        "Fecha_inicio": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "id_aprobador": usuario_actual_rut
+    })
+
 
     registrar_auditoria_manual(request, "Ocho", "éxito", f"El usuario {obtener_rut_actual(request)} se asigno la solicitud {solicitud.get("Asunto")} del usuario {solicitud_id_rut}")
 
@@ -1056,8 +1058,6 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
         registrar_auditoria_manual(request, "Ocho", "false", f"El usuario {obtener_rut_actual(request)} intento cerrar una solicitud con un estado que no es 'aporbada' o 'rechazada'.")
         return JsonResponse({'status': 'false', 'mensaje': 'Solo puede aprobar o rechazar la solicitud.'})
 
-    #OBTENER LA REF DE SOLICITUD A ASIGNAR
-    ref = database.child('Solicitudes/'+ id_solicitud)
     #VALIDAR QUE LA SOLICITUD NO ESTE YA ASIGNADA
     if solicitud_fecha_fin != "null":
         return JsonResponse({'status': 'false', 'mensaje': 'Solicitud ya cerrada.'})
@@ -1081,7 +1081,7 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
             usuario_solicitud = u.val()
             break
     correo = usuario_solicitud.get("correo")
-    nombre_usuario = usuario_solicitud.get("nombre", "")
+    nombre_usuario = usuario_solicitud.get("Nombre", "")
     asunto_solicitud = solicitud.get("Asunto", "")
     
 
@@ -1131,6 +1131,8 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
     email.attach_alternative(html_mensaje, "text/html")
     email.send(fail_silently=False)
 
+    #OBTENER LA REF DE SOLICITUD A CERRAR
+    ref = db.reference('/Solicitudes/'+id_solicitud)
     ref.update({
         "Fecha_fin": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "Estado": str(estado),
