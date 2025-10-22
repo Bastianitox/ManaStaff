@@ -13,12 +13,12 @@ import mimetypes
 from .firebase import authP, auth, database, storage, db
 from .decorators import admin_required
 import locale
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.utils.html import format_html
 import random
 import string
 
 from .auditoria import registrar_auditoria_manual
-
 
 MAX_INTENTOS = 5
 TIEMPO_BLOQUEO = timedelta(minutes=10)
@@ -985,6 +985,37 @@ def asignarme_solicitud(request, id_solicitud):
         "id_aprobador": usuario_actual_rut
     })
 
+    # ENVIAR CORREO AL USUARIO QUE HIZO LA SOLICITUD
+    usuario_solicitud = database.child("Usuario").child(solicitud_id_rut).get().val() or {}
+    correo = usuario_solicitud.get("correo")
+
+    if correo:
+        asunto = "Tu solicitud ha sido asignada"
+        texto_plano = f"Hola {usuario_solicitud.get('nombre', '')},\n\nUn miembro de Recursos Humanos se ha asignado tu solicitud: {solicitud.get('Asunto', '')}.\n\nPuedes seguir el estado en tu portal ManaStaff."
+        
+        html_mensaje = format_html("""
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #4e73df;">Avance de tu solicitud</h2>
+            <p>Hola <strong>{nombre}</strong>,</p>
+            <p>Un miembro de <strong>Recursos Humanos</strong> se ha asignado tu solicitud:</p>
+            <p style="background-color:#f2f2f2; padding:10px; border-radius:5px;">
+                <strong>Asunto:</strong> {asunto}<br>
+                <strong>ID Solicitud:</strong> {id_solicitud}
+            </p>
+            <p>Puedes seguir el estado de tu solicitud en tu portal <strong>ManaStaff</strong>.</p>
+            <p>Gracias por utilizar nuestro sistema.</p>
+        </div>
+        """, nombre=usuario_solicitud.get("nombre", ""), asunto=solicitud.get("Asunto", ""), id_solicitud=id_solicitud)
+
+        email = EmailMultiAlternatives(
+            subject=asunto,
+            body=texto_plano,
+            from_email="manastaffnoreply@gmail.com",
+            to=[correo]
+        )
+        email.attach_alternative(html_mensaje, "text/html")
+        email.send(fail_silently=False)
+
     registrar_auditoria_manual(request, "Ocho", "éxito", f"El usuario {obtener_rut_actual(request)} se asigno la solicitud {solicitud.get("Asunto")} del usuario {solicitud_id_rut}")
 
     return JsonResponse({'status': 'success', 'mensaje': 'Solicitud asignada.'})
@@ -1040,6 +1071,65 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
         if len(razon) < 10:
             return JsonResponse({'status': 'false', 'mensaje': 'La razón debe ser mayor a 10 caracteres.'})
 
+    # ENVIAR CORREO AL USUARIO QUE HIZO LA SOLICITUD
+    solicitud_id_rut = str(solicitud_id_rut).strip()
+    usuario_solicitud = database.child("Usuario").child(solicitud_id_rut).get().val() or {}
+    usuarios = database.child("Usuario").get()
+
+    for u in usuarios.each():
+        if u.key() == solicitud_id_rut:
+            usuario_solicitud = u.val()
+            break
+    correo = usuario_solicitud.get("correo")
+    nombre_usuario = usuario_solicitud.get("nombre", "")
+    asunto_solicitud = solicitud.get("Asunto", "")
+    
+
+    if estado == "aprobada":
+        asunto = "Tu solicitud ha sido aprobada ✅"
+        texto_plano = f"Hola {nombre_usuario},\n\nTu solicitud '{asunto_solicitud}' ha sido aprobada por Recursos Humanos.\n\nPuedes revisar los detalles en tu portal ManaStaff."
+        
+        html_mensaje = format_html("""
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #1cc88a;">Solicitud Aprobada</h2>
+            <p>Hola <strong>{nombre}</strong>,</p>
+            <p>Tu solicitud ha sido <strong>aprobada</strong> por Recursos Humanos:</p>
+            <p style="background-color:#f2f2f2; padding:10px; border-radius:5px;">
+                <strong>Asunto:</strong> {asunto}<br>
+                <strong>ID Solicitud:</strong> {id_solicitud}
+            </p>
+            <p>Puedes revisar los detalles en tu portal <strong>ManaStaff</strong>.</p>
+            <p>¡Gracias por utilizar nuestro sistema!</p>
+        </div>
+        """, nombre=nombre_usuario, asunto=asunto_solicitud, id_solicitud=id_solicitud)
+    
+    elif estado == "rechazada":
+        asunto = "Tu solicitud ha sido rechazada ❌"
+        texto_plano = f"Hola {nombre_usuario},\n\nTu solicitud '{asunto_solicitud}' ha sido rechazada por Recursos Humanos.\nRazón: {razon}\n\nPuedes revisar los detalles en tu portal ManaStaff."
+        
+        html_mensaje = format_html("""
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #e74a3b;">Solicitud Rechazada</h2>
+            <p>Hola <strong>{nombre}</strong>,</p>
+            <p>Tu solicitud ha sido <strong>rechazada</strong> por Recursos Humanos:</p>
+            <p style="background-color:#f2f2f2; padding:10px; border-radius:5px;">
+                <strong>Asunto:</strong> {asunto}<br>
+                <strong>ID Solicitud:</strong> {id_solicitud}<br>
+                <strong>Razón:</strong> {razon}
+            </p>
+            <p>Puedes revisar los detalles en tu portal <strong>ManaStaff</strong>.</p>
+            <p>¡Gracias por utilizar nuestro sistema!</p>
+        </div>
+        """, nombre=nombre_usuario, asunto=asunto_solicitud, id_solicitud=id_solicitud, razon=razon)
+
+    email = EmailMultiAlternatives(
+        subject=asunto,
+        body=texto_plano,
+        from_email="manastaffnoreply@gmail.com",
+        to=[correo]
+    )
+    email.attach_alternative(html_mensaje, "text/html")
+    email.send(fail_silently=False)
 
     ref.update({
         "Fecha_fin": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
