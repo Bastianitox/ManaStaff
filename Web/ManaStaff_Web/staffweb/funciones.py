@@ -1,22 +1,25 @@
 import re
-from django.shortcuts import render, redirect
-from django.views.decorators.http import require_POST,require_GET
+import json
+import base64
+import locale
+import random
+import string
+
 from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
+
 from django.http import JsonResponse, HttpResponse
-import json
-import re
-import base64
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.utils.html import format_html
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST,require_GET
+
 from urllib.parse import unquote_plus
 import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
 from .decorators import admin_required
-import locale
-from django.core.mail import send_mail, EmailMultiAlternatives
-from django.utils.html import format_html
-import random
-import string
+
 
 from .auditoria import registrar_auditoria_manual
 
@@ -214,71 +217,70 @@ def recuperar_contrasena_funcion(request):
 #USUARIOS
 @admin_required
 def obtener_usuarios(request):
-    # OBTENER LOS USUARIOS DE LA BASE DE DATOS
-    usuarios = database.child("Usuario").get().val() or {}
+    # Activos
+    activos = database.child("Usuario").get().val() or {}
+    # Deshabilitados
+    inactivos = database.child("UsuDeshabilitado").get().val() or {}
 
-    
     usuarios_lista = []
-    for id_usu, usuario in usuarios.items():
-        # Obtener el UID del usuario en Firebase Authentication
+
+    def _push_item(id_usu, usuario, is_disabled=False):
         email = usuario.get("correo")
         email_verificado = False
         try:
-            # Buscar usuario por correo
             user_record = auth.get_user_by_email(email)
             email_verificado = user_record.email_verified
-        except auth.UserNotFoundError:
-            email_verificado = False
-        except Exception as e:
+        except Exception:
             email_verificado = False
 
-        # OBTENER EL NOMBRE DEL CARGO
         cargo_id = usuario.get("Cargo")
-        cargo_data = database.child("Cargo").child(cargo_id).get()
-        cargo_nombre = cargo_data.val().get("Nombre") if cargo_data.val() else "Sin cargo"
+        cargo_nombre = "Sin cargo"
+        try:
+            cargo_data = database.child("Cargo").child(cargo_id).get()
+            cargo_nombre = cargo_data.val().get("Nombre") if cargo_data.val() else "Sin cargo"
+        except Exception:
+            pass
 
-        # NOMBRE COMPLETO
-        nombre_completo = f"{usuario.get('Nombre', '')} {usuario.get('ApellidoPaterno', '')} {usuario.get('ApellidoMaterno', '')}".strip()
+        nombre_completo = f"{usuario.get('Nombre','')} {usuario.get('ApellidoPaterno','')} {usuario.get('ApellidoMaterno','')}".strip()
 
-        # FECHA CREACIÓN DESDE LA BD
         fecha_creacion_str = usuario.get("Fecha_creacion")
-        created_date = "Sin fecha"
-        sort_date = None
+        created_date = "Sin fecha"; sort_date = None
         if fecha_creacion_str:
             try:
-                fecha_creacion = datetime.fromisoformat(fecha_creacion_str)
-                created_date = fecha_creacion.strftime("%d %B, %Y")  # Ej: "15 Enero, 2024"
-                sort_date = fecha_creacion.date().isoformat()        # Ej: "2024-01-15"
-            except ValueError:
+                dt = datetime.fromisoformat(fecha_creacion_str)
+                created_date = dt.strftime("%d %B, %Y")
+                sort_date = dt.date().isoformat()
+            except Exception:
                 created_date = fecha_creacion_str
 
-        # ÚLTIMO LOGIN DESDE BD
         fecha_login_str = usuario.get("Ultimo_login")
-        sort_login_date = None
-
         if fecha_login_str:
             try:
-                # Convertir a datetime
-                fecha_login_dt = datetime.fromisoformat(fecha_login_str)
-                # Fecha legible para mostrar
-                fecha_login_date = fecha_login_dt.strftime("%d %B, %Y")  # Ej: "15 Enero, 2024"
-
-            except ValueError:
+                fecha_login_date = datetime.fromisoformat(fecha_login_str).strftime("%d %B, %Y")
+            except Exception:
                 fecha_login_date = fecha_login_str
+        else:
+            fecha_login_date = ""
 
         usuarios_lista.append({
             "rut": id_usu,
             "rut_normal": formatear_rut(id_usu),
             "name": nombre_completo,
-            "email": usuario.get("correo", ""),
+            "email": usuario.get("correo",""),
             "position": cargo_nombre,
             "email_verificado": email_verificado,
             "createdDate": created_date,
             "Ultimo_login": fecha_login_date,
-            "sortDate": sort_date or fecha_creacion_str
+            "sortDate": sort_date or fecha_creacion_str,
+            "is_disabled": is_disabled
         })
 
-    registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} listo usuarios.")
+    for r, u in (activos or {}).items():
+        _push_item(r, u, is_disabled=False)
+    for r, u in (inactivos or {}).items():
+        _push_item(r, u, is_disabled=True)
+
+    registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} listo usuarios (activos e inactivos).")
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
 
 @admin_required
@@ -479,64 +481,6 @@ def crear_usuario_funcion(request):
 
     return JsonResponse({"status": "success", "message": "Usuario creado con éxito."})
 
-@require_POST
-@admin_required
-def eliminar_usuario(request, rut):
-    try:
-        usuario = database.child(f"Usuario/{rut}").get().val()
-        correo = usuario["correo"]
-        
-        usuario_id_en_sesion = request.session.get("usuario_id")
-        
-        if usuario_id_en_sesion == rut:
-            registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut} ({correo}) intento eliminarse a si mismo.")
-            return JsonResponse({"status": "false", "message": "No puede eliminar su propio usuario."})
-        uid = auth.get_user_by_email(correo).uid
-
-        auth.delete_user(uid)
-
-        database.child(f"Usuario/{rut}").remove()
-
-        eliminar_archivos_usuario(rut)
-
-        solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(rut).get()
-        if solicitudes.each():
-            for solicitud in solicitudes.each():
-                database.child("Solicitudes").child(solicitud.key()).remove()
-
-        documentos = database.child("Documentos").order_by_child("id_rut").equal_to(rut).get()
-        if documentos.each():
-            for doc in documentos.each():
-                database.child("Documentos").child(doc.key()).remove()
-
-        registrar_auditoria_manual(request, "Cuatro", "éxito", f"Se han eliminado el usuario {rut} ({correo}), junto a todas sus Solicitudes y Archivos.")
-        return JsonResponse({"status": "success", "message": "Usuario eliminado junto con sus Solicitudes y Documentos correctamente."})
-
-    except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=400)
-
-def eliminar_archivos_usuario(rut):
-    # Validación de entrada
-    if not rut or not isinstance(rut, str):
-        return {"status": "error", "mensaje": "El RUT proporcionado no es válido."}
-    
-    try:
-        # Referencia al bucket
-        bucket = storage.bucket()
-
-        # Listar todos los blobs que empiecen con el rut/
-        blobs = list(bucket.list_blobs(prefix=f"{rut}/"))
-
-        if not blobs:
-            return {"status": "warning", "mensaje": f"No se encontraron archivos para el RUT {rut}."}
-
-        # Eliminar todos los blobs encontrados
-        for blob in blobs:
-            blob.delete()
-
-        return {"status": "success", "mensaje": f"Se eliminaron {len(blobs)} archivos del usuario {rut}."}
-    except Exception as e:
-        return {"status": "error", "mensaje": f"Ocurrió un error al eliminar los archivos: {str(e)}"}
 
 @require_POST
 @admin_required
@@ -695,7 +639,84 @@ def modificar_usuario_funcion(request, rut):
 
     registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario ({rut}) modificado exitosamente por el usuario {obtener_rut_actual(request)}")
     return JsonResponse({"status": "success", "message": "Usuario modificado correctamente."})
+'''--------------------------------------------------------------------------------'''
+@require_POST
+@admin_required
+def deshabilitar_usuario(request, rut):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"status": "error", "message": "JSON inválido."}, status=400)
 
+    detalle = (payload.get("detalle") or "").strip()
+    if not detalle or len(detalle) < 5:
+        return JsonResponse({"status": "error", "message": "Debe ingresar un motivo (mínimo 5 caracteres)."}, status=400)
+
+    # No permitir auto-deshabilitarse
+    if str(request.session.get("usuario_id")) == str(rut):
+        registrar_auditoria_manual(request, "Tres", "false", f"Intento de auto-deshabilitarse ({rut}).")
+        return JsonResponse({"status": "error", "message": "No puede deshabilitar su propio usuario."}, status=403)
+
+    usuario = database.child("Usuario").child(rut).get().val()
+    if not usuario:
+        return JsonResponse({"status": "error", "message": "Usuario no encontrado o ya inhabilitado."}, status=404)
+
+    # Deshabilitar en Firebase Authentication (no eliminar)
+    try:
+        uid = auth.get_user_by_email(usuario.get("correo")).uid
+        auth.update_user(uid, disabled=True)
+    except Exception:
+        pass  # si falla, igual movemos el registro de la RTDB
+
+    # Mover a UsuDeshabilitado
+    usuario_desh = dict(usuario)
+    usuario_desh["Detalle"] = detalle
+    usuario_desh["FechaProceso"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    database.child("UsuDeshabilitado").child(rut).set(usuario_desh)
+    database.child("Usuario").child(rut).remove()
+
+    registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario {rut} deshabilitado. Motivo: {detalle}")
+    return JsonResponse({"status": "success", "message": "Usuario deshabilitado correctamente."})
+
+@require_POST
+@admin_required
+def habilitar_usuario(request, rut):
+    # No permitir auto-habilitarse si ya está activo
+    inactivo = database.child("UsuDeshabilitado").child(rut).get().val()
+    if not inactivo:
+        return JsonResponse({"status": "error", "message": "El usuario no está deshabilitado."}, status=404)
+
+    # Habilitar en Firebase Authentication
+    try:
+        uid = auth.get_user_by_email(inactivo.get("correo")).uid
+        auth.update_user(uid, disabled=False)
+    except Exception:
+        pass
+
+    # Limpiar campos propios de deshabilitado
+    usuario_activo = dict(inactivo)
+    usuario_activo.pop("Detalle", None)
+    usuario_activo.pop("FechaProceso", None)
+
+    database.child("Usuario").child(rut).set(usuario_activo)
+    database.child("UsuDeshabilitado").child(rut).remove()
+
+    registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario {rut} habilitado nuevamente.")
+    return JsonResponse({"status": "success", "message": "Usuario habilitado correctamente."})
+
+@admin_required
+def detalle_usuario_deshabilitado(request, rut):
+    data = database.child("UsuDeshabilitado").child(rut).get().val()
+    if not data:
+        return JsonResponse({"status": "error", "message": "No encontrado."}, status=404)
+    return JsonResponse({
+        "status": "success",
+        "rut": rut,
+        "detalle": data.get("Detalle",""),
+        "fecha": data.get("FechaProceso","")
+    })
+'''--------------------------------------------------------------------------------'''
 #SOLICITUDES
 
 def obtener_solicitudes_usuario(request):

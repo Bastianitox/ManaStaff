@@ -9,7 +9,7 @@
 {% block principal %}
 <div class="header">
     <h1>Administrar usuarios</h1>
-    <p>Aquí puedes modificar, crear, eliminar usuarios o visualizar</p>
+    <p>Aquí puedes modificar, crear, deshabilitar y habilitar usuarios o visualizar</p>
 </div>
 
 <div class="container">
@@ -52,14 +52,16 @@
     </div>
 
     <!-- Paginación -->
-    <div class="pagination-container">
-        <button id="prevBtn" class="pagination-btn" disabled>
+    <div class="pager">
+        <button data-pg="prev" class="pagination-btn" disabled>
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/>
             </svg>
         </button>
-        <span id="pageInfo" class="page-info">Página 1 de 1</span>
-        <button id="nextBtn" class="pagination-btn" disabled>
+
+        <span data-pg="info" class="page-info">Página 1 de 1</span>
+
+        <button data-pg="next" class="pagination-btn" disabled>
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
             </svg>
@@ -84,12 +86,38 @@
     </div>
 </div>
 
+<!-- Modal DESHABILITAR: pide motivo -->
+<div id="disableModal" class="modal hidden">
+  <div class="modal-content" style="max-width:520px">
+    <h3>Deshabilitar usuario</h3>
+    <p>Indique el motivo por el cual será deshabilitado. Este campo es obligatorio.</p>
+    <textarea id="disableReason" rows="5" placeholder="Escriba el motivo..." style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:10px;"></textarea>
+    <div class="modal-actions" style="margin-top:12px">
+      <button id="disableCancelBtn">Cancelar</button>
+      <button id="disableConfirmBtn" class="delete-btn">Deshabilitar</button>
+    </div>
+  </div>
+  <div id="loadingSpinner" class="hidden"><div class="spinner"></div></div>
+</div>
+
+<!-- Modal DETALLE deshabilitación -->
+<div id="detailModal" class="modal hidden">
+  <div class="modal-content" style="max-width:520px">
+    <h3>Detalle de deshabilitación</h3>
+    <div id="detailBody" style="text-align:left;color:#374151;margin:12px 0"></div>
+    <div class="modal-actions">
+      <button id="detailCloseBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 {% endblock principal %}
 
 {% block js %}
-<script>
+<script>window.currentUserRut = "{{ usuario_id|escapejs }}";</script>
+<!--<script>
     const currentUserRut = "{{ usuario_id|escapejs }}";
-</script>
+</script>-->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'staffweb/js/administrar_usuarios.js' %}"></script>
 {% endblock js %}

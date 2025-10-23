@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import detalle_auditoria,api_logs_auditoria,recuperar_pin,administrar_logs, cambiar_pin_funcion, perfil,cambiar_contrasena_funcion, modificar_documento, eliminar_documento, eliminar_publicacion,editar_publicacion,crear_publicacion, editar_noticiasyeventos, documentos_usuarios, crear_documento, administrar_noticiasyeventos,administrar_logs,modificar_usuario,crear_usuario,cambiar_pin,administrar_usuarios,administrar_solicitudes,cambiar_contrasena,administrar_documentos,panel_administrar,ver_documentos, crear_solicitud,inicio_dashboard,index, recuperar_contrasena,inicio_perfil, inicio_noticias_eventos,inicio_solicitudes,inicio_documentos
-from .funciones import  cambiar_PIN_verificado,verificar_codigo_recuperacion,solicitar_recuperacion_pin,descargar_documento,recuperar_contrasena_funcion,cerrar_solicitud,asignarme_solicitud,obtener_solicitudes_administrar,obtener_usuario_actual,cancelar_solicitud_funcion,crear_solicitud_funcion,obtener_solicitudes_usuario,modificar_usuario_funcion,obtener_usuario,eliminar_usuario,crear_usuario_funcion,iniciarSesion, cerrarSesion, obtener_usuarios
+from .funciones import detalle_usuario_deshabilitado, habilitar_usuario, deshabilitar_usuario, cambiar_PIN_verificado,verificar_codigo_recuperacion,solicitar_recuperacion_pin,descargar_documento,recuperar_contrasena_funcion,cerrar_solicitud,asignarme_solicitud,obtener_solicitudes_administrar,obtener_usuario_actual,cancelar_solicitud_funcion,crear_solicitud_funcion,obtener_solicitudes_usuario,modificar_usuario_funcion,obtener_usuario,crear_usuario_funcion,iniciarSesion, cerrarSesion, obtener_usuarios
 from .funciones_dos import  verificar_contrasena_actual,actualizar_contrasena,eliminar_publicacion_funcion, modificar_publicacion, obtener_publicacion, crear_publicacion_funcion, validar_pin, funcion_dos
 
 
@@ -43,7 +43,6 @@ urlpatterns = [
     path('cerrarSesion',cerrarSesion,name="cerrarSesion"),
     path('obtener_usuarios',obtener_usuarios,name="obtener_usuarios"),
     path('crear_usuario_funcion',crear_usuario_funcion,name="crear_usuario_funcion"),
-    path('eliminar_usuario/<str:rut>',eliminar_usuario,name="eliminar_usuario"),
     path('obtener_usuario',obtener_usuario,name="obtener_usuario"),
     path('modificar_usuario_funcion/<str:rut>',modificar_usuario_funcion,name="modificar_usuario_funcion"),
     path('obtener_solicitudes_usuario',obtener_solicitudes_usuario,name="obtener_solicitudes_usuario"),
@@ -62,6 +61,11 @@ urlpatterns = [
     path('cambiar_pin_funcion/<str:rut>',cambiar_pin_funcion,name="cambiar_pin_funcion"),
     path("api_logs_auditoria", api_logs_auditoria, name="api_logs_auditoria"),   
     path('auditoria/detalles/<str:log_id>/', detalle_auditoria, name='detalle_auditoria'),
+
+        #Usuarios: deshabilitar / habilitar / detalle
+    path('deshabilitar_usuario/<str:rut>', deshabilitar_usuario, name='deshabilitar_usuario'),
+    path('habilitar_usuario/<str:rut>', habilitar_usuario, name='habilitar_usuario'),
+    path('detalle_usuario_deshabilitado/<str:rut>', detalle_usuario_deshabilitado, name='detalle_usuario_deshabilitado'),
 
     #FUNCIONES DE PRUEBA DE PIN
     path('verificar_codigo_recuperacion',verificar_codigo_recuperacion,name="verificar_codigo_recuperacion"), 
