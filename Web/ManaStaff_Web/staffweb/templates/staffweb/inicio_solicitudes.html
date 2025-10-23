@@ -2,73 +2,106 @@
 {% load static %}
 
 {% block head %}
-<!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/solicitudes.css' %}">
 <link rel="stylesheet" href="{% static 'staffweb/css/detalle_solicitud.css' %}">
 <title>Solicitudes</title>
 {% endblock head %}
 
-
-
-
 {% block principal %}
 <div class="header">
-    <h1>Mis Solicitudes
-        <a href="{% url 'crear_solicitud' %}" class="new-request-btn">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/>
-            </svg>
-            Nueva Solicitud
-        </a>
-    </h1>
-    <p>Revisa tus Solicitudes</p>
-    
+  <h1>Mis Solicitudes
+    <a href="{% url 'crear_solicitud' %}" class="new-request-btn">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/>
+      </svg>
+      Nueva Solicitud
+    </a>
+  </h1>
+  <p>Revisa tus Solicitudes</p>
 </div>
 
-<!-- Search and Filter Section -->
+<!-- Buscador más filtro -->
 <div class="search-filter-section">
-    <div class="search-container">
-        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" class="search-input" placeholder="Busca tus archivos..." id="searchInput">
-    </div>
-    <div class="sort-container">
-        <select id="sortSelect">
-            <option value="asc">Más antigua</option>
-            <option value="desc">Más reciente</option>
-        </select>
-    </div>
+  <div class="search-container">
+    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <input type="text" class="search-input" placeholder="Busca tus solicitudes..." id="searchInput">
+  </div>
+
+  <!--botón de filtro -->
+  <button class="filter-btn" id="filterBtn">
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
+    </svg>
+    Filtrar
+  </button>
 </div>
 
-<!-- Status Tabs -->
+<!-- Tabs de estado -->
 <div class="status-tabs">
-    <button class="status-tab active" data-status="all">Todas</button>
-    <button class="status-tab" data-status="pendiente">Pendientes</button>
-    <button class="status-tab" data-status="aprobada">Aprobadas</button>
-    <button class="status-tab" data-status="rechazada">Rechazadas</button>
+  <button class="status-tab active" data-status="all">Todas</button>
+  <button class="status-tab" data-status="pendiente">Pendientes</button>
+  <button class="status-tab" data-status="aprobada">Aprobadas</button>
+  <button class="status-tab" data-status="rechazada">Rechazadas</button>
 </div>
 
- <!-- Seccion de solicitudes -->
+<!-- Listado -->
 <div class="requests-section">
-    <h2>Solicitudes recientes</h2>
-    <div class="requests-grid" id="requestsGrid">
+  <h2>Solicitudes recientes</h2>
+  <div class="requests-grid" id="requestsGrid">
     <div id="loader" class="loader-container">
-        <div class="spinner-carga"></div>
-        <p>Cargando solicitudes...</p>
+      <div class="spinner-carga"></div>
+      <p>Cargando solicitudes...</p>
     </div>
-        
-    </div>
-    <div class="no-results" id="noResults" style="display: none;">
-        <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <h3>No se encontraron solicitudes</h3>
-        <p>Intenta ajustar tus filtros de búsqueda</p>
-    </div>
+  </div>
+
+  <div class="no-results" id="noResults" style="display:none;">
+    <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <h3>No se encontraron solicitudes</h3>
+    <p>Intenta ajustar tus filtros de búsqueda</p>
+  </div>
 </div>
 
-<!-- Modal de confirmación -->
+<!-- Modal de filtros -->
+<div class="filter-modal" id="filterModal" style="display:none;">
+  <div class="filter-content">
+    <div class="filter-header">
+      <h3>Filtrar mis solicitudes</h3>
+      <button class="close-filter" id="closeFilter" title="Cerrar">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="filter-options">
+      <div class="filter-group">
+        <label for="sortFilter">Ordenar por</label>
+        <select id="sortFilter">
+          <option value="date-desc">Fecha (más reciente)</option>
+          <option value="date-asc">Fecha (más antigua)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="typeFilter">Tipo de solicitud</label>
+        <select id="typeFilter">
+          <option value="">Todos los tipos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="clear-filters" id="clearFilters">Limpiar filtros</button>
+      <button class="apply-filters" id="applyFilters">Aplicar filtros</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar -->
 <div id="confirmModal" class="modal hidden">
   <div class="modal-content">
     <h3>Confirmar eliminación</h3>
@@ -78,16 +111,12 @@
       <button id="confirmBtn" class="delete-btn">Eliminar</button>
     </div>
   </div>
-        <!-- Spinner de carga -->
-    <div id="loadingSpinner" class="hidden">
-        <div class="spinner"></div>
-    </div>
+  <div id="loadingSpinner" class="hidden">
+    <div class="spinner"></div>
+  </div>
 </div>
 {% endblock principal %}
 
-
-
-
 {% block js %}
-    <script src="{% static 'staffweb/js/inicio_solicitudes.js' %}"></script>
+<script src="{% static 'staffweb/js/inicio_solicitudes.js' %}"></script>
 {% endblock js %}
