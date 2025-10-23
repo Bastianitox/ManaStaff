@@ -102,14 +102,42 @@
             <!-- Campo de PIN -->
             <div class="form-group">
                 <label for="pin">PIN de acceso *</label>
-                <input type="password" id="pin" name="pin" maxlength="4" placeholder="Máx. 4 dígitos" required>
+                <input type="password" id="pin" name="pin" maxlength="4" placeholder="Máx. 4 dígitos" required inputmode="numeric" pattern="\d{4}">
                 <span class="error-message" id="pin-error"></span>
             </div>
 
-            <div class="form-group">
+            <!-- Campo de contraseña -->
+            <div class="form-group password-group">
                 <label for="password">Contraseña *</label>
                 <input type="password" id="password" name="password" required>
                 <span class="error-message" id="password-error"></span>
+                
+                <!-- Validador de requisitos -->
+                <div class="password-requirements">
+                    <p class="requirements-title">La contraseña debe contener:</p>
+                    <div class="requirements-list">
+                        <div class="requirement-item" id="req-length">
+                            <span class="requirement-icon">✓</span>
+                            <span class="requirement-text">Entre 8 y 30 caracteres</span>
+                        </div>
+                        <div class="requirement-item" id="req-uppercase">
+                            <span class="requirement-icon">✓</span>
+                            <span class="requirement-text">Al menos una letra mayúscula</span>
+                        </div>
+                        <div class="requirement-item" id="req-lowercase">
+                            <span class="requirement-icon">✓</span>
+                            <span class="requirement-text">Al menos una letra minúscula</span>
+                        </div>
+                        <div class="requirement-item" id="req-number">
+                            <span class="requirement-icon">✓</span>
+                            <span class="requirement-text">Al menos un número</span>
+                        </div>
+                        <div class="requirement-item" id="req-special">
+                            <span class="requirement-icon">✓</span>
+                            <span class="requirement-text">Al menos un carácter especial</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-actions">

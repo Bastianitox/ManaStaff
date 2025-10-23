@@ -262,3 +262,76 @@
     font-size: 0.9rem;
   }
 }
+
+
+/* Estilos para el validador de requisitos de contraseña */
+.password-requirements {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--lightest-blue) 0%, rgba(219, 234, 254, 0.5) 100%);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-blue);
+}
+
+.requirements-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.requirements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  transition: all 0.3s ease;
+}
+
+.requirement-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--gray-200);
+  color: var(--gray-600);
+  font-size: 0.75rem;
+  font-weight: bold;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.requirement-item.met {
+  color: var(--green-500);
+}
+
+.requirement-item.met .requirement-icon {
+  background-color: var(--green-500);
+  color: var(--white);
+}
+
+.requirement-item.unmet {
+  color: var(--gray-600);
+}
+
+.requirement-item.unmet .requirement-icon {
+  background-color: var(--gray-200);
+  color: var(--gray-600);
+}
+
+/* Mejorar el campo de contraseña cuando está enfocado */
+.password-group input:focus ~ .password-requirements {
+  background: linear-gradient(135deg, var(--lightest-blue) 0%, rgba(96, 165, 250, 0.1) 100%);
+  border-left-color: var(--light-blue);
+}
