@@ -260,3 +260,54 @@
         justify-content: center !important;
     }
 }
+
+/* Botón FILTRAR */
+.filter-btn{
+  display:flex; align-items:center; gap:8px;
+  padding:12px 20px; background:#fff; border:2px solid #e5e7eb;
+  border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;
+  transition:all .3s;
+}
+.filter-btn:hover{ border-color:#3b82f6; color:#3b82f6; }
+
+/* Modal filtros */
+.filter-modal{
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.5); z-index:1000;
+  align-items:center; justify-content:center;
+}
+.filter-content{
+  background:#fff; border-radius:12px; padding:24px;
+  width:90%; max-width:520px; max-height:80vh; overflow:auto;
+  box-shadow:0 20px 25px -5px rgba(0,0,0,.1);
+}
+.filter-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:12px; margin-bottom:18px; border-bottom:2px solid #e5e7eb;
+}
+.filter-header h3{ margin:0; font-size:18px; font-weight:600; color:#1f2937; }
+.close-filter{ background:none; border:none; cursor:pointer; padding:4px; color:#6b7280; border-radius:6px; }
+.close-filter:hover{ background:#f3f4f6; color:#111827; }
+
+.filter-options{ display:flex; flex-direction:column; gap:18px; margin-bottom:18px; }
+.filter-group{ display:flex; flex-direction:column; gap:8px; }
+.filter-group label{ font-size:14px; font-weight:500; color:#374151; }
+.filter-group select{
+  padding:10px 12px; border:2px solid #e5e7eb; border-radius:6px;
+  background:#fff; font-size:14px; transition:border-color .2s;
+}
+.filter-group select:focus{ outline:none; border-color:#3b82f6; }
+
+.filter-actions{
+  display:flex; justify-content:flex-end; gap:12px; border-top:2px solid #e5e7eb; padding-top:12px;
+}
+.clear-filters{
+  padding:10px 20px; background:#fff; border:2px solid #e5e7eb;
+  border-radius:6px; font-weight:600; color:#6b7280; cursor:pointer;
+}
+.clear-filters:hover{ border-color:#d1d5db; color:#374151; }
+.apply-filters{
+  padding:10px 20px; background:#3b82f6; border:2px solid #3b82f6;
+  border-radius:6px; color:#fff; font-weight:600; cursor:pointer;
+}
+.apply-filters:hover{ background:#2563eb; border-color:#2563eb; }
