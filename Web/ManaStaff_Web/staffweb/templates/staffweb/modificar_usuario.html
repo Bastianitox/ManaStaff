@@ -172,8 +172,16 @@
   </div>
 </div>
 
-<!-- Mensaje de éxito -->
-<div id="successMessage" class="success-message">Usuario modificado con éxito</div>
+<!-- ALERTAS flotantes -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Usuario modificado con éxito.</span>
+</div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">Ocurrió un error al modificar el usuario.</span>
+</div>
 
 <!-- Overlay de carga -->
 <div id="loadingOverlay"><div class="spinner"></div></div>
