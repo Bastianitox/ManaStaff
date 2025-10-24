@@ -76,5 +76,29 @@
           <button type="submit" class="btn-guardar">Guardar Cambios</button>
         </div>
     </form>
+    <!-- Alertas centradas  -->
+    <div id="successAlert" class="alert success" style="display:none;">
+        <div class="alert-icon">✓</div>
+        <span id="successMessageAlert">Datos modificados exitosamente.</span>
+    </div>
+
+    <div id="errorAlert" class="alert error" style="display:none;">
+        <div class="alert-icon">✕</div>
+        <span id="errorMessageAlert">Ocurrió un error al actualizar el perfil.</span>
+    </div>
 </div>
+
+
+
+<!-- Script de mensajes Django para mostrar alertas -->
+{% if messages %}
+  {% for m in messages %}
+    {% if 'success' in m.tags %}
+      <script>window.__perfilSuccess = true;</script>
+    {% elif 'error' in m.tags or 'warning' in m.tags %}
+      <script>window.__perfilError = "{{ m|escapejs }}";</script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
 {% endblock principal %}
