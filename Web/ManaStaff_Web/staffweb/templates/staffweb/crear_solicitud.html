@@ -20,7 +20,7 @@
     <p>¡Crea tu solicitud aqui!</p>
 </div>
 <div class="container-full">
-<div class="form-container">
+<div class="form-container compact">
     <form id="requestForm" action="{% url 'crear_solicitud_funcion' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <!-- Request Type Section -->

@@ -36,28 +36,28 @@
 }
 
 /* Form Container */
-.form-container {
+.form-container.compact {
     width: 100%;
     align-items: center;
     background: white;
     border-radius: 16px;
-    padding: 32px;
+    padding: 24px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    max-width: 800px;
+    max-width: 740px;
 }
 
-.form-section {
-    margin-bottom: 32px;
+.form-container.compact .form-section {
+    margin-bottom: 24px;
 }
 
 .form-section:last-child {
     margin-bottom: 0;
 }
 
-.form-section h2 {
-    font-size: 20px;
+.form-container.compact .form-section h2 {
+    font-size: 19px;
     color: #1f2937;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -69,8 +69,8 @@
     color: #1e40af;
 }
 
-.form-group {
-    margin-bottom: 24px;
+.form-container.compact .form-group {
+    margin-bottom: 18px;
 }
 
 .form-label {
@@ -85,9 +85,11 @@
     color: #ef4444;
 }
 
-.form-input, .form-select, .form-textarea {
+.form-container.compact .form-input,
+.form-container.compact .form-select,
+.form-container.compact .form-textarea {
     width: 100%;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
     font-size: 14px;
@@ -100,9 +102,9 @@
     border-color: #3b82f6;
 }
 
-.form-textarea {
+.form-container.compact .form-textarea {
     resize: vertical;
-    min-height: 120px;
+    min-height: 110px;
 }
 
 .form-select {
@@ -110,10 +112,10 @@
 }
 
 /* File Upload */
-.file-upload-area {
+.form-container.compact .file-upload-area {
     border: 2px dashed #d1d5db;
     border-radius: 12px;
-    padding: 32px;
+    padding: 24px;
     text-align: center;
     transition: all 0.3s;
     cursor: pointer;
@@ -152,11 +154,11 @@
     display: none;
 }
 
-.uploaded-file {
+.form-container.compact .uploaded-file {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 10px 14px;
     background: #f0f9ff;
     border: 1px solid #bae6fd;
     border-radius: 8px;
@@ -193,11 +195,11 @@
 }
 
 /* Form Actions */
-.form-actions {
+.form-container.compact .form-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: flex-end;
-    padding-top: 24px;
+    padding-top: 18px;
     border-top: 1px solid #e5e7eb;
 }
 
@@ -217,13 +219,14 @@
     background: #e5e7eb;
 }
 
-.btn-primary {
-    padding: 12px 24px;
+.form-container.compact .btn-primary,
+.form-container.compact .btn-secondary {
+    padding: 10px 18px;
     background: #1e40af;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s;
