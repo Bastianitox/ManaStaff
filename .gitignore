@@ -17,3 +17,4 @@ Web/ManaStaff_Web/staffweb/__pycache__/models.cpython-313.pyc
 Web/ManaStaff_Web/staffweb/__pycache__/urls.cpython-313.pyc
 Web/ManaStaff_Web/staffweb/__pycache__/views.cpython-313.pyc
 Web/ManaStaff_Web/staffweb/migrations/__pycache__/__init__.cpython-313.pyc
+*.pyc

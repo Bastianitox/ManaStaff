@@ -65,6 +65,21 @@ def iniciarSesion(request):
     #VALIDAR VERIFICACION DE CORREO
     try:
         user = auth.get_user_by_email(email)
+
+        # VALIDAR SI ESTÁ DESHABILITADO EN AUTHENTICATION
+        if user.disabled:
+            registrar_auditoria_manual(request, "Seis", "false", f"Intento de acceso con cuenta deshabilitada ({email}).")
+            return JsonResponse({"status": "false", "message": "Tu cuenta ha sido deshabilitada. Contacta al administrador."})
+
+        # VALIDAR SI ESTÁ DESHABILITADO EN LA BASE DE DATOS
+        id_usu, usuario_data = next(iter(usuario.items()))
+        estado_usuario = usuario_data.get("Deshabilitado", "")
+
+        if estado_usuario == True:
+            registrar_auditoria_manual(request, "Seis", "false", f"Intento de acceso con cuenta deshabilitada en la base de datos ({email}).")
+            return JsonResponse({"status": "false", "message": "Tu cuenta se encuentra deshabilitada. Contacta al administrador."})
+
+
         if not user.email_verified:
             registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con correo sin verificar.")
             return JsonResponse({"status": "false","message": "Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada."})
@@ -677,7 +692,7 @@ def deshabilitar_usuario(request, rut):
         "Deshabilitado": True
     })
 
-    registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario {rut} deshabilitado. Motivo: {detalle}")
+    registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario {rut} deshabilitado ({usuario.get("correo")}). Motivo: {detalle}")
     return JsonResponse({"status": "success", "message": "Usuario deshabilitado correctamente."})
 
 @require_POST
