@@ -248,6 +248,7 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 document.getElementById("confirmBtn").addEventListener("click", () => {
   if (!requestToDelete) return;
   document.getElementById("loadingSpinner").classList.remove("hidden");
+
   fetch(`/cancelar_solicitud_funcion/${requestToDelete}`, {
     method: "POST",
     headers: { "X-CSRFToken": getCookie("csrftoken") },
@@ -255,19 +256,21 @@ document.getElementById("confirmBtn").addEventListener("click", () => {
     .then((r) => r.json())
     .then((data) => {
       if (data.status === "success") {
-        alert("Solicitud cancelada con éxito");
         requests = requests.filter((r) => r.id_solicitud !== requestToDelete);
         aplicarFiltrosYRender();
       } else {
-        alert("Error: " + data.message);
+        showToast("Error: " + (data.message || "No se pudo cancelar la solicitud"), "error");
       }
     })
-    .catch((e) => console.error("Error:", e))
+    .catch((e) => {
+      console.error("Error:", e);
+      showToast("Ocurrió un error al cancelar la solicitud.", "error");
+    })
     .finally(() => {
       requestToDelete = null;
       document.getElementById("confirmModal").classList.add("hidden");
       document.getElementById("loadingSpinner").classList.add("hidden");
-    });
+    }); 
 });
 
 // CSRF
@@ -284,6 +287,21 @@ function getCookie(name) {
     }
   }
   return cookieValue;
+}
+
+function showToast(message, type = "success", ms = 3000) {
+  const container = document.getElementById("toastContainer");
+  if (!container) return console.log(message);
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.style.setProperty("--hide-delay", `${Math.max(1000, ms - 250)}ms`);
+  el.textContent = message;
+  container.appendChild(el);
+  // quitar del DOM cuando termine la animación de salida
+  const total = ms + 250;
+  setTimeout(() => {
+    el.remove();
+  }, total);
 }
 
 /*********** Detalle ***********/
