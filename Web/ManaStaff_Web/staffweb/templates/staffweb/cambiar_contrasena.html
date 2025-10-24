@@ -50,6 +50,37 @@
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
           </button>
         </div>
+
+        <!-- Recuadro de validaciones -->
+        <div class="password-requirements">
+          <p class="requirements-title">La contraseña debe contener:</p>
+          <div class="requirements-list">
+            <div class="requirement-item" id="req-length">
+              <span class="requirement-icon">✓</span>
+              <span class="requirement-text">Entre 8 y 30 caracteres</span>
+            </div>
+            <div class="requirement-item" id="req-uppercase">
+              <span class="requirement-icon">✓</span>
+              <span class="requirement-text">Al menos una letra mayúscula</span>
+            </div>
+            <div class="requirement-item" id="req-lowercase">
+              <span class="requirement-icon">✓</span>
+              <span class="requirement-text">Al menos una letra minúscula</span>
+            </div>
+            <div class="requirement-item" id="req-number">
+              <span class="requirement-icon">✓</span>
+              <span class="requirement-text">Al menos un número</span>
+            </div>
+            <div class="requirement-item" id="req-special">
+              <span class="requirement-icon">✓</span>
+              <span class="requirement-text">Al menos un carácter especial</span>
+            </div>
+            <div class="requirement-item" id="req-match">
+              <span class="requirement-icon">✓</span>
+              <span class="requirement-text">Las contraseñas coinciden</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="acciones-seguridad" >
@@ -60,10 +91,17 @@
   </div>
 </div>
 
-<!-- Mensaje de éxito -->
-<div id="successMessage" class="success-message">
-    Contraseña modificada con éxito
+<!-- ALERTAS CENTRADAS -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Contraseña modificada exitosamente.</span>
 </div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">Ocurrió un error al modificar la contraseña.</span>
+</div>
+
 <!-- Overlay de carga -->
 <div id="loadingOverlay">
     <div class="spinner"></div>
