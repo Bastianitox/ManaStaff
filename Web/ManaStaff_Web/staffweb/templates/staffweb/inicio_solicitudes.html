@@ -116,6 +116,17 @@
   </div>
 </div>
 <div id="toastContainer" class="toast-container"></div>
+
+<!-- Alertas centradas -->
+<div id="successAlert" class="alert success">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Solicitud cancelada con éxito.</span>
+</div>
+
+<div id="errorAlert" class="alert error">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">Ocurrió un error al cancelar la solicitud.</span>
+</div>
 {% endblock principal %}
 
 {% block js %}

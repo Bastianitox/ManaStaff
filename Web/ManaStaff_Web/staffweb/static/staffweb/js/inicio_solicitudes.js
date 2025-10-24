@@ -234,6 +234,35 @@ if ($clearFilters) {
   });
 }
 
+// ====== Alerta centrada (compartida con crear_solicitud) ======
+function showAlert(type, message) {
+  const successEl = document.getElementById('successAlert');
+  const errorEl   = document.getElementById('errorAlert');
+
+  // Oculta cualquier alerta visible
+  [successEl, errorEl].forEach(el => {
+    if (!el) return;
+    el.classList.add('hide');
+    el.style.display = 'none';
+  });
+
+  const alertEl = type === 'success' ? successEl : errorEl;
+  const messageEl = type === 'success'
+    ? document.getElementById('successMessageAlert')
+    : document.getElementById('errorMessageAlert');
+
+  messageEl.textContent = message;
+  alertEl.style.display = 'flex';
+  alertEl.classList.remove('hide');
+
+  // Le damos un pelín más de tiempo para leer
+  setTimeout(() => {
+    alertEl.classList.add('hide');
+    setTimeout(() => {
+      alertEl.style.display = 'none';
+    }, 400); // coincide con zoomOut
+  }, 5200);
+}
 /*********** Cancelar solicitud ***********/
 let requestToDelete = null;
 
@@ -258,13 +287,14 @@ document.getElementById("confirmBtn").addEventListener("click", () => {
       if (data.status === "success") {
         requests = requests.filter((r) => r.id_solicitud !== requestToDelete);
         aplicarFiltrosYRender();
+        showAlert('success', 'Solicitud cancelada con éxito.');
       } else {
-        showToast("Error: " + (data.message || "No se pudo cancelar la solicitud"), "error");
+        showAlert('error', data.message || 'No se pudo cancelar la solicitud.');
       }
     })
     .catch((e) => {
       console.error("Error:", e);
-      showToast("Ocurrió un error al cancelar la solicitud.", "error");
+      showAlert('error', 'Ocurrió un error al cancelar la solicitud.');
     })
     .finally(() => {
       requestToDelete = null;
