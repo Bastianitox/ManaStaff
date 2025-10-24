@@ -167,10 +167,17 @@
     </div>
 </div>
 
-<!-- Mensaje de éxito -->
-<div id="successMessage" class="success-message">
-    Usuario creado con éxito
+<!-- ALERTAS CENTRADAS -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Usuario creado con éxito.</span>
 </div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">Ocurrió un error al crear el usuario.</span>
+</div>
+
 <!-- Overlay de carga -->
 <div id="loadingOverlay">
     <div class="spinner"></div>

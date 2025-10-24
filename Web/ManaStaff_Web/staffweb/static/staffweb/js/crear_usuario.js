@@ -1,3 +1,4 @@
+// ===== Validaciones de contraseña =====
 function validarRequisitosPassword(password) {
   return {
     length: password.length >= 8 && password.length <= 30,
@@ -37,7 +38,7 @@ function passwordCumpleTodosRequisitos(password) {
   return requisitos.length && requisitos.uppercase && requisitos.lowercase && requisitos.number && requisitos.special
 }
 
-// Función para validar RUT chileno
+// ===== Helpers de validación de otros campos =====
 function validarRUT(rut) {
   const rutLimpio = rut.replace(/\./g, "").replace("-", "")
   if (rutLimpio.length < 8 || rutLimpio.length > 9) return false
@@ -57,7 +58,6 @@ function validarRUT(rut) {
   return dv === dvCalculado
 }
 
-// Formatear RUT
 function formatearRUT(rut) {
   const rutLimpio = rut.replace(/[^0-9kK]/g, "").toLowerCase()
   if (rutLimpio.length <= 1) return rutLimpio
@@ -76,19 +76,16 @@ function formatearRUT(rut) {
   return cuerpoFormateado + "-" + dv
 }
 
-// Validar email
 function validarEmail(email) {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return regex.test(email)
 }
 
-// Validar celular chileno
 function validarCelular(celular) {
   const regex = /^(\+56\s?)?9\s?\d{4}\s?\d{4}$/
   return regex.test(celular)
 }
 
-// Mostrar error
 function mostrarError(fieldId, mensaje) {
   const field = document.getElementById(fieldId)
   const errorElement = document.getElementById(fieldId + "-error")
@@ -97,7 +94,6 @@ function mostrarError(fieldId, mensaje) {
   errorElement.classList.add("show")
 }
 
-// Limpiar error
 function limpiarError(fieldId) {
   const field = document.getElementById(fieldId)
   const errorElement = document.getElementById(fieldId + "-error")
@@ -106,7 +102,6 @@ function limpiarError(fieldId) {
   errorElement.classList.remove("show")
 }
 
-// Validar imagen
 function validarImagen(fileInput) {
   if (!fileInput.files || fileInput.files.length === 0) return false
   const file = fileInput.files[0]
@@ -115,13 +110,11 @@ function validarImagen(fileInput) {
   return validTypes.includes(file.type) && file.size <= maxSize
 }
 
-// Validar PIN (solo números, exactamente 4 dígitos)
 function validarPIN(pin) {
   const regex = /^[0-9]{4}$/
   return regex.test(pin)
 }
 
-// Limpiar todos los errores
 function limpiarTodosLosErrores() {
   const campos = [
     "nombre",
@@ -141,12 +134,10 @@ function limpiarTodosLosErrores() {
   campos.forEach((campo) => limpiarError(campo))
 }
 
-// Validar formulario
 function validarFormulario() {
   let esValido = true
   limpiarTodosLosErrores()
 
-  // Validar nombre
   const nombre = document.getElementById("nombre").value.trim()
   if (!nombre) {
     mostrarError("nombre", "El primer nombre es obligatorio")
@@ -156,7 +147,6 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar segundo nombre
   const segundoNombre = document.getElementById("Segundo_nombre").value.trim()
   if (!segundoNombre) {
     mostrarError("Segundo_nombre", "El segundo nombre es obligatorio")
@@ -166,7 +156,6 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar apellido paterno
   const apellidoPaterno = document.getElementById("apellido_paterno").value.trim()
   if (!apellidoPaterno) {
     mostrarError("apellido_paterno", "El apellido paterno es obligatorio")
@@ -176,7 +165,6 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar apellido materno
   const apellidoMaterno = document.getElementById("apellido_materno").value.trim()
   if (!apellidoMaterno) {
     mostrarError("apellido_materno", "El apellido materno es obligatorio")
@@ -186,7 +174,6 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar RUT
   const rut = document.getElementById("rut").value.trim()
   if (!rut) {
     mostrarError("rut", "El RUT es obligatorio")
@@ -196,7 +183,6 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar celular
   const celular = document.getElementById("celular").value.trim()
   if (!celular) {
     mostrarError("celular", "El número de celular es obligatorio")
@@ -206,14 +192,12 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar dirección
   const direccion = document.getElementById("direccion").value.trim()
   if (!direccion) {
     mostrarError("direccion", "La dirección es obligatoria")
     esValido = false
   }
 
-  // Validar email
   const email = document.getElementById("email").value.trim()
   if (!email) {
     mostrarError("email", "El correo electrónico es obligatorio")
@@ -223,14 +207,12 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar cargo
   const cargo = document.getElementById("cargo").value
   if (!cargo) {
     mostrarError("cargo", "Debe seleccionar un cargo")
     esValido = false
   }
 
-  // Validar contraseña
   const password = document.getElementById("password").value
   if (!password) {
     mostrarError("password", "La contraseña es obligatoria")
@@ -240,21 +222,18 @@ function validarFormulario() {
     esValido = false
   }
 
-  // Validar imagen
   const imagenInput = document.getElementById("imagen")
   if (!validarImagen(imagenInput)) {
     mostrarError("imagen", "Debe subir una imagen válida (JPG, PNG, GIF, máx 2MB)")
     esValido = false
   }
 
-  // Validar rol
   const rol = document.getElementById("rol").value
   if (!rol) {
     mostrarError("rol", "Debe seleccionar un rol")
     esValido = false
   }
 
-  // Validar PIN
   const pin = document.getElementById("pin").value.trim()
   if (!pin) {
     mostrarError("pin", "El PIN es obligatorio")
@@ -267,22 +246,47 @@ function validarFormulario() {
   return esValido
 }
 
-// Mensaje de éxito
-function mostrarMensajeExito() {
-  const mensaje = document.getElementById("successMessage")
-  const REDIRECT_URL = window.REDIRECT_URL || "/administrar_usuarios";
+// ===== ALERTA CENTRADA =====
+function showAlert(type, message) {
+  const successEl = document.getElementById('successAlert');
+  const errorEl   = document.getElementById('errorAlert');
 
-  mensaje.classList.add("show")
+  // Ocultar alertas previas
+  [successEl, errorEl].forEach(el => {
+    if (!el) return;
+    el.classList.add('hide');
+    el.style.display = 'none';
+  });
 
+  const alertEl = type === 'success' ? successEl : errorEl;
+  const messageEl = type === 'success'
+    ? document.getElementById('successMessageAlert')
+    : document.getElementById('errorMessageAlert');
+
+  messageEl.textContent = message;
+  alertEl.style.display = 'flex';
+  alertEl.classList.remove('hide');
+
+  // Auto-close animado
   setTimeout(() => {
-    mensaje.classList.remove("show")
+    alertEl.classList.add('hide');
     setTimeout(() => {
-      window.location.href = REDIRECT_URL; 
-    }, 300);
-  }, 1000);
+      alertEl.style.display = 'none';
+    }, 400);
+  }, 5200);
 }
 
-// Eventos
+// éxito con redirección
+function mostrarMensajeExito() {
+  const REDIRECT_URL = window.REDIRECT_URL || "/administrar_usuarios";
+  showAlert('success', 'Usuario creado con éxito.');
+
+  setTimeout(() => {
+    window.location.href = REDIRECT_URL;
+  }, 2400);
+}
+
+// ===== Eventos =====
 document.addEventListener("DOMContentLoaded", () => {
   const imagenInput = document.getElementById("imagen")
   const imagePreview = document.getElementById("imagePreview")
@@ -300,18 +304,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Contraseña
+  // Password live validation
   document.getElementById("password").addEventListener("input", function () {
     actualizarRequisitosVisuales(this.value)
   })
   actualizarRequisitosVisuales("")
 
-  // Formatear RUT
+  // RUT formateado
   document.getElementById("rut").addEventListener("input", function () {
     this.value = formatearRUT(this.value)
   })
 
-  // Formatear celular
+  // Formato celular chileno
   document.getElementById("celular").addEventListener("input", function () {
     let valor = this.value.replace(/[^\d]/g, "")
     if (valor.length > 0) {
@@ -323,12 +327,11 @@ document.addEventListener("DOMContentLoaded", () => {
     this.value = valor.trim()
   })
 
-  //PIN: solo números, máx. 4, bloqueo de letras y pegado inválido
+  // PIN: solo números, máx. 4, anti-pegar letras
   const pinInput = document.getElementById("pin")
   pinInput.setAttribute("inputmode", "numeric") 
   pinInput.setAttribute("pattern", "\\d{4}")  
 
-  // Bloquear teclas no numéricas 
   pinInput.addEventListener("keydown", (e) => {
     const allowed = [
       "Backspace","Delete","ArrowLeft","ArrowRight","ArrowUp","ArrowDown",
@@ -336,16 +339,13 @@ document.addEventListener("DOMContentLoaded", () => {
     ]
     if (allowed.includes(e.key)) return
 
-    // Permitir Ctrl/Cmd + (A,C,V,X)
     if ((e.ctrlKey || e.metaKey) && ["a","c","v","x","A","C","V","X"].includes(e.key)) return
 
-    // Solo dígitos
     if (!/^\d$/.test(e.key)) {
       e.preventDefault()
       return
     }
 
-    // Respetar límite 4 si no hay selección
     const selStart = e.target.selectionStart ?? 0
     const selEnd = e.target.selectionEnd ?? 0
     const willReplace = selEnd > selStart
@@ -354,13 +354,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Normalizar a solo dígitos y cortar a 4
   pinInput.addEventListener("input", (e) => {
     const digits = e.target.value.replace(/\D/g, "").slice(0,4)
     if (e.target.value !== digits) e.target.value = digits
   })
 
-  // Controlar pegado
   pinInput.addEventListener("paste", (e) => {
     e.preventDefault()
     const clip = (e.clipboardData || window.clipboardData).getData("text") || ""
@@ -374,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.setSelectionRange(caret, caret)
   })
 
-  // Límites de longitud de campos
+  // Límite de largo en campos de texto
   const camposMaximos = {
     nombre: 25,
     Segundo_nombre: 25,
@@ -400,9 +398,11 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault()
 
-    if (!validarFormulario()) return
+    if (!validarFormulario()) {
+      return
+    }
 
-    // Mostrar overlay de carga
+    // Mostrar overlay
     loadingOverlay.classList.add("show")
 
     const data = {
@@ -439,16 +439,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (result.status === "success") {
           mostrarMensajeExito()
         } else {
-          alert(result.message || "Error al crear usuario")
+          showAlert('error', result.message || "Error al crear usuario")
         }
       } catch (error) {
         console.error(error)
         loadingOverlay.classList.remove("show")
-        alert("Error al enviar los datos")
+        showAlert('error', "Error al enviar los datos")
       }
     }
 
-    // Convertir imagen a Base64 si existe
+    // Adjuntar imagen en Base64 si viene
     const imagenInput = document.getElementById("imagen")
     if (imagenInput.files.length > 0) {
       const file = imagenInput.files[0]
@@ -464,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   document.getElementById("cancelBtn").addEventListener("click", () => {
-  const REDIRECT_URL = window.REDIRECT_URL || "/administrar_usuarios";
-  window.location.href = REDIRECT_URL;
-  });
+    const REDIRECT_URL = window.REDIRECT_URL || "/administrar_usuarios";
+    window.location.href = REDIRECT_URL;
+  })
 })
