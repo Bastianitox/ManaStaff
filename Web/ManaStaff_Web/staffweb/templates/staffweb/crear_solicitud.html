@@ -21,14 +21,6 @@
 </div>
 <div class="container-full">
 <div class="form-container">
-    <div id="successMessage" class="success-message">
-        <strong>¡Solicitud enviada exitosamente!</strong> Tu solicitud ha sido registrada y está siendo procesada.
-    </div>
-
-    <div id="errorMessage" class="error-message">
-        <strong>Error:</strong> <span id="errorText">Por favor completa todos los campos requeridos.</span>
-    </div>
-
     <form id="requestForm" action="{% url 'crear_solicitud_funcion' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <!-- Request Type Section -->
@@ -118,10 +110,17 @@
 </div>
 </div>
 
-<!-- Mensaje de éxito -->
-<div id="successMessage" class="success-message">
-    Usuario creado con éxito
+<!-- Alertas centradas -->
+<div id="successAlert" class="alert success">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">¡Solicitud enviada exitosamente! Tu solicitud ha sido registrada y está siendo procesada.</span>
 </div>
+
+<div id="errorAlert" class="alert error">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">Ocurrió un error al crear la solicitud.</span>
+</div>
+
 <!-- Overlay de carga -->
 <div id="loadingOverlay">
     <div class="spinner"></div>
