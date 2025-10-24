@@ -60,6 +60,7 @@ def iniciarSesion(request):
     usuarioDATABASE = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
     if not usuarioDATABASE:
         return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+    
 
     #VALIDAR VERIFICACION DE CORREO
     try:
@@ -218,13 +219,11 @@ def recuperar_contrasena_funcion(request):
 @admin_required
 def obtener_usuarios(request):
     # Activos
-    activos = database.child("Usuario").get().val() or {}
-    # Deshabilitados
-    inactivos = database.child("UsuDeshabilitado").get().val() or {}
+    usuarios = database.child("Usuario").get().val() or {}
 
     usuarios_lista = []
 
-    def _push_item(id_usu, usuario, is_disabled=False):
+    def _push_item(id_usu, usuario):
         email = usuario.get("correo")
         email_verificado = False
         try:
@@ -262,6 +261,8 @@ def obtener_usuarios(request):
         else:
             fecha_login_date = ""
 
+        is_disabled = usuario.get("Deshabilitado", False)
+
         usuarios_lista.append({
             "rut": id_usu,
             "rut_normal": formatear_rut(id_usu),
@@ -275,10 +276,8 @@ def obtener_usuarios(request):
             "is_disabled": is_disabled
         })
 
-    for r, u in (activos or {}).items():
-        _push_item(r, u, is_disabled=False)
-    for r, u in (inactivos or {}).items():
-        _push_item(r, u, is_disabled=True)
+    for r, u in (usuarios or {}).items():
+        _push_item(r, u)
 
     registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} listo usuarios (activos e inactivos).")
     return JsonResponse({'mensaje': 'Usuarios listados.', 'usuarios': usuarios_lista})
@@ -659,22 +658,24 @@ def deshabilitar_usuario(request, rut):
 
     usuario = database.child("Usuario").child(rut).get().val()
     if not usuario:
-        return JsonResponse({"status": "error", "message": "Usuario no encontrado o ya inhabilitado."}, status=404)
+        return JsonResponse({"status": "error", "message": "Usuario no encontrado."}, status=404)
 
+    if usuario.get("Deshabilitado") == True:
+        return JsonResponse({"status": "error", "message": "Usuario ya deshabilitado."}, status=404)
+    
     # Deshabilitar en Firebase Authentication (no eliminar)
     try:
         uid = auth.get_user_by_email(usuario.get("correo")).uid
         auth.update_user(uid, disabled=True)
     except Exception:
-        pass  # si falla, igual movemos el registro de la RTDB
+        return JsonResponse({"status": "error", "message": "Error al deshabilitar usuario desde firebase."}, status=404)
 
-    # Mover a UsuDeshabilitado
-    usuario_desh = dict(usuario)
-    usuario_desh["Detalle"] = detalle
-    usuario_desh["FechaProceso"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    database.child("UsuDeshabilitado").child(rut).set(usuario_desh)
-    database.child("Usuario").child(rut).remove()
+    # Deshabilitar
+    database.child("Usuario").child(rut).update({
+        "Detalle": detalle,
+        "FechaProceso": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "Deshabilitado": True
+    })
 
     registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario {rut} deshabilitado. Motivo: {detalle}")
     return JsonResponse({"status": "success", "message": "Usuario deshabilitado correctamente."})
@@ -683,33 +684,39 @@ def deshabilitar_usuario(request, rut):
 @admin_required
 def habilitar_usuario(request, rut):
     # No permitir auto-habilitarse si ya está activo
-    inactivo = database.child("UsuDeshabilitado").child(rut).get().val()
+    inactivo = database.child("Usuario").child(rut).get().val()
     if not inactivo:
-        return JsonResponse({"status": "error", "message": "El usuario no está deshabilitado."}, status=404)
+        return JsonResponse({"status": "error", "message": "Usuario no encontrado"}, status=404)
+    
+    if inactivo.get("Deshabilitado") == False:
+        return JsonResponse({"status": "error", "message": "Usuario ya habilitado"}, status=404)
 
     # Habilitar en Firebase Authentication
     try:
         uid = auth.get_user_by_email(inactivo.get("correo")).uid
         auth.update_user(uid, disabled=False)
     except Exception:
-        pass
+        return JsonResponse({"status": "error", "message": "Error al habilitar el usuario en Firebase."}, status=404)
 
-    # Limpiar campos propios de deshabilitado
-    usuario_activo = dict(inactivo)
-    usuario_activo.pop("Detalle", None)
-    usuario_activo.pop("FechaProceso", None)
-
-    database.child("Usuario").child(rut).set(usuario_activo)
-    database.child("UsuDeshabilitado").child(rut).remove()
+    # Habilitar
+    database.child("Usuario").child(rut).update({
+        "Detalle": None,
+        "FechaProceso": None,
+        "Deshabilitado": False
+    })
 
     registrar_auditoria_manual(request, "Tres", "éxito", f"Usuario {rut} habilitado nuevamente.")
     return JsonResponse({"status": "success", "message": "Usuario habilitado correctamente."})
 
 @admin_required
 def detalle_usuario_deshabilitado(request, rut):
-    data = database.child("UsuDeshabilitado").child(rut).get().val()
+    data = database.child("Usuario").child(rut).get().val()
     if not data:
-        return JsonResponse({"status": "error", "message": "No encontrado."}, status=404)
+        return JsonResponse({"status": "error", "message": "Usuario no encontrado."}, status=404)
+    
+    if data.get("Deshabilitado") == False:
+        return JsonResponse({"status": "error", "message": "Usuario habilitado."}, status=404)
+    
     return JsonResponse({
         "status": "success",
         "rut": rut,
