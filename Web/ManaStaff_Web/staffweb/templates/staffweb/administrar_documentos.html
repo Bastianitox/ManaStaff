@@ -49,26 +49,50 @@
   {{ users_docs_json|default:"[]"|safe }}
 </script>
 
-
 <script>
   window.ROUTES = {
     documentosUsuarios: "{% url 'documentos_usuarios' %}",
     crearDocumento: "{% url 'crear_documento' %}",
-    modificarDocumento: "{% url 'modificar_documento' 'DOC_ID' %}"
+    modificarDocumento: "{% url 'modificar_documento' 'DOC_ID' %}",
+    eliminarDocumento: "{% url 'eliminar_documento' %}",
   };
 </script>
 
 <script>
-  window.ROUTES.eliminarDocumento = "{% url 'eliminar_documento' %}";
-</script>
-
-<script>
-
   const goDocsUsuario = (rut) => {
     const limpio = String(rut).replace(/[^\dkK]/g, "");
     window.location.href = `${window.ROUTES.documentosUsuarios}?rut=${encodeURIComponent(limpio)}`;
   };
 </script>
+
+<!-- Modal CONFIRMAR ELIMINACIÓN -->
+<div id="deleteModal" class="modal hidden">
+  <div class="modal-content" style="max-width:400px">
+    <h3 class="delete-title">Eliminar documento</h3>
+    <p>¿Eliminar este documento definitivamente?</p>
+    <div class="modal-actions modal-actions-center">
+      <button id="deleteCancelBtn" class="cancel-modal-btn">Cancelar</button>
+      <button id="deleteConfirmBtn" class="confirm-delete-btn">Eliminar</button>
+    </div>
+  </div>
+
+  <!-- overlay spinner -->
+  <div id="loadingSpinner" class="hidden">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- Alertas centradas -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Documento borrado con éxito.</span>
+</div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">No se pudo eliminar el documento.</span>
+</div>
+
 {% endblock principal %}
 
 {% block js %}
