@@ -36,14 +36,19 @@
         <input type="text" id="nuevoPin" placeholder="Nuevo PIN (4 dígitos)">
         <button onclick="cambiarPIN()" class="btn-solicitar">Actualizar PIN</button>
     </div>
+
+    <!-- Alertas centradas -->
+    <div id="successAlert" class="alert success" style="display:none;">
+        <div class="alert-icon">✓</div>
+        <span id="successMessageAlert">Operación realizada con éxito.</span>
+    </div>
+
+    <div id="errorAlert" class="alert error" style="display:none;">
+        <div class="alert-icon">✕</div>
+        <span id="errorMessageAlert">Ocurrió un error.</span>
+    </div>
 </div>
 
-
-
-<!-- Mensaje de éxito -->
-<div id="successMessage" class="success-message">
-    PIN modificado con éxito
-</div>
 <!-- Overlay de carga -->
 <div id="loadingOverlay">
     <div class="spinner"></div>
