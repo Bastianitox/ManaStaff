@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block head %}
-<!-- STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/perfil.css' %}">
 <link rel="stylesheet" href="{% static 'staffweb/css/cambiar_contrasena.css' %}">
 <script src="{% static 'staffweb/js/cambiar_pin.js' %}"></script>
@@ -24,7 +23,16 @@
       <div class="campo">
         <label for="pin_actual">Pin Actual</label>
         <div class="input-grupo">
-          <input type="password" id="pin_actual" name="pin_actual" placeholder="Ingresa tu pin actual" required>
+          <input 
+            type="password" 
+            id="pin_actual" 
+            name="pin_actual" 
+            placeholder="Ingresa tu pin actual" 
+            required
+            inputmode="numeric"
+            pattern="\d{4}"
+            maxlength="4"
+          >
           <button type="button" class="toggle-password" data-target="pin_actual" aria-label="Mostrar pin">
             <span class="icono-ojo">👁</span>
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
@@ -33,9 +41,18 @@
       </div>
 
       <div class="campo">
-        <label for="pin_nueva">Nuevo Pin </label>
+        <label for="pin_nueva">Nuevo Pin</label>
         <div class="input-grupo">
-          <input type="password" id="pin_nueva" name="pin_nueva" placeholder="Ingresa un nuevo pin" required>
+          <input 
+            type="password" 
+            id="pin_nueva" 
+            name="pin_nueva" 
+            placeholder="Ingresa un nuevo pin (4 dígitos)" 
+            required
+            inputmode="numeric"
+            pattern="\d{4}"
+            maxlength="4"
+          >
           <button type="button" class="toggle-password" data-target="pin_nueva" aria-label="Mostrar pin">
             <span class="icono-ojo">👁</span>
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
@@ -46,7 +63,16 @@
       <div class="campo">
         <label for="pin_confirmar">Confirmar Nuevo Pin</label>
         <div class="input-grupo">
-          <input type="password" id="pin_confirmar" name="pin_confirmar" placeholder="Repite el nuevo pin" required>
+          <input 
+            type="password" 
+            id="pin_confirmar" 
+            name="pin_confirmar" 
+            placeholder="Repite el nuevo pin" 
+            required
+            inputmode="numeric"
+            pattern="\d{4}"
+            maxlength="4"
+          >
           <button type="button" class="toggle-password" data-target="pin_confirmar" aria-label="Mostrar pin">
             <span class="icono-ojo">👁</span>
             <span class="icono-ojo-cerrado oculto">👁‍🗨</span>
@@ -54,18 +80,24 @@
         </div>
       </div>
 
-      <div class="acciones-seguridad" >
+      <div class="acciones-seguridad">
         <button id="submitBtn" type="submit" class="btn-guardar">Guardar Cambios</button>
         <a href="{% url 'inicio_perfil' %}" class="btn-cancelar">Cancelar</a>
       </div>
     </form>
-  </div>
 </div>
 
-<!-- Mensaje de éxito -->
-<div id="successMessage" class="success-message">
-    Pin modificado con éxito
+<!-- ALERTAS CENTRADAS -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">PIN modificado exitosamente.</span>
 </div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">Ocurrió un error al modificar el PIN.</span>
+</div>
+
 <!-- Overlay de carga -->
 <div id="loadingOverlay">
     <div class="spinner"></div>
@@ -74,7 +106,6 @@
 {% endblock principal %}
 
 {% block js %}
-
 <script>
     const currentUserRut = "{{ usuario_id|escapejs }}";
 </script>
