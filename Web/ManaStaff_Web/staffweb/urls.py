@@ -84,8 +84,4 @@ urlpatterns = [
     path('verificar_contrasena_actual/<str:doc_id>',verificar_contrasena_actual,name="verificar_contrasena_actual"),
 
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 handler403 = "staffweb.views.error_403"

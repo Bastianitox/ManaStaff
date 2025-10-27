@@ -1,0 +1,257 @@
+:root {
+  --primary-blue: #3b82f6;
+  --light-blue: #60a5fa;
+  --lightest-blue: #dbeafe;
+  --white: #ffffff;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-600: #4b5563;
+  --gray-800: #1f2937;
+  --red-500: #ef4444;
+  --red-100: #fee2e2;
+  --green-500: #10b981;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f6fa;
+}
+
+
+
+.container {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Caja principal */
+.recover-box {
+  display: flex;
+  width: 900px;
+  height: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Columna izquierda */
+.recover-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+}
+
+.recover-left img {
+  width: 60px;
+  margin-bottom: 10px;
+}
+
+.recover-left h2 {
+  margin: 0;
+  color: #003366;
+  font-size: 22px;
+}
+
+.recover-left p {
+  font-size: 14px;
+  color: #003366;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  color: #003366;
+  display: block;
+  margin: 10px 0 5px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #003366;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+button {
+  width: 100%;
+  background-color: #003366;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #002244;
+}
+
+.back-login {
+  display: block;
+  margin-top: 15px;
+  font-size: 13px;
+  color: #003366;
+  text-decoration: none;
+}
+
+.back-login:hover {
+  text-decoration: underline;
+}
+
+/* Columna derecha */
+.recover-right {
+  flex: 1;
+  background-color: #003366;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.recover-right img {
+  width: 120px;
+  margin-right: 15px;
+}
+
+.recover-right h1 {
+  color: white;
+  font-size: 40px;
+  margin: 0;
+}
+
+.recover-right span {
+  color: white;
+  font-size: 18px;
+  letter-spacing: 6px;
+}
+
+.logo-box {
+  width: 120px;        
+  height: 120px;            
+  background-color: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+
+.logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+
+.brand-text h1 {
+  color: white;
+  font-size: 40px;
+  margin: 0;
+}
+
+.brand-text span {
+  color: white;
+  font-size: 18px;
+  letter-spacing: 6px;
+}
+
+.img-logo {
+    background-image: url('../img/logo.png');
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* LOADER */
+/* Overlay de carga */
+.loadingOverlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255,255,255,0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+/* Mostrar overlay */
+.loadingOverlay.show{
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Spinner */
+.spinnerGlobal {
+  border: 6px solid #e5e7eb;
+  border-top: 6px solid #3b82f6;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Texto de carga */
+.loading-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+
+/* Mensaje de éxito */
+.success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--green-500);
+  color: var(--white);
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.success-message.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+@media (max-width: 768px) {
+  .recover-right{
+    display: none;
+  }
+}
