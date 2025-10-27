@@ -25,12 +25,12 @@ SECRET_KEY = 'django-insecure-hfx+w-@n6c8ra@eui-d+=ml9+$iy)qwwr=q2dpltk56c1ty-un
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['manastaff.onrender.com','127.0.0.1', 'http://127.0.0.1:8000/']
+ALLOWED_HOSTS = ['manastaff.onrender.com','127.0.0.1', 'http://127.0.0.1:8000', 'https://manastaff.onrender.com']
 
 CORS_ALLOWED_ORIGINS = [
-    "https://manastaff.onrender.com/",
+    "https://manastaff.onrender.com",
     "http://localhost:8000",           
-    "http://127.0.0.1:8000/"
+    "http://127.0.0.1:8000"
 ]
 # Tiempo de expiración de sesión en segundos (ej: 30 min)
 SESSION_COOKIE_AGE = 30 * 60  
