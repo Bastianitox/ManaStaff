@@ -1,0 +1,7 @@
+{
+  "name": "ManaStaffApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
