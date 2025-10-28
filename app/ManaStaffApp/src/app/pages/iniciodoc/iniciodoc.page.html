@@ -1,0 +1,265 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-toolbar">
+    <ion-title class="header-title">Mis documentos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" [fullscreen]="false">
+  <!-- PIN -->
+  <ion-modal 
+    [isOpen]="showPinModal" 
+    [backdropDismiss]="false"
+    class="pin-modal">
+    <ng-template ionModalContent>
+      <div class="pin-modal-container">
+        <div class="pin-modal-content">
+          <!-- lock icono-->
+          <div class="pin-icon">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+          </div>
+
+          <h2 class="pin-title">Verificación de acceso</h2>
+          <p class="pin-subtitle">Ingresa tu código PIN de 4 dígitos para ver tus documentos</p>
+
+          <!-- código pin-->
+          <div class="pin-inputs">
+            <input 
+              type="password" 
+              maxlength="1" 
+              class="pin-input"
+              [(ngModel)]="pinInputs[0]"
+              (input)="onPinInput(0, $event)"
+              #pinField
+              inputmode="numeric">
+
+            <input 
+              type="password" 
+              maxlength="1" 
+              class="pin-input"
+              [(ngModel)]="pinInputs[1]"
+              (input)="onPinInput(1, $event)"
+              #pinField
+              inputmode="numeric">
+
+            <input 
+              type="password" 
+              maxlength="1" 
+              class="pin-input"
+              [(ngModel)]="pinInputs[2]"
+              (input)="onPinInput(2, $event)"
+              #pinField
+              inputmode="numeric">
+
+            <input 
+              type="password" 
+              maxlength="1" 
+              class="pin-input"
+              [(ngModel)]="pinInputs[3]"
+              (input)="onPinInput(3, $event)"
+              #pinField
+              inputmode="numeric">
+          </div>
+
+          <!-- mensaje de error -->
+          <p class="pin-error" *ngIf="pinError">{{ pinError }}</p>
+
+          <!-- botón de verificar -->
+          <button 
+            class="pin-button"
+            (click)="verifyPin()"
+            [disabled]="isPinIncomplete()">
+            Verificar código
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- filtro modal -->
+  <ion-modal 
+    [isOpen]="showFilterModal"
+    class="filter-modal">
+    <ng-template ionModalContent>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="filter-toolbar">
+          <ion-title>Filtros</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeFilterModal()" class="close-btn">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="filter-content">
+        <!-- tipo de documento filtro -->
+        <div class="filter-section">
+          <h3 class="filter-label">Tipo de documento</h3>
+          <div class="filter-options">
+            <label class="filter-checkbox" *ngFor="let type of documentTypes">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="filters.types[type]"
+                (change)="applyFilters()">
+              <span>{{ type }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- tamaño filtro -->
+        <div class="filter-section">
+          <h3 class="filter-label">Tamaño</h3>
+          <div class="filter-options">
+            <label class="filter-checkbox" *ngFor="let size of sizeOptions">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="filters.sizes[size.key]"
+                (change)="applyFilters()">
+              <span>{{ size.label }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- status filtro -->
+        <div class="filter-section">
+          <h3 class="filter-label">Estado</h3>
+          <div class="filter-options">
+            <label class="filter-checkbox" *ngFor="let status of statusOptions">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="filters.statuses[status]"
+                (change)="applyFilters()">
+              <span>{{ status }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- filtro -->
+        <div class="filter-section">
+          <h3 class="filter-label">Ordenar por</h3>
+          <div class="filter-options">
+            <label class="filter-radio">
+              <input 
+                type="radio" 
+                name="sortBy" 
+                value="date"
+                [(ngModel)]="filters.sortBy"
+                (change)="applyFilters()">
+              <span>Fecha</span>
+            </label>
+            <label class="filter-radio">
+              <input 
+                type="radio" 
+                name="sortBy" 
+                value="name"
+                [(ngModel)]="filters.sortBy"
+                (change)="applyFilters()">
+              <span>Nombre</span>
+            </label>
+          </div>
+          <div class="filter-options" style="margin-top: 8px;">
+            <label class="filter-radio">
+              <input 
+                type="radio" 
+                name="sortOrder" 
+                value="asc"
+                [(ngModel)]="filters.sortOrder"
+                (change)="applyFilters()">
+              <span>Ascendente</span>
+            </label>
+            <label class="filter-radio">
+              <input 
+                type="radio" 
+                name="sortOrder" 
+                value="desc"
+                [(ngModel)]="filters.sortOrder"
+                (change)="applyFilters()">
+              <span>Descendente</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- botones de acción -->
+        <div class="filter-actions">
+          <button class="btn-secondary" (click)="clearFilters()">Limpiar</button>
+          <button class="btn-primary" (click)="closeFilterModal()">Aplicar</button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- buscador y filtro  -->
+  <div class="search-filter-container">
+    <ion-searchbar 
+      class="search-bar"
+      placeholder="Busca tus archivos…"
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      debounce="300">
+    </ion-searchbar>
+    <button class="filter-button" (click)="openFilterModal()">
+      <ion-icon name="funnel-outline"></ion-icon>
+    </button>
+  </div>
+
+  <!-- grid de documentos -->
+  <div class="documents-container" *ngIf="filteredDocuments.length > 0">
+    <div class="documents-grid">
+      <div class="document-card" *ngFor="let doc of filteredDocuments">
+        <!-- Status -->
+        <div class="badge" [ngClass]="'badge-' + doc.status">
+          {{ doc.status }}
+        </div>
+
+        <!-- icono de file-->
+        <div class="card-icon">
+          <ion-icon [name]="getFileIcon(doc.type)"></ion-icon>
+        </div>
+
+        <!-- contenido -->
+        <div class="card-content">
+          <h3 class="card-title">{{ doc.name }}</h3>
+          <div class="card-meta">
+            <span class="meta-item">{{ doc.type }}</span>
+            <span class="meta-separator">•</span>
+            <span class="meta-item">{{ doc.size }}</span>
+            <span class="meta-separator">•</span>
+            <span class="meta-item">{{ doc.date }}</span>
+          </div>
+        </div>
+
+        <!-- cartas de acciones -->
+        <div class="card-actions">
+          <button 
+            class="action-btn view-btn"
+            [disabled]="doc.status === 'Pendiente'"
+            (click)="viewDocument(doc)">
+            Ver
+          </button>
+          <button 
+            class="action-btn download-btn"
+            [disabled]="doc.status === 'Pendiente'"
+            (click)="downloadDocument(doc)">
+            Descargar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="filteredDocuments.length === 0 && !isLoading">
+    <div class="empty-icon">
+      <ion-icon name="folder-open-outline"></ion-icon>
+    </div>
+    <h3 class="empty-title">No se encontraron documentos</h3>
+    <p class="empty-subtitle">Intenta cambiar el filtro o buscar otra palabra</p>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+    <p>Cargando documentos...</p>
+  </div>
+</ion-content>
+

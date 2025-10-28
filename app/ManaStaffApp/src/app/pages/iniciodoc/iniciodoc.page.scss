@@ -1,0 +1,564 @@
+
+// variables y paletas de colores
+$color-primary: #2563EB;
+$color-primary-dark: #1E3A8A;
+$color-primary-light: #3B82F6;
+$color-bg: #F8FAFC;
+$color-text-primary: #0F172A;
+$color-text-secondary: #6B7280;
+$color-white: #FFFFFF;
+$color-success: #10B981;
+$color-warning: #F59E0B;
+$color-danger: #DC2626;
+$color-border: #E5E7EB;
+
+$border-radius: 12px;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+// Header
+.header-toolbar {
+  --background: #{$color-white};
+  --border-bottom: 1px solid #{$color-border};
+  box-shadow: #{$shadow-sm};
+  padding: 16px 0;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #{$color-text-primary};
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+
+// PIN modal
+.pin-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+  --box-shadow: none;
+  --background: rgba(0, 0, 0, 0.5);
+
+  @media (min-width: 768px) {
+    --width: 420px;
+    --height: auto;
+    --border-radius: #{$border-radius};
+    --box-shadow: #{$shadow-lg};
+  }
+}
+
+.pin-modal-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+
+  @media (min-width: 768px) {
+    min-height: auto;
+  }
+}
+
+.pin-modal-content {
+  background: #{$color-white};
+  border-radius: #{$border-radius};
+  padding: 40px 24px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: #{$shadow-lg};
+  animation: slideUp 0.3s ease-out;
+
+  @media (min-width: 768px) {
+    padding: 48px 32px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pin-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+
+  ion-icon {
+    font-size: 48px;
+    color: #{$color-primary};
+  }
+}
+
+.pin-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #{$color-text-primary};
+  text-align: center;
+  margin: 0 0 8px 0;
+}
+
+.pin-subtitle {
+  font-size: 14px;
+  color: #{$color-text-secondary};
+  text-align: center;
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.pin-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.pin-input {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #{$color-border};
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: #{$color-text-primary};
+  background: #{$color-white};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #{$color-primary};
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  &:disabled {
+    background: #{$color-bg};
+    color: #{$color-text-secondary};
+  }
+}
+
+.pin-error {
+  font-size: 13px;
+  color: #{$color-danger};
+  text-align: center;
+  margin: 0 0 24px 0;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.pin-button {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #{$color-primary-light} 0%, #{$color-primary} 100%);
+  color: #{$color-white};
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: #{$shadow-md};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: #{$shadow-lg};
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Filtro modal
+.filter-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+
+  @media (min-width: 768px) {
+    --width: 400px;
+    --height: auto;
+    --border-radius: #{$border-radius};
+  }
+}
+
+.filter-toolbar {
+  --background: #{$color-white};
+  --border-bottom: 1px solid #{$color-border};
+  padding: 16px;
+}
+
+.close-btn {
+  --color: #{$color-text-primary};
+  font-size: 24px;
+}
+
+.filter-content {
+  --background: #{$color-bg};
+  padding: 24px;
+}
+
+.filter-section {
+  margin-bottom: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #{$color-text-primary};
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-checkbox,
+.filter-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #{$color-text-primary};
+
+  input {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: #{$color-primary};
+  }
+
+  span {
+    user-select: none;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #{$color-border};
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #{$color-primary-light} 0%, #{$color-primary} 100%);
+  color: #{$color-white};
+  box-shadow: #{$shadow-md};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: #{$shadow-lg};
+  }
+}
+
+.btn-secondary {
+  background: #{$color-white};
+  color: #{$color-text-primary};
+  border: 1px solid #{$color-border};
+
+  &:hover {
+    background: #{$color-bg};
+  }
+}
+
+// buscador y filtro
+.search-filter-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.search-bar {
+  flex: 1;
+  --background: #{$color-white};
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border: 1px solid #{$color-border};
+  box-shadow: #{$shadow-sm};
+
+  &::placeholder {
+    color: #{$color-text-secondary};
+  }
+}
+
+.filter-button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #{$color-border};
+  background: #{$color-white};
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: #{$shadow-sm};
+
+  ion-icon {
+    font-size: 20px;
+    color: #{$color-text-primary};
+  }
+
+  &:hover {
+    background: #{$color-bg};
+    border-color: #{$color-primary};
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Documentos grid
+.documents-container {
+  margin-bottom: 40px;
+}
+
+.documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.document-card {
+  background: #{$color-white};
+  border-radius: #{$border-radius};
+  padding: 20px;
+  box-shadow: #{$shadow-md};
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #{$color-border};
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: #{$shadow-lg};
+  }
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+
+  &.badge-Activo {
+    background: rgba(16, 185, 129, 0.1);
+    color: #{$color-success};
+  }
+
+  &.badge-Pendiente {
+    background: rgba(245, 158, 11, 0.1);
+    color: #{$color-warning};
+  }
+
+  &.badge-Caducado {
+    background: rgba(220, 38, 38, 0.1);
+    color: #{$color-danger};
+  }
+}
+
+.card-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 40px;
+  color: #{$color-primary};
+}
+
+.card-content {
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #{$color-text-primary};
+  margin: 0 0 8px 0;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  color: #{$color-text-secondary};
+  line-height: 1.5;
+}
+
+.meta-item {
+  white-space: nowrap;
+}
+
+.meta-separator {
+  opacity: 0.5;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.view-btn {
+  background: linear-gradient(135deg, #{$color-primary-light} 0%, #{$color-primary} 100%);
+  color: #{$color-white};
+  box-shadow: #{$shadow-sm};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: #{$shadow-md};
+  }
+}
+
+.download-btn {
+  background: #{$color-bg};
+  color: #{$color-text-primary};
+  border: 1px solid #{$color-border};
+
+  &:hover:not(:disabled) {
+    background: #{$color-white};
+    border-color: #{$color-primary};
+  }
+}
+
+//empty state
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 80px;
+  color: #{$color-text-secondary};
+  opacity: 0.3;
+  margin-bottom: 24px;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #{$color-text-primary};
+  margin: 0 0 8px 0;
+}
+
+.empty-subtitle {
+  font-size: 14px;
+  color: #{$color-text-secondary};
+  margin: 0;
+  line-height: 1.5;
+}
+
+// loading state
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+
+  p {
+    color: #{$color-text-secondary};
+    font-size: 14px;
+  }
+}
+
+// ion
+ion-content {
+  --background: #{$color-bg};
+}
+
+ion-searchbar {
+  --icon-color: #{$color-text-secondary};
+  --placeholder-color: #{$color-text-secondary};
+  --placeholder-opacity: 1;
+}
+
+ion-spinner {
+  --color: #{$color-primary};
+}
