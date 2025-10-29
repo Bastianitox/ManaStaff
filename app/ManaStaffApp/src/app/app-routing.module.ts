@@ -24,6 +24,10 @@ const routes: Routes = [
   {
     path: 'crearsoli',
     loadChildren: () => import('./pages/crearsoli/crearsoli.module').then( m => m.CrearsoliPageModule)
+  },
+  {
+    path: 'detallesoli',
+    loadChildren: () => import('./pages/detallesoli/detallesoli.module').then( m => m.DetallesoliPageModule)
   }
 
 
