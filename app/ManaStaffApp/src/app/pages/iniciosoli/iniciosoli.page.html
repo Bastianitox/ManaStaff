@@ -1,0 +1,257 @@
+<!-- Header ahora igual a iniciodoc con logo a la izquierda -->
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-toolbar">
+    <div class="header-container">
+      <!-- Logo -->
+      <div class="header-left">
+        <div class="company-logo">
+          <img src="assets/img/logo_grande.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
+      </div>
+      
+      <!-- Título -->
+      <div class="header-right">
+        <h1 class="header-title">Mis solicitudes</h1>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Buscador y filtro -->
+  <div class="search-filter-container">
+    <ion-searchbar
+      class="search-bar"
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      debounce="300"
+      placeholder="Busca tus solicitudes…"
+    ></ion-searchbar>
+    <button class="filter-button" (click)="openFilterModal()">
+      <ion-icon name="funnel-outline"></ion-icon>
+    </button>
+  </div>
+
+  <!-- botón de nueva solicitud-->
+  <div class="new-request-container">
+    <button class="btn-new-request" (click)="createNewRequest()">
+      <ion-icon name="add-outline"></ion-icon>
+      <span>Nueva solicitud</span>
+    </button>
+  </div>
+
+  <!-- título de sección -->
+  <div class="section-title">Solicitudes recientes</div>
+
+  <!-- cargando -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner color="primary"></ion-spinner>
+    <p>Cargando solicitudes…</p>
+  </div>
+
+  <!-- Lista de solicitudes -->
+  <div class="requests-list" *ngIf="!isLoading && filteredSolicitudes.length > 0">
+    <div class="request-card" *ngFor="let solicitud of filteredSolicitudes">
+      <!-- Badge de estado -->
+      <div class="status-badge" [ngClass]="solicitud.estado">
+        <span *ngIf="solicitud.estado === 'aprobada'">Aprobada ✓</span>
+        <span *ngIf="solicitud.estado === 'pendiente'">Pendiente ⏳</span>
+        <span *ngIf="solicitud.estado === 'rechazada'">Rechazada ✗</span>
+      </div>
+
+      <!-- contenido principal -->
+      <div class="card-content">
+        <div class="icon-container">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </div>
+        <div class="info-container">
+          <h3 class="request-title">{{ solicitud.asunto }}</h3>
+          <div class="request-meta">
+            <div class="meta-item">
+              <span>Enviada: {{ solicitud.fecha_solicitud }}</span>
+            </div>
+            <div class="meta-item">
+              <span>{{ getDateRange(solicitud) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- botones de acción -->
+      <div class="action-buttons">
+        <button 
+          class="btn-cancel" 
+          *ngIf="solicitud.estado === 'pendiente'"
+          (click)="cancelRequest(solicitud.id)"
+        >
+          Cancelar
+        </button>
+        <button 
+          class="btn-primary" 
+          (click)="viewDetails(solicitud.id)"
+        >
+          Ver detalles
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- empty state -->
+  <div class="empty-state" *ngIf="!isLoading && filteredSolicitudes.length === 0">
+    <ion-icon name="chatbox-ellipses-outline" class="empty-icon"></ion-icon>
+    <h3>No se encontraron solicitudes</h3>
+    <p>Intenta ajustar tus filtros de búsqueda</p>
+  </div>
+
+  <!-- espaciado para bottom nav -->
+  <div style="height: 80px;"></div>
+</ion-content>
+
+<!-- Modal de filtros-->
+<ion-modal 
+  [isOpen]="showFilterModal"
+  class="filter-modal">
+  <ng-template ionModalContent>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="filter-toolbar">
+        <ion-title class="filter-modal-title">Filtrar solicitudes</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeFilterModal()" class="close-btn">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+      <div class="filter-description">
+        <p>Refina por tipo, estado o fecha</p>
+      </div>
+    </ion-header>
+
+    <ion-content class="filter-content">
+      <!-- Estado -->
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <ion-icon name="checkmark-circle-outline" class="filter-icon"></ion-icon>
+          <h3 class="filter-label">Estado</h3>
+        </div>
+        <div class="filter-options">
+          <label class="filter-checkbox">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="filters.estados.pendiente">
+            <span class="checkbox-label">Pendiente</span>
+          </label>
+          <label class="filter-checkbox">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="filters.estados.aprobada">
+            <span class="checkbox-label">Aprobada</span>
+          </label>
+          <label class="filter-checkbox">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="filters.estados.rechazada">
+            <span class="checkbox-label">Rechazada</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Tipo de solicitud -->
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <ion-icon name="document-text-outline" class="filter-icon"></ion-icon>
+          <h3 class="filter-label">Tipo de solicitud</h3>
+        </div>
+        <div class="filter-options">
+          <label class="filter-checkbox" *ngFor="let tipo of tipoOptions">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="filters.tipo[tipo.id]">
+            <span class="checkbox-label">{{ tipo.nombre }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Ordenar por -->
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <ion-icon name="swap-vertical-outline" class="filter-icon"></ion-icon>
+          <h3 class="filter-label">Ordenar por</h3>
+        </div>
+        <div class="filter-options">
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="sortBy" 
+              value="desc"
+              [(ngModel)]="filters.sort">
+            <span class="radio-label">Fecha más reciente</span>
+          </label>
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="sortBy" 
+              value="asc"
+              [(ngModel)]="filters.sort">
+            <span class="radio-label">Fecha más antigua</span>
+          </label>
+        </div>
+      </div>
+    </ion-content>
+
+    <div class="filter-footer">
+      <button class="btn-secondary" (click)="clearFilters()">
+        Limpiar
+      </button>
+      <button class="btn-primary" (click)="closeFilterModal()">
+        Aplicar filtros
+      </button>
+    </div>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal de confirmación de cancelación -->
+<ion-modal [isOpen]="showCancelModal" (didDismiss)="closeCancelModal()">
+  <ng-template>
+    <div class="cancel-modal-content">
+      <div class="cancel-modal-icon">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+      </div>
+      <h2>Confirmar cancelación</h2>
+      <p>¿Estás seguro de que quieres cancelar esta solicitud?</p>
+      <div class="cancel-modal-actions">
+        <button class="btn-secondary" (click)="closeCancelModal()">
+          Volver
+        </button>
+        <button class="btn-danger" (click)="confirmCancel()">
+          Cancelar solicitud
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+<!-- Toast -->
+<div class="app-toast" *ngIf="showToast" [ngClass]="toastType">
+  {{ toastMessage }}
+</div>
+
+<!-- navegación -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>
+
