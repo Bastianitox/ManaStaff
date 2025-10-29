@@ -254,6 +254,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const rut = document.getElementById("rut").value.replace(/\./g, "").replace("-", "");
     const url = `/modificar_usuario_funcion/${rut}`;
     const formData = new FormData(form);
+    const imagenFile = document.getElementById("imagen").files[0];
+    if (imagenFile) formData.set("imagen", imagenFile);
     try {
       const res = await fetch(url, {
         method: "POST",

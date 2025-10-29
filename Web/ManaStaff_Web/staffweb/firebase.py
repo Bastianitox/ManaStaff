@@ -21,7 +21,7 @@ storageP = firebase.storage()
 cred = credentials.Certificate(certificados)
 
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred, {
+    firebase_app = firebase_admin.initialize_app(cred, {
         "databaseURL": "https://manastaff-7ef1d-default-rtdb.firebaseio.com",
         "storageBucket": "manastaff-7ef1d.firebasestorage.app",
     })

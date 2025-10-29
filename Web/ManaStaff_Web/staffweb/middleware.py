@@ -122,7 +122,7 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
         return response
 
     def registrar_auditoria(self, request, response, accion, detalle):
-        from staffweb.firebase import database
+        from staffweb.firebase import db
 
         usuario_rut = request.session.get("usuario_rut", "anonimo")
         ip_origen = request.META.get("REMOTE_ADDR", "")
@@ -153,6 +153,7 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
         }
 
         try:
-            database.child("Auditoria").push(log_data)
+            ref = db.reference("Auditoria")
+            ref.push(log_data)
         except Exception as e:
             print("Error registrando log:", e)
