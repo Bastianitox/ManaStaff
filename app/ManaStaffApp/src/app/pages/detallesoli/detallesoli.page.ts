@@ -74,11 +74,13 @@ export class DetallesoliPage implements OnInit {
 
   // Navegación
   goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
+    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
+    this.router.navigate(['/iniciodoc'])
   }
 
   goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
+    console.log("Navegar a Solicitudes")
+    this.router.navigate(["/iniciosoli"])
   }
 
   goToNoticias() {

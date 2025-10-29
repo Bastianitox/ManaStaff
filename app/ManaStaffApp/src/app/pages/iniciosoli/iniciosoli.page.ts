@@ -1,4 +1,5 @@
 import { Component, type OnInit } from "@angular/core"
+import { Router } from '@angular/router'
 
 interface Solicitud {
   id: string
@@ -108,7 +109,9 @@ export class IniciosoliPage implements OnInit {
   toastMessage = ""
   toastType: "success" | "error" | null = null
 
-  constructor() {}
+  constructor(
+    private router: Router
+  ) {}
 
   ngOnInit() {
     // Extraer tipos únicos de solicitudes
@@ -262,11 +265,13 @@ export class IniciosoliPage implements OnInit {
 
   // Navegación
   goToDocumentos() {
-    console.log("Navegar a Documentos")
+    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
+    this.router.navigate(['/iniciodoc'])
   }
 
   goToSolicitudes() {
-    console.log("Ya estás en Solicitudes")
+    console.log("Navegar a Solicitudes")
+    this.router.navigate(["/iniciosoli"])
   }
 
   goToNoticias() {
@@ -277,4 +282,3 @@ export class IniciosoliPage implements OnInit {
     console.log("Navegar a Configuración")
   }
 }
-

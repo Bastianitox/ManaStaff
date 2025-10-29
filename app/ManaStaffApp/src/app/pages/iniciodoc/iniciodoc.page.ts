@@ -286,7 +286,8 @@ export class IniciodocPage implements OnInit {
   }
 
   goToDocumentos() {
-    console.log("Ya estás en Mis documentos")
+    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
+    this.router.navigate(['/iniciodoc'])
   }
 
   goToNoticias() {
@@ -294,14 +295,11 @@ export class IniciodocPage implements OnInit {
   }
 
   goToSolicitudes() {
-    console.log("Navegando a Solicitudes")
+    console.log("Navegar a Solicitudes")
+    this.router.navigate(["/iniciosoli"])
   }
 
   goToConfig() {
     console.log("Navegando a Configuración")
   }
 }
-
-
-
-

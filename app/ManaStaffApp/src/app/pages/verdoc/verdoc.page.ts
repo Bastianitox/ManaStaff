@@ -100,12 +100,11 @@ export class VerdocPage implements OnInit {
   }
 
   goToSolicitudes() {
-    console.log("[verdoc] Navegar a Solicitudes")
+    console.log("Navegar a Solicitudes")
+    this.router.navigate(["/iniciosoli"])
   }
 
   goToConfig() {
     console.log("[verdoc] Navegar a Configuración")
   }
 }
-
-
