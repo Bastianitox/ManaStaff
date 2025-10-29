@@ -18,10 +18,10 @@ from urllib.parse import unquote_plus
 import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
-from .decorators import admin_required
+from .utils.decorators import admin_required
 
 
-from .auditoria import registrar_auditoria_manual
+from .utils.auditoria import registrar_auditoria_manual
 
 MAX_INTENTOS = 5
 TIEMPO_BLOQUEO = timedelta(minutes=10)

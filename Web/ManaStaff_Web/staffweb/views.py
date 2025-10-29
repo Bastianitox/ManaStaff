@@ -14,8 +14,8 @@ from collections import Counter, defaultdict
 import requests
 
 from .funciones_dos import obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
-from .decorators import admin_required
-from .auditoria import registrar_auditoria_manual
+from .utils.decorators import admin_required
+from .utils.auditoria import registrar_auditoria_manual
 from .funciones import obtener_rut_actual
 #IMPORTS DE FIREBASE
 from firebase_admin import auth

@@ -81,7 +81,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'staffweb.middleware.FirebaseAuthAuditoriaMiddleware',
+    'staffweb.utils.middleware.FirebaseAuthAuditoriaMiddleware',
 ]
 
 ROOT_URLCONF = 'ManaStaff_Web.urls'
@@ -96,7 +96,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                "staffweb.context_processors.user_info",
+                "staffweb.utils.context_processors.user_info",
             ],
         },
     },
