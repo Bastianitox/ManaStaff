@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
 import { AlertController } from "@ionic/angular"
+import { Router } from '@angular/router'
 
 // Interfaces
 interface Document {
@@ -126,7 +127,10 @@ export class IniciodocPage implements OnInit {
   @ViewChildren("pinField") pinFields!: QueryList<ElementRef>
 
   // Constructor -> para mostrar alertas
-  constructor(private alertController: AlertController) {
+  constructor(
+    private alertController: AlertController,
+    private router: Router) {
+
     this.documents = [...MOCK_DOCUMENTS]
     this.filteredDocuments = [...MOCK_DOCUMENTS]
   }
@@ -265,13 +269,11 @@ export class IniciodocPage implements OnInit {
     return iconMap[type] || "document-outline"
   }
 
-  async viewDocument(doc: Document) {
-    const alert = await this.alertController.create({
-      header: "Ver Documento",
-      message: `Abriendo: ${doc.name}`,
-      buttons: ["OK"],
+  viewDocument(doc: Document) {
+    console.log("[iniciodoc] Abriendo documento:", doc.name)
+    this.router.navigate(['/verdoc'], {
+      state: { document: doc } 
     })
-    await alert.present()
   }
 
   async downloadDocument(doc: Document) {

@@ -1,0 +1,108 @@
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="header-title">Detalle del documento</ion-title>
+    <ion-buttons slot="end" *ngIf="doc.downloadUrl">
+      <ion-button (click)="downloadDocument()" class="download-header-button">
+        <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="content-wrapper">
+    <!-- Información del documento -->
+    <div class="document-info-card">
+      <h2 class="document-title">{{ doc.title }}</h2>
+      <div class="document-meta">
+        <span>{{ doc.format }}</span>
+        <span class="meta-separator">•</span>
+        <span>{{ doc.size }}</span>
+        <span class="meta-separator">•</span>
+        <span>{{ doc.date }}</span>
+      </div>
+    </div>
+
+    <!-- Botón de descarga -->
+    <div class="download-section" *ngIf="doc.downloadUrl">
+      <ion-button 
+        expand="block" 
+        class="download-button"
+        (click)="downloadDocument()">
+        <ion-icon slot="start" name="download-outline"></ion-icon>
+        Descargar documento
+      </ion-button>
+    </div>
+
+    <div class="download-section" *ngIf="!doc.downloadUrl">
+      <ion-button 
+        expand="block" 
+        class="download-button disabled"
+        disabled>
+        <ion-icon slot="start" name="download-outline"></ion-icon>
+        Descarga no disponible
+      </ion-button>
+    </div>
+
+    <!-- Visor del documento -->
+    <div class="document-viewer-card">
+      <!-- Caso 1: Documento disponible con fileUrl -->
+      <div class="viewer-container" *ngIf="doc.fileUrl">
+        <iframe 
+          [src]="safeFileUrl" 
+          class="document-iframe"
+          frameborder="0">
+        </iframe>
+      </div>
+
+      <!-- Caso 2: Documento no disponible -->
+      <div class="empty-state" *ngIf="!doc.fileUrl">
+        <div class="empty-icon">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+        </div>
+        <h3 class="empty-title">Documento no disponible</h3>
+        <p class="empty-description">
+          El documento solicitado no está disponible o no se pudo encontrar.
+        </p>
+        <ion-button 
+          class="back-to-list-button"
+          (click)="goBackToList()">
+          Volver a Mis documentos
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de navegación inferior -->
+  <div class="bottom-nav">
+    <div 
+      class="bottom-nav-item bottom-nav-active" 
+      (click)="goToDocumentos()">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <span>Mis documentos</span>
+    </div>
+    <div 
+      class="bottom-nav-item" 
+      (click)="goToNoticias()">
+      <ion-icon name="megaphone-outline"></ion-icon>
+      <span>Noticias y avisos</span>
+    </div>
+    <div 
+      class="bottom-nav-item" 
+      (click)="goToSolicitudes()">
+      <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+      <span>Solicitudes</span>
+    </div>
+    <div 
+      class="bottom-nav-item" 
+      (click)="goToConfig()">
+      <ion-icon name="settings-outline"></ion-icon>
+      <span>Configuración</span>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,274 @@
+// colores corporativos
+$primary-blue: #2563EB;
+$dark-blue: #1E3A8A;
+$light-blue: #3B82F6;
+$text-primary: #0F172A;
+$text-secondary: #6B7280;
+$background-app: #F8FAFC;
+$border-color: #E5E7EB;
+$white: #FFFFFF;
+$red-error: #DC2626;
+
+// Fondo general de la página
+ion-content {
+  --background: #{$background-app};
+}
+
+// Header
+.header-toolbar {
+  --background: #{$white};
+  --border-color: #{$border-color};
+  --color: #{$text-primary};
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.back-button {
+  --color: #{$primary-blue};
+  font-size: 24px;
+}
+
+.download-header-button {
+  --color: #{$primary-blue};
+  font-size: 22px;
+}
+
+// Contenedor principal
+.content-wrapper {
+  padding: 16px;
+  padding-bottom: 80px;
+}
+
+// Tarjeta de información del documento
+.document-info-card {
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.document-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.document-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-secondary;
+  flex-wrap: wrap;
+
+  .meta-separator {
+    color: $border-color;
+  }
+}
+
+// Sección de descarga
+.download-section {
+  margin-bottom: 16px;
+}
+
+.download-button {
+  --background: linear-gradient(135deg, #{$light-blue} 0%, #{$primary-blue} 100%);
+  --background-hover: #{$primary-blue};
+  --background-activated: #{$dark-blue};
+  --border-radius: 12px;
+  --box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  --color: #{$white};
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: none;
+  letter-spacing: 0;
+
+  ion-icon {
+    font-size: 20px;
+    margin-right: 4px;
+  }
+
+  &.disabled {
+    --background: #{$text-secondary};
+    --box-shadow: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Tarjeta del visor
+.document-viewer-card {
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-height: 400px;
+}
+
+// Contenedor del iframe
+.viewer-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.document-iframe {
+  width: 100%;
+  height: 400px;
+  border: none;
+  border-radius: 8px;
+  background: $background-app;
+}
+
+// Estado vacío
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  min-height: 400px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  ion-icon {
+    font-size: 48px;
+    color: $red-error;
+  }
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0 0 8px 0;
+}
+
+.empty-description {
+  font-size: 14px;
+  color: $text-secondary;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+  max-width: 280px;
+}
+
+.back-to-list-button {
+  --background: #{$white};
+  --background-hover: #{$background-app};
+  --background-activated: #{$border-color};
+  --border-radius: 12px;
+  --border-width: 2px;
+  --border-style: solid;
+  --border-color: #{$primary-blue};
+  --color: #{$primary-blue};
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+// Barra de navegación inferior
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: $primary-blue;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0 12px 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  z-index: 1000;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  max-width: 100px;
+
+  ion-icon {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.2s ease;
+  }
+
+  span {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    line-height: 1.2;
+    transition: color 0.2s ease;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.bottom-nav-active {
+  ion-icon {
+    color: $white;
+  }
+
+  span {
+    color: $white;
+    font-weight: 600;
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .document-iframe {
+    height: 600px;
+  }
+
+  .document-viewer-card {
+    min-height: 600px;
+  }
+
+  .empty-state {
+    min-height: 600px;
+  }
+}

@@ -12,6 +12,10 @@ const routes: Routes = [
   },  {
     path: 'iniciodoc',
     loadChildren: () => import('./pages/iniciodoc/iniciodoc.module').then( m => m.IniciodocPageModule)
+  },
+  {
+    path: 'verdoc',
+    loadChildren: () => import('./pages/verdoc/verdoc.module').then( m => m.VerdocPageModule)
   }
 
 
