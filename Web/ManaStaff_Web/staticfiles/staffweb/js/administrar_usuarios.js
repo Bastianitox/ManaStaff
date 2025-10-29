@@ -429,7 +429,7 @@ function showDisableDetail(userId) {
     })
     .catch(err => {
       console.error(err);
-      showAlert('error', err.message);
+      showAlert('error', 'Error al obtener el detalle del usuario.');
     });
 }
 

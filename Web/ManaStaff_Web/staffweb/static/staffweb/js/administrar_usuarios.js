@@ -414,7 +414,6 @@ function showDisableDetail(userId) {
   fetch(`/detalle_usuario_deshabilitado/${userId}`)
     .then(r => r.json())
     .then(data => {
-      console.log(data)
       if (data.status !== 'success') {
         showAlert('error', 'No fue posible obtener el detalle.');
         return;
