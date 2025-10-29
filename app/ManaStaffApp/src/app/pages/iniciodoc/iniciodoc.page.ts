@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
 import { AlertController } from "@ionic/angular"
 
-
 // Interfaces
 interface Document {
   id: string
@@ -92,12 +91,10 @@ const MOCK_DOCUMENTS: Document[] = [
   selector: "app-iniciodoc",
   templateUrl: "./iniciodoc.page.html",
   styleUrls: ["./iniciodoc.page.scss"],
-  standalone: false
+  standalone: false,
 })
 export class IniciodocPage implements OnInit {
-
-
-// Estado de la interfaz
+  // Estado de la interfaz
   showPinModal = true
   showFilterModal = false
   isLoading = false
@@ -128,15 +125,13 @@ export class IniciodocPage implements OnInit {
 
   @ViewChildren("pinField") pinFields!: QueryList<ElementRef>
 
-
   // Constructor -> para mostrar alertas
   constructor(private alertController: AlertController) {
     this.documents = [...MOCK_DOCUMENTS]
     this.filteredDocuments = [...MOCK_DOCUMENTS]
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   // Modal del pin
   onPinInput(index: number, event: any) {
@@ -177,7 +172,7 @@ export class IniciodocPage implements OnInit {
   }
 
   isPinIncomplete(): boolean {
-    return this.pinInputs.some(p => !p || p.trim() === '');
+    return this.pinInputs.some((p) => !p || p.trim() === "")
   }
 
   // Buscador
@@ -260,7 +255,7 @@ export class IniciodocPage implements OnInit {
   }
 
   // Acciones sobre los documentos
- getFileIcon(type: string): string {
+  getFileIcon(type: string): string {
     const iconMap: { [key: string]: string } = {
       PDF: "document-outline",
       DOCX: "document-text-outline",
@@ -287,6 +282,24 @@ export class IniciodocPage implements OnInit {
     })
     await alert.present()
   }
+
+  goToDocumentos() {
+    console.log("Ya estás en Mis documentos")
+  }
+
+  goToNoticias() {
+    console.log("Navegando a Noticias y avisos")
+  }
+
+  goToSolicitudes() {
+    console.log("Navegando a Solicitudes")
+  }
+
+  goToConfig() {
+    console.log("Navegando a Configuración")
+  }
 }
+
+
 
 
