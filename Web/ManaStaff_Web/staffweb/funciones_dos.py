@@ -1,19 +1,6 @@
-import re
-from django.shortcuts import render
-from django.views.decorators.http import require_POST,require_GET
-from requests.exceptions import HTTPError
-from datetime import datetime, timedelta
-from django.http import JsonResponse, HttpResponse
-import json
-import re
-import base64
-from urllib.parse import unquote_plus
-import requests
-import mimetypes
-from .firebase import authP, auth, database, storage, db
-from urllib.parse import urlparse, unquote, parse_qs
+from django.http import JsonResponse
+from .firebase import database, db
 #-----------------------------------------PIN--------------------------------------------------
-from django.views.decorators.csrf import csrf_exempt
 
 def validar_pin(request):
     #Valida el PIN 
@@ -36,7 +23,7 @@ def validar_pin(request):
 
     try:
         #leer desde Realtime Database Usuario/<rut>/PIN
-        usuario_data = database.child("Usuario").child(rut).get().val() or {}
+        usuario_data = db.reference("Usuario").child(rut).get() or {}
         pin_real = str(usuario_data.get("PIN") or "").strip()
     except Exception as e:
         return JsonResponse({"ok": False, "error": "Error consultando la base de datos."}, status=500)
@@ -49,62 +36,44 @@ def validar_pin(request):
     else:
         return JsonResponse({"ok": False, "error": "PIN incorrecto."}, status=403)
 
-
-
-
-
-
-
-
 #-----------------------------------------------------------------------------------------------
-def funcion_dos(request):
-    pass
 
 # Listar todas las publicaciones
 def listar_publicaciones():
-    database.child()
     ref = db.reference("Anuncio")
     anuncios = ref.get() or {}
     return anuncios
 
 # Crear nueva publicación
 def crear_publicacion_funcion(data):
-
-    database.child()
     ref = db.reference("Anuncio")
     ref.push(data)
 
 # Obtener una publicación por ID
 def obtener_publicacion(pub_id):
-    database.child()
     ref = db.reference(f"Anuncio/{pub_id}")
     return ref.get()
 
 # Modificar una publicación existente
 def modificar_publicacion(pub_id, data):
-    database.child()
     ref = db.reference(f"Anuncio/{pub_id}")
     ref.update(data)
 
 # Eliminar una publicación
 def eliminar_publicacion_funcion(pub_id):
-    database.child()
     ref = db.reference(f"Anuncio/{pub_id}")
     ref.delete()
 
-
-
-
 #--------------------------------------------------------------------------------#
 def obtener_datos_usuario(usuario_id):
-    datos = database.child("Usuario").child(usuario_id).get().val()
+    datos = db.reference("Usuario").child(usuario_id).get()
     if not datos:
         return {}
 
     cargo_nombre = ""
     cargo_id = datos.get("Cargo")
     if cargo_id:
-        cargo_data = database.child("Cargo").child(cargo_id).get().val()
+        cargo_data = db.reference("Cargo").child(cargo_id).get()
         if cargo_data:
             cargo_nombre = cargo_data.get("Nombre", "")
 
@@ -121,29 +90,8 @@ def obtener_datos_usuario(usuario_id):
     }
 
 def actualizar_datos_usuario(usuario_id, nuevo_celular, nueva_direccion, imagen_nueva):
-    database.child("Usuario").child(usuario_id).update({
+    db.reference("Usuario").child(usuario_id).update({
         "Telefono": nuevo_celular,
         "Direccion": nueva_direccion,
         "imagen": imagen_nueva
-    })
-
-
-#-------------------------------------------------------------------------#
-
-def verificar_contrasena_actual(usuario_id, contrasena_ingresada):
-    """
-    Verifica si la contraseña actual ingresada coincide con la registrada en Firebase.
-    """
-    datos = database.child("Usuario").child(usuario_id).get().val()
-    if not datos:
-        return False
-    return datos.get("Contrasena", "") == contrasena_ingresada
-
-
-def actualizar_contrasena(usuario_id, nueva_contrasena):
-    """
-    Actualiza la contraseña del usuario en Firebase.
-    """
-    database.child("Usuario").child(usuario_id).update({
-        "Contrasena": nueva_contrasena
     })

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from staffweb.firebase import database
+from staffweb.firebase import db
 
 def registrar_auditoria_manual(request, accion, resultado, descripcion=""):
     usuario_id = request.session.get("usuario_id", "anonimo")
@@ -20,6 +20,7 @@ def registrar_auditoria_manual(request, accion, resultado, descripcion=""):
     }
 
     try:
-        database.child("Auditoria").push(log_data)
+        ref = db.reference("Auditoria")
+        ref.push(log_data)
     except Exception as e:
         print("Error registrando log manual:", e)

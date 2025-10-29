@@ -30,174 +30,182 @@ TIEMPO_BLOQUEO = timedelta(minutes=10)
 @require_POST
 def iniciarSesion(request):
     try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"status": "false", "message": "JSON inválido."})
-
-    # Obtener campos desde JSON
-    email = data.get("email")
-    password = data.get("password")
-
-    
-    # VALIDAR CAMPOS VACIOS
-    if not all([email, password]):
-        return JsonResponse({"status": "false", "message": "Los campos correo y/o contraseña están vacíos."})
-
-    # Validación de correo
-    patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    if not re.match(patron_email, email):
-        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
-    email = str(email).lower()
-    if not correo_ya_existe(email):
-        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
-
-    #CERRAR SESION
-    request.session.flush()
-
-    # VERIFICAR QUE EL CORREO EXISTA EN REALTIME DATABASE
-    usuario = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
-
-    usuarioDATABASE = database.child("Usuario").order_by_child("correo").equal_to(email).get().val() or {}
-    if not usuarioDATABASE:
-        return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
-    
-
-    #VALIDAR VERIFICACION DE CORREO
-    try:
-        user = auth.get_user_by_email(email)
-
-        # VALIDAR SI ESTÁ DESHABILITADO EN AUTHENTICATION
-        if user.disabled:
-            registrar_auditoria_manual(request, "Seis", "false", f"Intento de acceso con cuenta deshabilitada ({email}).")
-            return JsonResponse({"status": "false", "message": "Tu cuenta ha sido deshabilitada. Contacta al administrador."})
-
-        # VALIDAR SI ESTÁ DESHABILITADO EN LA BASE DE DATOS
-        id_usu, usuario_data = next(iter(usuario.items()))
-        estado_usuario = usuario_data.get("Deshabilitado", "")
-
-        if estado_usuario == True:
-            registrar_auditoria_manual(request, "Seis", "false", f"Intento de acceso con cuenta deshabilitada en la base de datos ({email}).")
-            return JsonResponse({"status": "false", "message": "Tu cuenta se encuentra deshabilitada. Contacta al administrador."})
-
-
-        if not user.email_verified:
-            registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con correo sin verificar.")
-            return JsonResponse({"status": "false","message": "Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada."})
-    except auth.UserNotFoundError:
-        return JsonResponse({"status": "false","message": "Correo no encontrado."})
-
-
-    # VARIABLES DE HORA PARA BLOQUEO
-    id_usu, usuario = next(iter(usuario.items()))
-
-    try:
-        locale.setlocale(locale.LC_TIME, "es_ES.utf8")  # Linux/Mac
-    except:
         try:
-            locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")  # Windows
-        except:
-            pass
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "false", "message": "JSON inválido."})
 
-    # VALIDAR SI EL USUARIO ESTA BLOQUEADO
-    bloqueado_hasta = usuario.get("bloqueado_hasta")
-    if bloqueado_hasta:
-        bloqueado_dt = datetime.fromisoformat(bloqueado_hasta)
-        if bloqueado_dt > datetime.now():
-            fecha_formateada = bloqueado_dt.strftime("%d de %B del %Y a las %H:%Mhrs")
-            registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con cuenta bloqueada.")
-            return JsonResponse({"status": "false", "message": f"Cuenta bloqueada hasta el {fecha_formateada}. Demasiados intentos fallidos de inicio de sesión."})
-        else:
-            # Reiniciar bloqueo si ya pasó el tiempo
-            database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
+        # Obtener campos desde JSON
+        email = data.get("email")
+        password = data.get("password")
 
-    # INICIAR SESION USANDO PYREBASE
-    try:
-        user = authP.sign_in_with_email_and_password(email, password)
-
-        # REINICIAR INTENTOS DE BLOQUEO
-        database.child("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
-
-
-        id_token = user['idToken']
-        refresh_token = user['refreshToken']
-
-        # GUARDAR TOKENS EN LA SESION
-        request.session['firebase_id_token'] = id_token
-        request.session['firebase_refresh_token'] = refresh_token
-
-        uid = user['localId']
-        request.session['usuario_id'] = uid
-
-
-    except HTTPError as e:
-        #VALIDAR QUE EL USUARIO Y CONTRASEÑA SEAN CORRECTOS
-        try:
-            error_json = json.loads(e.args[1])
-            error_message = error_json['error']['message']
-        except Exception:
-            # fallback si no se puede parsear
-            error_message = str(e)
-
-        if error_message in ["INVALID_PASSWORD", "INVALID_LOGIN_CREDENTIALS"]:
-            intentos = usuario.get("intentos_fallidos", 0) + 1
-            data_actualizar = {"intentos_fallidos": intentos}
-            if intentos >= MAX_INTENTOS:
-                # Bloquear cuenta
-                data_actualizar["bloqueado_hasta"] = (datetime.now() + TIEMPO_BLOQUEO).isoformat()
-            database.child("Usuario").child(id_usu).update(data_actualizar)
-
-            if intentos >= MAX_INTENTOS:
-                registrar_auditoria_manual(request, "Seis", "false", f"{email} bloqueado por accesos de contraseña incorrecta.")
-                mensaje = f"Cuenta bloqueada tras {MAX_INTENTOS} intentos fallidos."
-            else:
-                registrar_auditoria_manual(request, "Seis", "false", f"Acceso a {email} con contraseña incorrecta (Intento {intentos}).")
-                mensaje = f"Correo o contraseña incorrectos. Intentos restantes: {MAX_INTENTOS - intentos}"
-      
-        elif error_message == "EMAIL_NOT_FOUND":
-            mensaje = "Correo o contraseña incorrectos."
-        elif error_message == "TOO_MANY_ATTEMPTS_TRY_LATER":
-            mensaje = "Demasiados intentos de inicio de sesión, intente más tarde."
-        else:
-            mensaje = "Error de autenticación: " + error_message
         
-        registrar_auditoria_manual(request, "Seis", "false", f"Error de acceso al correo {email}. {mensaje}")
-        return JsonResponse({"status": "false", "message": mensaje})
+        # VALIDAR CAMPOS VACIOS
+        if not all([email, password]):
+            return JsonResponse({"status": "false", "message": "Los campos correo y/o contraseña están vacíos."})
 
-    except Exception:
-        return JsonResponse({"status": "false", "message": "Error de autenticación con Firebase."})
+        # Validación de correo
+        patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(patron_email, email):
+            return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
+        email = str(email).lower()
+        if not correo_ya_existe(email):
+            return JsonResponse({"status": "false", "message": "Correo o contraseña incorrectos."})
 
-    # inicio correcto → guardar datos del usuario
-    for id_usu, usuario in usuarioDATABASE.items():
+        #CERRAR SESION
+        request.session.flush()
 
-        #ACTUALIZAR ULTIMO_LOGIN
-        usuario_ref = database.child("Usuario").child(id_usu)
-        usuario_ref.update({"Ultimo_login": datetime.now().isoformat()})
+        
+        # VERIFICAR QUE EL CORREO EXISTA EN REALTIME DATABASE
+        usuarioDB = db.reference("Usuario").order_by_child("correo").equal_to(email).get() or {}
+        if not usuarioDB:
+            return JsonResponse({"status": "false", "message": "Correo no encontrado."})
 
-        #OBTENER EL NOMBRE DEL CARGO
-        cargo_id = usuario.get("Cargo")
+        #VALIDAR VERIFICACION DE CORREO
+        try:
+            user = auth.get_user_by_email(email)
 
-        cargo_data = database.child("Cargo").child(cargo_id).get()
-        cargo_nombre = cargo_data.val().get("Nombre") if cargo_data.val() else "Sin cargo"
+            # VALIDAR SI ESTÁ DESHABILITADO EN AUTHENTICATION
+            if user.disabled:
+                registrar_auditoria_manual(request, "Seis", "false", f"Intento de acceso con cuenta deshabilitada ({email}).")
+                return JsonResponse({"status": "false", "message": "Tu cuenta ha sido deshabilitada. Contacta al administrador."})
 
-        # URL de la imagen
-        url_imagen = usuario.get('imagen', '/static/default.png')
 
-        # Guardamos el rut del usuario en la sesión para reutilizarlo en otras vistas.
-        rut_usuario = usuario.get('id_rut') or usuario.get('Rut') or usuario.get('rut') or id_usu
-        rut_usuario = re.sub(r'[^0-9]', '', str(rut_usuario or ''))
-        request.session['usuario_rut'] = rut_usuario
+            # VALIDAR SI ESTÁ DESHABILITADO EN LA BASE DE DATOS
+            id_usu, usuario_data = next(iter(usuarioDB.items()))
+            estado_usuario = usuario_data.get("Deshabilitado", "")
 
-        request.session['usuario_id'] = id_usu
-        request.session['nombre_usu'] = usuario.get('Nombre', '')
-        request.session['apellido_usu'] = usuario.get('ApellidoPaterno', '')
-        request.session['correo_usu'] = usuario.get('correo', '')
-        request.session['cargo_usu'] = cargo_nombre
-        request.session['logeado'] = True
-        request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
-        request.session['rol_usu'] = usuario.get('rol', '')
+            # Aquí continúa tu lógica de inicio de sesión
 
-        registrar_auditoria_manual(request, "Seis", "éxito", f"{email} inicio sesión correctamente.")
-        return JsonResponse({"status": "success", "message": "Inicio de sesión correcto."})
+            if estado_usuario == True:
+                registrar_auditoria_manual(request, "Seis", "false", f"Intento de acceso con cuenta deshabilitada en la base de datos ({email}).")
+                return JsonResponse({"status": "false", "message": "Tu cuenta se encuentra deshabilitada. Contacta al administrador."})
+
+
+            if not user.email_verified:
+                registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con correo sin verificar.")
+                return JsonResponse({"status": "false","message": "Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada."})
+        except auth.UserNotFoundError:
+            return JsonResponse({"status": "false","message": "Correo no encontrado."})
+
+
+        # VARIABLES DE HORA PARA BLOQUEO
+        id_usu, usuario = next(iter(usuarioDB.items()))
+
+        try:
+            locale.setlocale(locale.LC_TIME, "es_ES.utf8")  # Linux/Mac
+        except:
+            try:
+                locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")  # Windows
+            except:
+                pass
+
+        # VALIDAR SI EL USUARIO ESTA BLOQUEADO
+        bloqueado_hasta = usuario.get("bloqueado_hasta")
+        if bloqueado_hasta:
+            bloqueado_dt = datetime.fromisoformat(bloqueado_hasta)
+            if bloqueado_dt > datetime.now():
+                fecha_formateada = bloqueado_dt.strftime("%d de %B del %Y a las %H:%Mhrs")
+                registrar_auditoria_manual(request, "Seis", "false", "Intento de acceso con cuenta bloqueada.")
+                return JsonResponse({"status": "false", "message": f"Cuenta bloqueada hasta el {fecha_formateada}. Demasiados intentos fallidos de inicio de sesión."})
+            else:
+                # Reiniciar bloqueo si ya pasó el tiempo
+                db.reference("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
+
+        # INICIAR SESION USANDO PYREBASE
+        try:
+            user = authP.sign_in_with_email_and_password(email, password)
+
+            # REINICIAR INTENTOS DE BLOQUEO
+            db.reference("Usuario").child(id_usu).update({"intentos_fallidos": 0, "bloqueado_hasta": None})
+
+
+            id_token = user['idToken']
+            refresh_token = user['refreshToken']
+
+            # GUARDAR TOKENS EN LA SESION
+            request.session['firebase_id_token'] = id_token
+            request.session['firebase_refresh_token'] = refresh_token
+
+            uid = user['localId']
+            request.session['uid'] = uid
+            request.session['firebase_token'] = user['idToken']
+
+
+        except HTTPError as e:
+            #VALIDAR QUE EL USUARIO Y CONTRASEÑA SEAN CORRECTOS
+            try:
+                error_json = json.loads(e.args[1])
+                error_message = error_json['error']['message']
+            except Exception:
+                # fallback si no se puede parsear
+                error_message = str(e)
+
+            if error_message in ["INVALID_PASSWORD", "INVALID_LOGIN_CREDENTIALS"]:
+                intentos = usuario.get("intentos_fallidos", 0) + 1
+                data_actualizar = {"intentos_fallidos": intentos}
+                if intentos >= MAX_INTENTOS:
+                    # Bloquear cuenta
+                    data_actualizar["bloqueado_hasta"] = (datetime.now() + TIEMPO_BLOQUEO).isoformat()
+                db.reference("Usuario").child(id_usu).update(data_actualizar)
+
+                if intentos >= MAX_INTENTOS:
+                    registrar_auditoria_manual(request, "Seis", "false", f"{email} bloqueado por accesos de contraseña incorrecta.")
+                    mensaje = f"Cuenta bloqueada tras {MAX_INTENTOS} intentos fallidos."
+                else:
+                    registrar_auditoria_manual(request, "Seis", "false", f"Acceso a {email} con contraseña incorrecta (Intento {intentos}).")
+                    mensaje = f"Correo o contraseña incorrectos. Intentos restantes: {MAX_INTENTOS - intentos}"
+        
+            elif error_message == "EMAIL_NOT_FOUND":
+                mensaje = "Correo o contraseña incorrectos."
+            elif error_message == "TOO_MANY_ATTEMPTS_TRY_LATER":
+                mensaje = "Demasiados intentos de inicio de sesión, intente más tarde."
+            else:
+                mensaje = "Error de autenticación: " + error_message
+            
+            registrar_auditoria_manual(request, "Seis", "false", f"Error de acceso al correo {email}. {mensaje}")
+            return JsonResponse({"status": "false", "message": mensaje})
+
+        except Exception:
+            return JsonResponse({"status": "false", "message": "Error de autenticación con Firebase."})
+
+        # inicio correcto → guardar datos del usuario
+        for id_usu, usuario in usuarioDB.items():
+
+            #ACTUALIZAR ULTIMO_LOGIN
+            usuario_ref = db.reference("Usuario").child(id_usu)
+            usuario_ref.update({"Ultimo_login": datetime.now().isoformat()})
+
+            #OBTENER EL NOMBRE DEL CARGO
+            cargo_id = usuario.get("Cargo")
+
+            cargo_data = db.reference("Cargo").child(cargo_id).get()
+            cargo_nombre = cargo_data.get("Nombre") if cargo_data.get("Nombre") else "Sin cargo"
+
+            # URL de la imagen
+            url_imagen = usuario.get('imagen', '/static/default.png')
+
+            # Guardamos el rut del usuario en la sesión para reutilizarlo en otras vistas.
+            rut_usuario = usuario.get('id_rut') or usuario.get('Rut') or usuario.get('rut') or id_usu
+            rut_usuario = re.sub(r'[^0-9]', '', str(rut_usuario or ''))
+            request.session['usuario_rut'] = rut_usuario
+
+            request.session['usuario_id'] = id_usu
+            request.session['nombre_usu'] = usuario.get('Nombre', '')
+            request.session['apellido_usu'] = usuario.get('ApellidoPaterno', '')
+            request.session['correo_usu'] = usuario.get('correo', '')
+            request.session['cargo_usu'] = cargo_nombre
+            request.session['logeado'] = True
+            request.session['url_imagen_usuario'] = usuario.get('imagen', '/static/default.png')
+            request.session['rol_usu'] = usuario.get('rol', '')
+
+            registrar_auditoria_manual(request, "Seis", "éxito", f"{email} inicio sesión correctamente.")
+            return JsonResponse({"status": "success", "message": "Inicio de sesión correcto."})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print("ERROR: "+ str(e))
+        return JsonResponse({"status": "error", "message": "Ocurrio un error desconocido."})
 
 @require_GET
 def cerrarSesion(request):
@@ -216,7 +224,7 @@ def recuperar_contrasena_funcion(request):
     if not correo:
         return JsonResponse({'status': 'false', 'mensaje':"El correo no debe estar vacío."})
 
-    usuario = database.child("Usuario").order_by_child("correo").equal_to(correo).get().val()
+    usuario = db.reference("Usuario").order_by_child("correo").equal_to(correo).get()
     if not usuario:
         return JsonResponse({'status': 'false', 'mensaje':"Ese correo no está registrado en el sistema."})
 
@@ -234,7 +242,7 @@ def recuperar_contrasena_funcion(request):
 @admin_required
 def obtener_usuarios(request):
     # Activos
-    usuarios = database.child("Usuario").get().val() or {}
+    usuarios = db.reference("Usuario").get() or {}
 
     usuarios_lista = []
 
@@ -250,8 +258,8 @@ def obtener_usuarios(request):
         cargo_id = usuario.get("Cargo")
         cargo_nombre = "Sin cargo"
         try:
-            cargo_data = database.child("Cargo").child(cargo_id).get()
-            cargo_nombre = cargo_data.val().get("Nombre") if cargo_data.val() else "Sin cargo"
+            cargo_data = db.reference("Cargo").child(cargo_id).get()
+            cargo_nombre = cargo_data.get("Nombre") if cargo_data else "Sin cargo"
         except Exception:
             pass
 
@@ -304,13 +312,13 @@ def obtener_usuario(request):
         return JsonResponse({"status": "error", "message": "RUT no especificado"}, status=400)
 
     # Obtener usuario
-    usuario_data = database.child(f"Usuario/{rut}").get().val()
+    usuario_data = db.reference(f"Usuario/{rut}").get()
     if not usuario_data:
         return JsonResponse({"status": "error", "message": "Usuario no encontrado"}, status=404)
 
     # Obtener cargo
     cargo_id = usuario_data.get("Cargo")
-    cargo_data = database.child("Cargo").child(cargo_id).get().val()
+    cargo_data = db.reference("Cargo").child(cargo_id).get()
     cargo_nombre = cargo_data.get("Nombre") if cargo_data else "Sin cargo"
 
     usuario_json = {
@@ -340,7 +348,7 @@ def obtener_usuario_actual(request):
     if not rut:
         return JsonResponse({"status": "error", "message": "Usuario no autenticado"}, status=401)
 
-    usuario_data = database.child(f"Usuario/{rut}").get().val()
+    usuario_data = db.reference(f"Usuario/{rut}").get()
     if not usuario_data:
         return JsonResponse({"status": "error", "message": "Usuario no encontrado"}, status=404)
 
@@ -430,8 +438,8 @@ def crear_usuario_funcion(request):
     rut_limpio = rut.replace(".", "").replace("-", "")
 
     # VALIDAR QUE EL RUT NO EXISTA
-    usuario_ref = database.child("Usuario").child(rut_limpio).get()
-    if usuario_ref.val() is not None:
+    usuario_ref = db.reference("Usuario").child(rut_limpio).get() or None
+    if usuario_ref:
         registrar_auditoria_manual(request, "Dos", "False", f"El usuario {obtener_rut_actual(request)} intento crear usuario con un rut existente ({rut}).")
         return JsonResponse({"status": "false", "message": "El RUT ya existe."})
 
@@ -472,8 +480,15 @@ def crear_usuario_funcion(request):
     except Exception as e:
         return JsonResponse({"status": "false", "message": f"Error al crear usuario en Base de Datos: {e}"})
 
+    #CREAR EL MAPEO DE UiD Y RUT
+    try:
+        db.reference(f"UidToRut/{userFIREBASE.uid}").set(rut_limpio)
+    except Exception as e:
+        auth.delete_user(userFIREBASE.uid)
+        return JsonResponse({"status": "false", "message": f"Error crítico al mapear UID a RUT. Usuario eliminado de Auth: {e}"})
+    
     #CREAR USUARIO DENTRO DE LA BASE DE DATOS
-    ref = database.child(f"Usuario/{rut_limpio}")
+    ref = db.reference(f"Usuario/{rut_limpio}")
     ref.set({
         "Nombre":nombre,
         "Segundo_nombre":segundo_nombre,
@@ -489,6 +504,7 @@ def crear_usuario_funcion(request):
         "Fecha_creacion": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "intentos_fallidos": 0,
         "bloqueado_hasta": None,
+        "uid": userFIREBASE.uid
     })
 
     registrar_auditoria_manual(request, "Dos", "éxito", f"Se creo al usuario de rut {rut}, correo {email} y nombre {nombre} {segundo_nombre} {apellido_paterno} {apellido_materno}")
@@ -509,12 +525,13 @@ def modificar_usuario_funcion(request, rut):
     email = request.POST.get('email', None)
     cargo = request.POST.get('cargo', None)
     imagen = request.FILES.get('imagen', None)
+    print(imagen)
     rol = request.POST.get('rol', None)
     pin = request.POST.get('pin', None)
     password = request.POST.get('password', None)
 
     #OBTENER VALORES DEL USUARIO ACTUAL
-    usuario_a_modificar = database.child(f"Usuario/{rut}").get().val()
+    usuario_a_modificar = db.reference(f"Usuario/{rut}").get()
     correo_actual = usuario_a_modificar.get("correo")
     usuarioAUTH = auth.get_user_by_email(correo_actual)
     uid = usuarioAUTH.uid
@@ -671,7 +688,7 @@ def deshabilitar_usuario(request, rut):
         registrar_auditoria_manual(request, "Tres", "false", f"Intento de auto-deshabilitarse ({rut}).")
         return JsonResponse({"status": "error", "message": "No puede deshabilitar su propio usuario."}, status=403)
 
-    usuario = database.child("Usuario").child(rut).get().val()
+    usuario = db.reference("Usuario").child(rut).get()
     if not usuario:
         return JsonResponse({"status": "error", "message": "Usuario no encontrado."}, status=404)
 
@@ -686,7 +703,7 @@ def deshabilitar_usuario(request, rut):
         return JsonResponse({"status": "error", "message": "Error al deshabilitar usuario desde firebase."}, status=404)
 
     # Deshabilitar
-    database.child("Usuario").child(rut).update({
+    db.reference("Usuario").child(rut).update({
         "Detalle": detalle,
         "FechaProceso": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "Deshabilitado": True
@@ -699,7 +716,7 @@ def deshabilitar_usuario(request, rut):
 @admin_required
 def habilitar_usuario(request, rut):
     # No permitir auto-habilitarse si ya está activo
-    inactivo = database.child("Usuario").child(rut).get().val()
+    inactivo = db.reference("Usuario").child(rut).get()
     if not inactivo:
         return JsonResponse({"status": "error", "message": "Usuario no encontrado"}, status=404)
     
@@ -714,7 +731,7 @@ def habilitar_usuario(request, rut):
         return JsonResponse({"status": "error", "message": "Error al habilitar el usuario en Firebase."}, status=404)
 
     # Habilitar
-    database.child("Usuario").child(rut).update({
+    db.reference("Usuario").child(rut).update({
         "Detalle": None,
         "FechaProceso": None,
         "Deshabilitado": False
@@ -725,7 +742,7 @@ def habilitar_usuario(request, rut):
 
 @admin_required
 def detalle_usuario_deshabilitado(request, rut):
-    data = database.child("Usuario").child(rut).get().val()
+    data = db.reference("Usuario").child(rut).get()
     if not data:
         return JsonResponse({"status": "error", "message": "Usuario no encontrado."}, status=404)
     
@@ -746,7 +763,7 @@ def obtener_solicitudes_usuario(request):
     usuario_actual_rut = request.session.get("usuario_id")
 
     # OBTENER LOS USUARIOS DE LA BASE DE DATOS
-    solicitudes = database.child("Solicitudes").order_by_child("id_rut").equal_to(usuario_actual_rut).get().val() or {}
+    solicitudes = db.reference("Solicitudes").order_by_child("id_rut").equal_to(usuario_actual_rut).get() or {}
 
     solicitudes_lista = []
     for id_solicitud, solicitud in solicitudes.items():
@@ -763,7 +780,7 @@ def obtener_solicitudes_usuario(request):
                 created_date = fecha_solicitud_str  # Dejar como viene si no es ISO
         
         tipo_solicitud_id = solicitud.get("tipo_solicitud")
-        tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
+        tipo_solicitud_nombre = db.reference("TiposSolicitud").child(tipo_solicitud_id).get() or {}
         tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
 
         razon = solicitud.get("Razon")
@@ -866,7 +883,7 @@ def cancelar_solicitud_funcion(request, id_solicitud):
         return JsonResponse({"status": "false", "message": "No has iniciado sesión."})
     
     #OBTENEMOS LA SOLICITUD A ELIMINAR
-    solicitud_a_cancelar = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    solicitud_a_cancelar = db.reference("Solicitudes").child(id_solicitud).get() or {}
 
     #VALIDAMOS QUE LA SOLICITUD EXISTA
     if solicitud_a_cancelar == {}:
@@ -904,85 +921,90 @@ def cancelar_solicitud_funcion(request, id_solicitud):
 
 @admin_required
 def obtener_solicitudes_administrar(request):
-    #OBTENER USUARIO ACTUAL
-    usuario_actual_rut = request.session.get("usuario_id")
+    try:
+        #OBTENER USUARIO ACTUAL
+        usuario_actual_rut = request.session.get("usuario_id")
 
-    # OBTENER LAS SOLICITUDES DE LA BASE DE DATOS
-    solicitudes = database.child("Solicitudes").get().val() or {}
+        # OBTENER LAS SOLICITUDES DE LA BASE DE DATOS
+        solicitudes = db.reference("Solicitudes").get() or {}
 
-    solicitudes_lista = []
-    for id_solicitud, solicitud in solicitudes.items():
-        fecha_inicio = solicitud.get("Fecha_inicio")
-        fecha_fin = solicitud.get("Fecha_fin")
-        id_aprobador = solicitud.get("id_aprobador")
+        solicitudes_lista = []
+        for id_solicitud, solicitud in solicitudes.items():
+            fecha_inicio = solicitud.get("Fecha_inicio")
+            fecha_fin = solicitud.get("Fecha_fin")
+            id_aprobador = solicitud.get("id_aprobador")
 
-        # FILTRO SEGÚN LA CONDICIÓN
-        if fecha_inicio == "null" or fecha_fin == "null" or (fecha_fin != "null" and id_aprobador == usuario_actual_rut):
+            # FILTRO SEGÚN LA CONDICIÓN
+            if fecha_inicio == "null" or fecha_fin == "null" or (fecha_fin != "null" and id_aprobador == usuario_actual_rut):
 
-            # FORMATEAR FECHA DE SOLICITUD
-            fecha_solicitud_str = solicitud.get("Fecha_solicitud")
-            created_date = "Sin fecha"
-            sort_date = None
-            if fecha_solicitud_str:
-                try:
-                    fecha_solicitud = datetime.fromisoformat(fecha_solicitud_str)
-                    created_date = fecha_solicitud.strftime("%d %B, %Y")
-                    sort_date = fecha_solicitud.date().isoformat()
-                except ValueError:
-                    created_date = fecha_solicitud_str
+                # FORMATEAR FECHA DE SOLICITUD
+                fecha_solicitud_str = solicitud.get("Fecha_solicitud")
+                created_date = "Sin fecha"
+                sort_date = None
+                if fecha_solicitud_str:
+                    try:
+                        fecha_solicitud = datetime.fromisoformat(fecha_solicitud_str)
+                        created_date = fecha_solicitud.strftime("%d %B, %Y")
+                        sort_date = fecha_solicitud.date().isoformat()
+                    except ValueError:
+                        created_date = fecha_solicitud_str
 
-            # OBTENER NOMBRE DEL TIPO SOLICITUD
-            tipo_solicitud_id = solicitud.get("tipo_solicitud")
-            tipo_solicitud_nombre = database.child("TiposSolicitud").child(tipo_solicitud_id).get().val() or {}
-            tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
+                # OBTENER NOMBRE DEL TIPO SOLICITUD
+                tipo_solicitud_id = solicitud.get("tipo_solicitud")
+                tipo_solicitud_nombre = db.reference("TiposSolicitud").child(tipo_solicitud_id).get() or {}
+                tipo_solicitud_nombre = tipo_solicitud_nombre.get("nombre")
 
-            # OBTENER NOMBRE DEL CREADOR DE SOLICITUD
-            rut_usuario_solicitud = solicitud.get("id_rut")
-            rut_usuario_solicitud_nombre = database.child("Usuario").child(rut_usuario_solicitud).get().val() or {}
-            rut_usuario_solicitud_nombre = rut_usuario_solicitud_nombre.get("Nombre") + " " + rut_usuario_solicitud_nombre.get("ApellidoPaterno")
+                # OBTENER NOMBRE DEL CREADOR DE SOLICITUD
+                rut_usuario_solicitud = solicitud.get("id_rut")
+                rut_usuario_solicitud_nombre = db.reference("Usuario").child(rut_usuario_solicitud).get() or {}
+                rut_usuario_solicitud_nombre = rut_usuario_solicitud_nombre.get("Nombre") + " " + rut_usuario_solicitud_nombre.get("ApellidoPaterno")
 
-            # OBTENER NOMBRE DEL APROBADOR DE SOLICITUD
-            rut_usuario_aprobador = solicitud.get("id_aprobador")
-            rut_usuario_aprobador_nombre = None
-            if rut_usuario_aprobador != "null":
-                rut_usuario_aprobador_nombre = database.child("Usuario").child(rut_usuario_aprobador).get().val() or {}
-                rut_usuario_aprobador_nombre = rut_usuario_aprobador_nombre.get("Nombre") + " " + rut_usuario_aprobador_nombre.get("ApellidoPaterno")
+                # OBTENER NOMBRE DEL APROBADOR DE SOLICITUD
+                rut_usuario_aprobador = solicitud.get("id_aprobador")
+                rut_usuario_aprobador_nombre = None
+                if rut_usuario_aprobador != "null":
+                    rut_usuario_aprobador_nombre = db.reference("Usuario").child(rut_usuario_aprobador).get() or {}
+                    rut_usuario_aprobador_nombre = rut_usuario_aprobador_nombre.get("Nombre") + " " + rut_usuario_aprobador_nombre.get("ApellidoPaterno")
 
-            # DETERMINAR ESTADO ASIGNACIÓN
-            estado_asignacion = "pendiente"
-            if fecha_inicio != "null":
-                estado_asignacion = "asignada"
-            if fecha_fin != "null":
-                estado_asignacion = "cerrada"
+                # DETERMINAR ESTADO ASIGNACIÓN
+                estado_asignacion = "pendiente"
+                if fecha_inicio != "null":
+                    estado_asignacion = "asignada"
+                if fecha_fin != "null":
+                    estado_asignacion = "cerrada"
 
-            razon = solicitud.get("Razon")
+                razon = solicitud.get("Razon")
 
-            if razon and razon == "null":
-                razon = None
+                if razon and razon == "null":
+                    razon = None
 
-            solicitudes_lista.append({
-                "id_solicitud": id_solicitud,
-                "asunto": solicitud.get("Asunto"),
-                "id_rut": solicitud.get("id_rut"),
-                "descripcion": solicitud.get("Descripcion"),
-                "estado": solicitud.get("Estado"),
-                "fecha_fin": fecha_fin,
-                "fecha_inicio": fecha_inicio,
-                "fecha_solicitud": solicitud.get("Fecha_solicitud"),
-                "id_aprobador": id_aprobador,
-                "tipo_solicitud": solicitud.get("tipo_solicitud"),
-                "sortDate": sort_date or created_date,
-                "archivo": solicitud.get("archivo"),
-                "archivo_name": solicitud.get("archivo_name"),
-                "tipo_solicitud_nombre": tipo_solicitud_nombre,
-                "estado_asignacion": estado_asignacion,
-                "rut_usuario_solicitud_nombre": rut_usuario_solicitud_nombre,
-                "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre,
-                "razon": razon
-            })
-    registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} ha listado las solicitudes en administrar con éxito.")
+                solicitudes_lista.append({
+                    "id_solicitud": id_solicitud,
+                    "asunto": solicitud.get("Asunto"),
+                    "id_rut": solicitud.get("id_rut"),
+                    "descripcion": solicitud.get("Descripcion"),
+                    "estado": solicitud.get("Estado"),
+                    "fecha_fin": fecha_fin,
+                    "fecha_inicio": fecha_inicio,
+                    "fecha_solicitud": solicitud.get("Fecha_solicitud"),
+                    "id_aprobador": id_aprobador,
+                    "tipo_solicitud": solicitud.get("tipo_solicitud"),
+                    "sortDate": sort_date or created_date,
+                    "archivo": solicitud.get("archivo"),
+                    "archivo_name": solicitud.get("archivo_name"),
+                    "tipo_solicitud_nombre": tipo_solicitud_nombre,
+                    "estado_asignacion": estado_asignacion,
+                    "rut_usuario_solicitud_nombre": rut_usuario_solicitud_nombre,
+                    "rut_usuario_aprobador_nombre": rut_usuario_aprobador_nombre,
+                    "razon": razon
+                })
+        registrar_auditoria_manual(request, "Siete", "éxito", f"El usuario {obtener_rut_actual(request)} ha listado las solicitudes en administrar con éxito.")
 
-    return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
+        return JsonResponse({'mensaje': 'Solicitudes listadas.', 'solicitudes': solicitudes_lista})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'mensaje': 'ERROR', 'solicitudes': 'ERROR'})
 
 @admin_required
 def asignarme_solicitud(request, id_solicitud):
@@ -994,7 +1016,7 @@ def asignarme_solicitud(request, id_solicitud):
         return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
 
     #VALIDAR QUE USUARIO SEA ADMIN (RECURSOS HUMANOS)
-    usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
+    usuario_actual = db.reference("Usuario").child(usuario_actual_rut).get() or {}
     usuario_actual_rol = usuario_actual.get("rol")
 
     if not usuario_actual_rol:
@@ -1006,7 +1028,7 @@ def asignarme_solicitud(request, id_solicitud):
     
 
     #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
-    solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    solicitud = db.reference("Solicitudes").child(id_solicitud).get() or {}
     if solicitud == {}:
         return JsonResponse({'status': 'false', 'mensaje': 'La solicitud no pudo ser encontrada.'})
     solicitud_fecha_inicio =solicitud.get("Fecha_inicio")
@@ -1023,7 +1045,7 @@ def asignarme_solicitud(request, id_solicitud):
 
 
     # ENVIAR CORREO AL USUARIO QUE HIZO LA SOLICITUD
-    usuario_solicitud = database.child("Usuario").child(solicitud_id_rut).get().val() or {}
+    usuario_solicitud = db.reference("Usuario").child(solicitud_id_rut).get() or {}
     correo = usuario_solicitud.get("correo")
 
     if correo:
@@ -1075,7 +1097,7 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
         return JsonResponse({'status': 'false', 'mensaje': 'No ha iniciado sesión.'})
 
     #VALIDAR QUE USUARIO SEA ADMIN (RECURSOS HUMANOS)
-    usuario_actual = database.child("Usuario").child(usuario_actual_rut).get().val() or {}
+    usuario_actual = db.reference("Usuario").child(usuario_actual_rut).get() or {}
     usuario_actual_rol = usuario_actual.get("rol")
 
     if not usuario_actual_rol:
@@ -1087,7 +1109,7 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
     
 
     #OBTENER LA FECHA DE INICIO DE SOLICITU PARA VALIDAR ASIGNACION
-    solicitud = database.child("Solicitudes").child(id_solicitud).get().val() or {}
+    solicitud = db.reference("Solicitudes").child(id_solicitud).get() or {}
     solicitud_fecha_fin =solicitud.get("Fecha_fin")
 
     solicitud_id_rut = solicitud.get("id_rut")
@@ -1116,13 +1138,8 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
 
     # ENVIAR CORREO AL USUARIO QUE HIZO LA SOLICITUD
     solicitud_id_rut = str(solicitud_id_rut).strip()
-    usuario_solicitud = database.child("Usuario").child(solicitud_id_rut).get().val() or {}
-    usuarios = database.child("Usuario").get()
+    usuario_solicitud = db.reference("Usuario").child(solicitud_id_rut).get() or {}
 
-    for u in usuarios.each():
-        if u.key() == solicitud_id_rut:
-            usuario_solicitud = u.val()
-            break
     correo = usuario_solicitud.get("correo")
     nombre_usuario = usuario_solicitud.get("Nombre", "")
     asunto_solicitud = solicitud.get("Asunto", "")
@@ -1230,7 +1247,7 @@ def solicitar_recuperacion_pin(request):
     # Validar que el usuario actual y el correo a cambiar coincidan
     
     idusu = (request.session.get('usuario_id') or '').strip()
-    correo_actual = database.child("Usuario").child(idusu).get().val().get('correo')
+    correo_actual = db.reference("Usuario").child(idusu).get().get('correo')
 
     if not correo_actual or not idusu:
         return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
@@ -1272,7 +1289,7 @@ def verificar_codigo_recuperacion(request):
     # Validar que el usuario actual y el correo a cambiar coincidan
     
     idusu = (request.session.get('usuario_id') or '').strip()
-    correo_actual = database.child("Usuario").child(idusu).get().val().get('correo')
+    correo_actual = db.reference("Usuario").child(idusu).get().get('correo')
 
     if not correo_actual or not idusu:
         return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})
@@ -1315,7 +1332,7 @@ def cambiar_PIN_verificado(request):
     # Validar que el usuario actual y el correo a cambiar coincidan
     
     idusu = (request.session.get('usuario_id') or '').strip()
-    correo_actual = database.child("Usuario").child(idusu).get().val().get('correo')
+    correo_actual = db.reference("Usuario").child(idusu).get().get('correo')
 
     if not correo_actual or not idusu:
         return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"})

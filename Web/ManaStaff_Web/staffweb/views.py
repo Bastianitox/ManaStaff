@@ -13,10 +13,10 @@ from collections import Counter, defaultdict
 
 import requests
 
-from .funciones_dos import verificar_contrasena_actual, actualizar_contrasena, obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
+from .funciones_dos import obtener_datos_usuario, actualizar_datos_usuario, listar_publicaciones, crear_publicacion_funcion, modificar_publicacion, eliminar_publicacion_funcion, obtener_publicacion
 from .decorators import admin_required
 from .auditoria import registrar_auditoria_manual
-from .funciones import obtener_rut_actual, obtener_correo_actual
+from .funciones import obtener_rut_actual
 #IMPORTS DE FIREBASE
 from firebase_admin import auth
 from .firebase import firebase, db, storage, database
@@ -139,13 +139,13 @@ def inicio_documentos(request):
 
 def recuperar_pin(request):
     idusu = (request.session.get('usuario_id') or '').strip()
-    correo = database.child("Usuario").child(idusu).get().val().get('correo')
+    correo = db.reference("Usuario").child(idusu).get().get('correo')
     return render(request, 'staffweb/recuperar_pin.html', {'correo': correo})
 
 #---------------------------------------------------------
 
 def inicio_noticias_eventos(request):
-    raw = database.child("Anuncio").get().val() or {}
+    raw = db.reference("Anuncio").get() or {}
     if not isinstance(raw, dict):
         raw = {}
 
@@ -173,7 +173,7 @@ def inicio_noticias_eventos(request):
         tipo_nombre = None
         try:
             if tipo_codigo:
-                tipo_info = database.child("TipoAnuncio").child(tipo_codigo).get().val() or {}
+                tipo_info = db.reference("TipoAnuncio").child(tipo_codigo).get() or {}
                 tipo_nombre = tipo_info.get("nombre")  # "Noticia" o "Evento"
         except Exception:
             tipo_nombre = None
@@ -196,6 +196,7 @@ def inicio_noticias_eventos(request):
         "announcements_json": json.dumps(items, ensure_ascii=False)
     }
     return render(request, 'staffweb/inicio_noticias_eventos.html', context)
+
 #---------------------------------------------------------
 @admin_required
 def inicio_dashboard(request):
@@ -323,7 +324,7 @@ def inicio_dashboard(request):
 
 def crear_solicitud(request):
     #TRAEMOS LOS TIPOS DE SOLICITUD
-    tipos_solicitud = database.child("TiposSolicitud").get().val() or {}  #RECORDAR QUE EL NOMBRE DE TABLA DEBE SER EXACTAMENTE EL MISMO DE LA BASE DE DATOS
+    tipos_solicitud = db.reference("TiposSolicitud").get() or {}  #RECORDAR QUE EL NOMBRE DE TABLA DEBE SER EXACTAMENTE EL MISMO DE LA BASE DE DATOS
 
     #CREAMOS UNA VARIABLE PARA GUARDAR LA INFO
     tipos_solicitud_lista = []
@@ -404,14 +405,14 @@ def crear_usuario(request):
     roles_lista = []
     cargos_lista = []
     #OBTENER ROLES
-    roles = database.child("Rol").get().val() or {}
+    roles = db.reference("Rol").get() or {}
     for id_rol, rol in roles.items():
         roles_lista.append({
             "id_rol": id_rol,
             "nombre": rol.get("nombre")
         })
     #OBTENER CARGOS
-    cargos = database.child("Cargo").get().val() or {}
+    cargos = db.reference("Cargo").get() or {}
     for id_cargo, cargo in cargos.items():
         cargos_lista.append({
             "id_cargo": id_cargo,
@@ -429,14 +430,14 @@ def modificar_usuario(request):
     roles_lista = []
     cargos_lista = []
     #OBTENER ROLES
-    roles = database.child("Rol").get().val() or {}
+    roles = db.reference("Rol").get() or {}
     for id_rol, rol in roles.items():
         roles_lista.append({
             "id_rol": id_rol,
             "nombre": rol.get("nombre")
         })
     #OBTENER CARGOS
-    cargos = database.child("Cargo").get().val() or {}
+    cargos = db.reference("Cargo").get() or {}
     for id_cargo, cargo in cargos.items():
         cargos_lista.append({
             "id_cargo": id_cargo,
@@ -477,7 +478,7 @@ def _parse_date_multi(s: str):
 
 def _tipoestado_codes():
     try:
-        raw = database.child("Tipoestado").get().val() or {}
+        raw = db.reference("Tipoestado").get() or {}
     except Exception:
         raw = {}
 
@@ -529,7 +530,7 @@ def administrar_documentos(request):
     name_to_code, code_to_name = _tipoestado_codes()
 
     # Usuarios
-    usuarios_raw = database.child("Usuario").get().val() or {}
+    usuarios_raw = db.reference("Usuario").get() or {}
     if not isinstance(usuarios_raw, dict):
         usuarios_raw = {}
 
@@ -596,6 +597,7 @@ def administrar_documentos(request):
             "estado": estado,
             "url": url_archivo,
         }
+
         docs_por_rut.setdefault(rut_doc, []).append(doc)
 
     # Bloques por usuario
@@ -613,6 +615,7 @@ def administrar_documentos(request):
 
     context = {"users_docs_json": json.dumps(bloques, ensure_ascii=False)}
     return render(request, "staffweb/administrar_documentos.html", context)
+
 
 @admin_required
 def crear_documento(request):
@@ -702,7 +705,7 @@ def crear_documento(request):
             return redirect("crear_documento")
 
     # GET 
-    usuarios_raw = database.child("Usuario").get().val() or {}
+    usuarios_raw = db.reference("Usuario").get() or {}
     usuarios_lista = []
     if isinstance(usuarios_raw, dict):
         for rut, u in usuarios_raw.items():
@@ -737,9 +740,9 @@ def documentos_usuarios(request):
     # Usuario
     usuario = {"nombre": "Usuario", "rut": rut_norm, "rut_visible": rut_norm}
     try:
-        user_raw = database.child("Usuario").child(rut_norm).get().val()
+        user_raw = db.reference("Usuario").child(rut_norm).get()
         if not isinstance(user_raw, dict):
-            todos_users = database.child("Usuario").get().val() or {}
+            todos_users = db.reference("Usuario").get() or {}
             if isinstance(todos_users, dict):
                 user_raw = todos_users.get(rut_norm)
         if isinstance(user_raw, dict):
@@ -883,7 +886,7 @@ def modificar_documento(request, doc_id):
     # Usuario
     usuario = {"nombre": "Usuario", "rut": rut_sel, "rut_visible": rut_sel}
     try:
-        user_raw = database.child("Usuario").child(rut_sel).get().val()
+        user_raw = db.reference("Usuario").child(rut_sel).get()
         if isinstance(user_raw, dict):
             nombre = f"{(user_raw.get('Nombre') or '').strip()} {(user_raw.get('ApellidoPaterno') or '').strip()}".strip() or "Usuario"
             usuario["nombre"] = nombre
@@ -1136,7 +1139,7 @@ def administrar_noticiasyeventos(request):
         # --- autor  ---
         id_emp = str(val.get("id_empleador") or "").strip()
         try:
-            u = database.child("Usuario").child(id_emp).get().val() or {}
+            u = db.reference("Usuario").child(id_emp).get() or {}
         except Exception:
             u = {}
         nombre = (u.get("Nombre") or "").strip()
@@ -1146,7 +1149,7 @@ def administrar_noticiasyeventos(request):
         # --- tipo ---
         tipo_code = str(val.get("TipoAnuncio") or "").strip()
         try:
-            t = database.child("TipoAnuncio").child(tipo_code).get().val() or {}
+            t = db.reference("TipoAnuncio").child(tipo_code).get()or {}
         except Exception:
             t = {}
         tipo = (t.get("nombre") or "").strip().lower() or "aviso"   # noticia/aviso
@@ -1226,11 +1229,11 @@ def inicio_perfil(request):
     idusu = (request.session.get('usuario_id') or '').strip()
 
     # Rol (tolerante a None)
-    roldatabase = database.child('Rol').child(rol_usu).get().val() or {}
+    roldatabase = db.reference('Rol').child(rol_usu).get() or {}
     nombrerol = (roldatabase.get('nombre') or rol_usu or '').strip()
 
     # Usuario en Firebase
-    usuariodatabase = database.child('Usuario').child(idusu).get().val() or {}
+    usuariodatabase = db.reference('Usuario').child(idusu).get() or {}
     celular = (usuariodatabase.get('Telefono') or '').strip()
     direccion = (usuariodatabase.get('Direccion') or '').strip()
 
@@ -1281,7 +1284,7 @@ def perfil(request):
         messages.warning(request, "Por favor completa ambos campos.")
         return redirect('inicio_perfil')
 
-    usuario_actual = database.child("Usuario").child(usuario_id).get().val() or {}
+    usuario_actual = db.reference("Usuario").child(usuario_id).get() or {}
     imagen_actual_url = (usuario_actual.get('imagen') or '').strip()
 
     if nueva_imagen:
@@ -1356,7 +1359,7 @@ def cambiar_contrasena_funcion(request, rut):
         return JsonResponse({"status": "false", "message": "La nueva contraseña debe tener al menos 6 caracteres."})
 
     # Obtener email del usuario según su RUT
-    usuario_ref = database.child(f"Usuario/{rut}").get().val()
+    usuario_ref = db.reference(f"Usuario/{rut}").get()
     if not usuario_ref:
         return JsonResponse({"status": "false", "message": "Usuario no encontrado."})
 
@@ -1407,7 +1410,7 @@ def cambiar_pin_funcion(request, rut):
         return JsonResponse({"status": "false", "message": "El nuevo pin debe tener 4 números."})
 
     # Obtener email del usuario según su RUT
-    usuario_ref = database.child(f"Usuario/{rut}").get().val()
+    usuario_ref = db.reference(f"Usuario/{rut}").get()
     if not usuario_ref:
         return JsonResponse({"status": "false", "message": "Usuario no encontrado."})
 
@@ -1443,12 +1446,12 @@ def _fmt_fecha(dt_str):
 @admin_required
 def administrar_logs(request):
     # 1) Traer los logs desde Realtime DB
-    raw = database.child("Auditoria").get().val() or {}
+    raw = db.reference("Auditoria").get() or {}
     if not isinstance(raw, dict):
         raw = {}
 
     # 2) Cache simple de usuarios para mapear nombre/rol
-    usuarios = database.child("Usuario").get().val() or {}
+    usuarios = db.reference("Usuario").get() or {}
     if not isinstance(usuarios, dict):
         usuarios = {}
 
@@ -1466,7 +1469,7 @@ def administrar_logs(request):
     
 
     # OBTENER TIPOS DE AUDITORIA
-    tipos_auditora_firebase = database.child("TipoAuditoria").get().val() or {}
+    tipos_auditora_firebase = db.reference("TipoAuditoria").get()or {}
     tipos_auditoria_lista = []
     for id_tipo, auditoria in tipos_auditora_firebase.items():
         tipos_auditoria_lista.append({
@@ -1475,7 +1478,7 @@ def administrar_logs(request):
         })
 
     # OBTENER ROLES
-    roles_firebase = database.child("Rol").get().val() or {}
+    roles_firebase = db.reference("Rol").get()or {}
 
     for _, log in raw.items():
         if not isinstance(log, dict):
@@ -1592,16 +1595,16 @@ def api_logs_auditoria(request):
     page = int(request.GET.get("page", 1))
     per_page = 30  # registros por carga
 
-    raw = database.child("Auditoria").get().val() or {}
+    raw = db.reference("Auditoria").get() or {}
     if not isinstance(raw, dict):
         raw = {}
 
-    usuarios = database.child("Usuario").get().val() or {}
+    usuarios = db.reference("Usuario").get() or {}
     if not isinstance(usuarios, dict):
         usuarios = {}
 
     # OBTENER TIPOS DE AUDITORIA
-    tipos_auditora_firebase = database.child("TipoAuditoria").get().val() or {}
+    tipos_auditora_firebase = db.reference("TipoAuditoria").get() or {}
     tipos_auditoria_lista = []
     for id_tipo, auditoria in tipos_auditora_firebase.items():
         tipos_auditoria_lista.append({
@@ -1610,7 +1613,7 @@ def api_logs_auditoria(request):
         })
 
     # OBTENER ROLES
-    roles_firebase = database.child("Rol").get().val() or {}
+    roles_firebase = db.reference("Rol").get() or {}
 
     logs_filtrados = []
     for id_auditoria, log in raw.items():
@@ -1689,12 +1692,12 @@ def detalle_auditoria(request, log_id):
     if rol_usuario not in ["Uno", "uno", "admin"]:
         return HttpResponseForbidden("No tienes permisos para acceder a esta información")
 
-    log = database.child("Auditoria").child(log_id).get().val()
+    log = db.reference("Auditoria").child(log_id).get()
     if not log:
         return HttpResponseNotFound("Registro no encontrado")
 
     uid = log.get("id_rut", "")
-    usuarios = database.child("Usuario").get().val() or {}
+    usuarios = db.reference("Usuario").get() or {}
     u = usuarios.get(uid, {})
 
     usuario_nombre = f"{u.get('Nombre','')} {u.get('ApellidoPaterno','')}".strip() or uid
