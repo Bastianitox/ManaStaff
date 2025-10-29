@@ -1,0 +1,174 @@
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="header-title">Nueva solicitud</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="content-wrapper">
+    <div class="form-card">
+      <div class="form-header">
+        <h2 class="form-title">Nueva solicitud</h2>
+        <p class="form-subtitle">Crea y envía tu solicitud</p>
+      </div>
+
+      <form class="request-form">
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="list-outline" class="section-icon"></ion-icon>
+            <h3 class="section-title">Tipo de solicitud</h3>
+          </div>
+          <ion-select
+            [(ngModel)]="selectedTipo"
+            name="tipo"
+            placeholder="Seleccionar tipo..."
+            interface="action-sheet"
+            class="custom-select"
+            cancelText="Cancelar"
+            [interfaceOptions]="{ cssClass: 'custom-action-sheet' }">
+            <ion-select-option *ngFor="let tipo of tipoOptions" [value]="tipo.id">
+              {{ tipo.nombre }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- Detalles de la solicitud -->
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="document-text-outline" class="section-icon"></ion-icon>
+            <h3 class="section-title">Detalles de la solicitud</h3>
+          </div>
+
+          <!-- Título -->
+          <div class="form-field">
+            <label class="field-label">
+              Título de la solicitud <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="titulo"
+              name="titulo"
+              placeholder="Ej: Solicitud de vacaciones"
+              class="custom-input"
+            />
+          </div>
+
+          <!-- Descripción -->
+          <div class="form-field">
+            <label class="field-label">
+              Descripción <span class="required">*</span>
+            </label>
+            <textarea
+              [(ngModel)]="descripcion"
+              name="descripcion"
+              rows="5"
+              placeholder="Describe los detalles de tu solicitud..."
+              class="custom-textarea"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Archivo adjunto -->
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="cloud-upload-outline" class="section-icon"></ion-icon>
+            <h3 class="section-title">Archivo adjunto (opcional)</h3>
+          </div>
+
+          <!-- Dropzone -->
+          <div class="file-upload-zone" *ngIf="!selectedFile">
+            <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
+            <p class="upload-text">Adjunta tu archivo</p>
+            <p class="upload-hint">PDF, DOC, JPG, PNG • Máx. 10 MB</p>
+            <input
+              type="file"
+              #fileInput
+              (change)="onFileSelected($event)"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              style="display: none"
+            />
+            <ion-button
+              class="select-file-button"
+              (click)="fileInput.click()">
+              Seleccionar archivo
+            </ion-button>
+          </div>
+
+          <!-- Archivo seleccionado -->
+          <div class="file-selected" *ngIf="selectedFile">
+            <div class="file-info">
+              <ion-icon name="document-outline" class="file-icon"></ion-icon>
+              <div class="file-details">
+                <p class="file-name">{{ selectedFile.name }}</p>
+                <p class="file-size">{{ formatFileSize(selectedFile.size) }}</p>
+              </div>
+            </div>
+            <ion-button
+              fill="clear"
+              class="remove-file-button"
+              (click)="removeFile()">
+              <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Botones de acción -->
+      <div class="form-actions">
+        <ion-button
+          expand="block"
+          fill="outline"
+          class="clear-button"
+          (click)="resetForm()"
+          [disabled]="isSubmitting">
+          Limpiar
+        </ion-button>
+        <ion-button
+          expand="block"
+          class="submit-button"
+          (click)="submitRequest()"
+          [disabled]="isSubmitting">
+          <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+          <span *ngIf="!isSubmitting">Enviar solicitud</span>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="app-toast" *ngIf="showToast" [ngClass]="toastType">
+    <ion-icon
+      [name]="toastType === 'success' ? 'checkmark-circle' : 'alert-circle'"
+      class="toast-icon">
+    </ion-icon>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <!-- Navegación-->
+  <div style="height: 80px;"></div>
+</ion-content>
+
+<!-- navegación -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>

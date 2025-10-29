@@ -20,6 +20,10 @@ const routes: Routes = [
   {
     path: 'iniciosoli',
     loadChildren: () => import('./pages/iniciosoli/iniciosoli.module').then( m => m.IniciosoliPageModule)
+  },
+  {
+    path: 'crearsoli',
+    loadChildren: () => import('./pages/crearsoli/crearsoli.module').then( m => m.CrearsoliPageModule)
   }
 
 
