@@ -1469,7 +1469,7 @@ def administrar_logs(request):
     
 
     # OBTENER TIPOS DE AUDITORIA
-    tipos_auditora_firebase = db.reference("TipoAuditoria").get()or {}
+    tipos_auditora_firebase = db.reference("TipoAuditoria").get() or {}
     tipos_auditoria_lista = []
     for id_tipo, auditoria in tipos_auditora_firebase.items():
         tipos_auditoria_lista.append({

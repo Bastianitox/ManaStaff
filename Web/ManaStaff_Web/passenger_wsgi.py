@@ -1,0 +1,1 @@
+from ManaStaff_Web.wsgi import application
