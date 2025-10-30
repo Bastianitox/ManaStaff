@@ -39,6 +39,9 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         path = request.path
+        
+        if path.startswith('/api/'):
+            return None
 
         rutas_publicas = [
             reverse("index"),

@@ -41,13 +41,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Reinicia el tiempo de sesión cada vez que el usuario haga algo
 SESSION_SAVE_EVERY_REQUEST = True
 
-#CORREO CONFIGURACION
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'manastaffnoreply@gmail.com'
-EMAIL_HOST_PASSWORD = 'dyjr urwp iosg fmxy'
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 
 # Application definition
 
@@ -58,8 +52,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'staffweb'
+    'staffweb',
+    'api',
+    'rest_framework'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'api.authentication.FirebaseAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,7 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'staffweb.middleware.FirebaseAuthAuditoriaMiddleware',
+    'staffweb.utils.middleware.FirebaseAuthAuditoriaMiddleware',
 ]
 
 ROOT_URLCONF = 'ManaStaff_Web.urls'
@@ -85,7 +90,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                "staffweb.context_processors.user_info",
+                "staffweb.utils.context_processors.user_info",
             ],
         },
     },
@@ -155,3 +160,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+import staffweb.firebase
