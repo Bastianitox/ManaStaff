@@ -25,9 +25,16 @@ ion-content {
 }
 
 .header-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   font-size: 17px;
   font-weight: 600;
   color: $white;
+  text-align: center;
+  width: auto;
+  line-height: 1;
 }
 
 .back-button {
