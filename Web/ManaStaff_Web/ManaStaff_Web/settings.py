@@ -32,8 +32,31 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",           
     "http://127.0.0.1:8000",
     "http://localhost",                
-    "http://127.0.0.1",     
+    "http://127.0.0.1",
+    "http://localhost:8100",     
 ]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
 # Tiempo de expiración de sesión en segundos (ej: 30 min)
 SESSION_COOKIE_AGE = 30 * 60  
 
@@ -69,6 +92,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
