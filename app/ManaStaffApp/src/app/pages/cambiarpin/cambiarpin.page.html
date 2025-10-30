@@ -1,13 +1,163 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>cambiarpin</ion-title>
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="header-title">Cambiar PIN</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">cambiarpin</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="content-wrapper">
+    <div class="form-card">
+      <div class="form-header">
+        <h2 class="form-title">Cambiar PIN</h2>
+        <p class="form-subtitle">Actualiza tu PIN de seguridad de 4 dígitos</p>
+      </div>
+
+      <form class="pin-form">
+        <!-- PIN actual -->
+        <div class="form-field">
+          <label class="field-label">
+            PIN actual <span class="required">*</span>
+          </label>
+          <div class="pin-input-wrapper">
+            <input
+              [type]="showCurrentPin ? 'tel' : 'password'"
+              inputmode="numeric"
+              [(ngModel)]="currentPin"
+              name="currentPin"
+              placeholder="••••"
+              maxlength="4"
+              class="pin-input"
+              (input)="onPinInput($event, 'current')"
+              (keypress)="onlyNumbers($event)"
+            />
+            <button 
+              type="button"
+              class="toggle-pin-btn"
+              (click)="showCurrentPin = !showCurrentPin">
+              <ion-icon [name]="showCurrentPin ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+          <p class="field-hint">Ingresa tu PIN actual de 4 dígitos</p>
+        </div>
+
+        <!-- Nuevo PIN -->
+        <div class="form-field">
+          <label class="field-label">
+            Nuevo PIN <span class="required">*</span>
+          </label>
+          <div class="pin-input-wrapper">
+            <input
+              [type]="showNewPin ? 'tel' : 'password'"
+              inputmode="numeric"
+              [(ngModel)]="newPin"
+              name="newPin"
+              placeholder="••••"
+              maxlength="4"
+              class="pin-input"
+              (input)="onPinInput($event, 'new')"
+              (keypress)="onlyNumbers($event)"
+            />
+            <button 
+              type="button"
+              class="toggle-pin-btn"
+              (click)="showNewPin = !showNewPin">
+              <ion-icon [name]="showNewPin ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+          <p class="field-hint">Ingresa tu nuevo PIN de 4 dígitos</p>
+        </div>
+
+        <!-- Confirmar nuevo PIN -->
+        <div class="form-field">
+          <label class="field-label">
+            Confirmar nuevo PIN <span class="required">*</span>
+          </label>
+          <div class="pin-input-wrapper">
+            <input
+              [type]="showConfirmPin ? 'tel' : 'password'"
+              inputmode="numeric"
+              [(ngModel)]="confirmPin"
+              name="confirmPin"
+              placeholder="••••"
+              maxlength="4"
+              class="pin-input"
+              (input)="onPinInput($event, 'confirm')"
+              (keypress)="onlyNumbers($event)"
+            />
+            <button 
+              type="button"
+              class="toggle-pin-btn"
+              (click)="showConfirmPin = !showConfirmPin">
+              <ion-icon [name]="showConfirmPin ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+          <p class="field-hint">Confirma tu nuevo PIN</p>
+        </div>
+
+        <!-- Indicador de validación -->
+        <div class="validation-box" *ngIf="newPin.length > 0 || confirmPin.length > 0">
+          <div class="validation-item" [class.valid]="newPin.length === 4">
+            <ion-icon [name]="newPin.length === 4 ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+            <span>Nuevo PIN completo (4 dígitos)</span>
+          </div>
+          <div class="validation-item" [class.valid]="confirmPin.length === 4">
+            <ion-icon [name]="confirmPin.length === 4 ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+            <span>Confirmación completa (4 dígitos)</span>
+          </div>
+          <div class="validation-item" [class.valid]="pinsMatch && newPin.length === 4">
+            <ion-icon [name]="pinsMatch && newPin.length === 4 ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+            <span>Los PIN coinciden</span>
+          </div>
+        </div>
+
+        <!-- Botón -->
+        <div class="form-actions">
+          <ion-button
+            expand="block"
+            class="submit-button"
+            (click)="changePin()"
+            [disabled]="!isFormValid || isSubmitting">
+            <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+            <span *ngIf="!isSubmitting">Cambiar PIN</span>
+          </ion-button>
+        </div>
+      </form>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </div>
 </ion-content>
+
+<!-- Toast -->
+<div class="app-toast" *ngIf="showToast" [ngClass]="toastType">
+  <ion-icon
+    [name]="toastType === 'success' ? 'checkmark-circle' : 'alert-circle'"
+    class="toast-icon">
+  </ion-icon>
+  <span>{{ toastMessage }}</span>
+</div>
+
+<!-- navegación -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>

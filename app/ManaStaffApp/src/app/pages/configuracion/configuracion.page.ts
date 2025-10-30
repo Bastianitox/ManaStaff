@@ -32,10 +32,12 @@ export class ConfiguracionPage implements OnInit {
 
   cambiarPIN() {
     console.log("Navegar a cambiar PIN")
+    this.router.navigateByUrl("/cambiarpin")
   }
 
   recuperarPIN() {
     console.log("Navegar a recuperar PIN")
+    this.router.navigateByUrl("/recuperarpin")
   }
 
   // Toggle modo oscuro
