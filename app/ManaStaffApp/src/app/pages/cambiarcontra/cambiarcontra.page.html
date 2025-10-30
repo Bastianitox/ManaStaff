@@ -1,13 +1,166 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>cambiarcontra</ion-title>
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="header-title">Cambiar contraseña</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">cambiarcontra</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="content-wrapper">
+    <div class="form-card">
+      <div class="form-header">
+        <h2 class="form-title">Cambiar contraseña</h2>
+        <p class="form-subtitle">Actualiza tu contraseña de acceso</p>
+      </div>
+
+      <form class="password-form">
+        <!-- Contraseña actual -->
+        <div class="form-field">
+          <label class="field-label">
+            Contraseña actual <span class="required">*</span>
+          </label>
+          <div class="password-input-wrapper">
+            <input
+              [type]="showCurrentPassword ? 'text' : 'password'"
+              [(ngModel)]="currentPassword"
+              name="currentPassword"
+              placeholder="Ingresa tu contraseña actual"
+              class="custom-input"
+              (input)="checkFormValidity()"
+            />
+            <button 
+              type="button"
+              class="toggle-password-btn"
+              (click)="showCurrentPassword = !showCurrentPassword">
+              <ion-icon [name]="showCurrentPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Nueva contraseña -->
+        <div class="form-field">
+          <label class="field-label">
+            Nueva contraseña <span class="required">*</span>
+          </label>
+          <div class="password-input-wrapper">
+            <input
+              [type]="showNewPassword ? 'text' : 'password'"
+              [(ngModel)]="newPassword"
+              name="newPassword"
+              placeholder="Ingresa tu nueva contraseña"
+              class="custom-input"
+              (input)="validatePassword()"
+            />
+            <button 
+              type="button"
+              class="toggle-password-btn"
+              (click)="showNewPassword = !showNewPassword">
+              <ion-icon [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirmar nueva contraseña -->
+        <div class="form-field">
+          <label class="field-label">
+            Confirmar nueva contraseña <span class="required">*</span>
+          </label>
+          <div class="password-input-wrapper">
+            <input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              placeholder="Confirma tu nueva contraseña"
+              class="custom-input"
+              (input)="validatePassword()"
+            />
+            <button 
+              type="button"
+              class="toggle-password-btn"
+              (click)="showConfirmPassword = !showConfirmPassword">
+              <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Validaciones -->
+        <div class="validation-box">
+          <h3 class="validation-title">Requisitos de la contraseña:</h3>
+          <div class="validation-list">
+            <div class="validation-item" [class.valid]="validations.length">
+              <ion-icon [name]="validations.length ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>8 a 30 caracteres</span>
+            </div>
+            <div class="validation-item" [class.valid]="validations.uppercase">
+              <ion-icon [name]="validations.uppercase ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>1 mayúscula</span>
+            </div>
+            <div class="validation-item" [class.valid]="validations.lowercase">
+              <ion-icon [name]="validations.lowercase ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>1 minúscula</span>
+            </div>
+            <div class="validation-item" [class.valid]="validations.number">
+              <ion-icon [name]="validations.number ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>1 número</span>
+            </div>
+            <div class="validation-item" [class.valid]="validations.special">
+              <ion-icon [name]="validations.special ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>1 carácter especial</span>
+            </div>
+            <div class="validation-item" [class.valid]="validations.match">
+              <ion-icon [name]="validations.match ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>Las contraseñas coinciden</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón -->
+        <div class="form-actions">
+          <ion-button
+            expand="block"
+            class="submit-button"
+            (click)="changePassword()"
+            [disabled]="!isFormValid || isSubmitting">
+            <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+            <span *ngIf="!isSubmitting">Cambiar contraseña</span>
+          </ion-button>
+        </div>
+      </form>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </div>
 </ion-content>
+
+<!-- Toast -->
+<div class="app-toast" *ngIf="showToast" [ngClass]="toastType">
+  <ion-icon
+    [name]="toastType === 'success' ? 'checkmark-circle' : 'alert-circle'"
+    class="toast-icon">
+  </ion-icon>
+  <span>{{ toastMessage }}</span>
+</div>
+
+<!-- navegación -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>

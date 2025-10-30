@@ -27,6 +27,7 @@ export class ConfiguracionPage implements OnInit {
   // Opciones de seguridad
   cambiarContrasena() {
     console.log("Navegar a cambiar contraseña")
+    this.router.navigateByUrl("/cambiarcontra")
   }
 
   cambiarPIN() {
