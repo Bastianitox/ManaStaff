@@ -1,13 +1,124 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>login</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">login</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Bienvenida -->
+  <div class="login-container" *ngIf="!showLoginForm">
+    <div class="welcome-screen">
+      <div class="logo-container">
+        <!-- Logo -->
+        <div class="logo-placeholder">
+          <img src="assets/img/logo_blanco.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
+      </div>
+
+      <div class="brand-section">
+        <h1 class="brand-name">ManaStaff</h1>
+        <p class="welcome-message">Gestión empresarial inteligente</p>
+      </div>
+
+      <div class="action-section">
+        <ion-button class="login-button" expand="block" (click)="showLogin()">
+          Iniciar sesión
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- formulario de login -->
+  <div class="login-container" *ngIf="showLoginForm">
+    <div class="login-form-screen">
+      <!-- Botón de volver -->
+      <ion-button class="back-btn" fill="clear" (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+
+      <!-- Logo -->
+      <div class="logo-container-small">
+        <div class="logo-placeholder-small">
+          <img src="assets/img/logo_blanco.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
+        <h2 class="brand-name-small">ManaStaff</h2>
+      </div>
+
+      <!-- Formulario -->
+      <div class="form-card">
+        <div class="form-header">
+          <h3 class="form-title">Iniciar sesión</h3>
+          <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <form class="login-form">
+          <!-- Email -->
+          <div class="form-field">
+            <label class="field-label">
+              Correo electrónico <span class="required">*</span>
+            </label>
+            <input
+              type="email"
+              class="custom-input"
+              placeholder="ejemplo@empresa.com"
+              [(ngModel)]="email"
+              name="email"
+              autocomplete="email"
+            />
+          </div>
+
+          <!-- Contraseña -->
+          <div class="form-field">
+            <label class="field-label">
+              Contraseña <span class="required">*</span>
+            </label>
+            <div class="password-input-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                class="custom-input"
+                placeholder="Ingresa tu contraseña"
+                [(ngModel)]="password"
+                name="password"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="toggle-password-btn"
+                (click)="showPassword = !showPassword"
+              >
+                <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Enlace de recuperación -->
+          <div class="forgot-password">
+            <a (click)="goToRecoverPassword()">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <!-- Botón de login -->
+          <div class="form-actions">
+            <ion-button
+              class="submit-button"
+              expand="block"
+              [disabled]="!isFormValid || isLoggingIn"
+              (click)="login()"
+            >
+              <ion-spinner name="crescent" *ngIf="isLoggingIn"></ion-spinner>
+              <span *ngIf="!isLoggingIn">Iniciar sesión</span>
+              <span *ngIf="isLoggingIn">Iniciando sesión...</span>
+            </ion-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div class="loading-overlay" *ngIf="isLoggingIn">
+    <div class="loading-content">
+      <ion-spinner class="loading-spinner" name="crescent"></ion-spinner>
+      <p class="loading-text">Iniciando sesión...</p>
+    </div>
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div class="app-toast" [class.success]="toastType === 'success'" [class.error]="toastType === 'error'" *ngIf="showToast">
+    <ion-icon class="toast-icon" [name]="toastType === 'success' ? 'checkmark-circle-outline' : 'close-circle-outline'"></ion-icon>
+    <span>{{ toastMessage }}</span>
+  </div>
 </ion-content>

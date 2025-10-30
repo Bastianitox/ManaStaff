@@ -1,0 +1,434 @@
+// Colores corporativos
+$primary-blue: #062f63;
+$dark-blue: #041d3d;
+$light-blue: #0a4a8f;
+$text-primary: #0F172A;
+$text-secondary: #6B7280;
+$background: #F8FAFC;
+$border-color: #E5E7EB;
+$white: #FFFFFF;
+$success: #10B981;
+$error: #DC2626;
+
+ion-content {
+  --background: #{$primary-blue};
+}
+
+// Contenedor principal
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+// Vista de bienvenida
+.welcome-screen {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.logo-container {
+  animation: slideDown 0.8s ease-out;
+}
+
+.logo-placeholder {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, rgba($white, 0.2) 0%, rgba($white, 0.1) 100%);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+
+  ion-icon {
+    font-size: 64px;
+    color: $white;
+  }
+}
+
+.brand-section {
+  text-align: center;
+  animation: fadeIn 1s ease-out 0.3s both;
+}
+
+.brand-name {
+  font-size: 42px;
+  font-weight: 700;
+  color: $white;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.welcome-message {
+  font-size: 16px;
+  color: rgba($white, 0.9);
+  margin: 0;
+  font-weight: 400;
+}
+
+.action-section {
+  width: 100%;
+  animation: slideUp 0.8s ease-out 0.5s both;
+}
+
+.login-button {
+  --background: #{$white};
+  --background-hover: rgba(#{$white}, 0.95);
+  --background-activated: rgba(#{$white}, 0.9);
+  --border-radius: 14px;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --color: #{$primary-blue};
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: none;
+  height: 56px;
+  margin-top: 16px;
+}
+
+// Formulario
+.login-form-screen {
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  animation: slideUp 0.5s ease-out;
+}
+
+.back-btn {
+  --color: #{$white};
+  position: absolute;
+  top: -60px;
+  left: -8px;
+  font-size: 28px;
+  z-index: 10;
+}
+
+.logo-container-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.logo-placeholder-small {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, rgba($white, 0.2) 0%, rgba($white, 0.1) 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+
+  ion-icon {
+    font-size: 40px;
+    color: $white;
+  }
+}
+
+.brand-name-small {
+  font-size: 28px;
+  font-weight: 700;
+  color: $white;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+// Tarjeta del formulario
+.form-card {
+  background: $white;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+.form-header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0 0 8px 0;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  color: $text-secondary;
+  margin: 0;
+  line-height: 1.4;
+}
+
+// Formulario
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+
+  .required {
+    color: $error;
+  }
+}
+
+.custom-input {
+  width: 100%;
+  border: 2px solid $border-color;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  color: $text-primary;
+  background: $white;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: $text-secondary;
+    opacity: 0.6;
+  }
+
+  &:focus {
+    border-color: $primary-blue;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .custom-input {
+    flex: 1;
+    padding-right: 48px;
+  }
+
+  .toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-secondary;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $primary-blue;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+}
+
+.forgot-password {
+  text-align: right;
+  margin-top: -8px;
+
+  a {
+    font-size: 14px;
+    color: $primary-blue;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $dark-blue;
+      text-decoration: underline;
+    }
+  }
+}
+
+.form-actions {
+  margin-top: 8px;
+}
+
+.submit-button {
+  --background: linear-gradient(135deg, #{$light-blue} 0%, #{$primary-blue} 100%);
+  --background-hover: #{$primary-blue};
+  --background-activated: #{$dark-blue};
+  --border-radius: 12px;
+  --box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  --color: #{$white};
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: none;
+  height: 52px;
+
+  &[disabled] {
+    --background: #{$border-color};
+    --color: #{$text-secondary};
+    --box-shadow: none;
+    opacity: 0.6;
+  }
+
+  ion-spinner {
+    margin-right: 8px;
+  }
+}
+
+// Overlay de carga
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  background: $white;
+  border-radius: 16px;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  color: $primary-blue;
+}
+
+.loading-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: $text-primary;
+  margin: 0;
+}
+
+// Toast
+.app-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  min-width: 280px;
+  max-width: 90%;
+  animation: fadeIn 0.3s ease-out;
+
+  &.success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  }
+
+  &.error {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  }
+
+  .toast-icon {
+    font-size: 22px;
+  }
+}
+
+// Animaciones
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .form-card {
+    padding: 40px 32px;
+  }
+
+  .logo-placeholder {
+    width: 140px;
+    height: 140px;
+
+    ion-icon {
+      font-size: 72px;
+    }
+  }
+
+  .brand-name {
+    font-size: 48px;
+  }
+
+  .welcome-message {
+    font-size: 18px;
+  }
+}
