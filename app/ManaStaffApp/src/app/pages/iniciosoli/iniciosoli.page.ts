@@ -65,6 +65,7 @@ export class IniciosoliPage implements OnInit {
         
         if (response.status === 'success') {
           // 1. Asignar los datos del API
+          console.log(response.solicitudes)
           this.solicitudes = response.solicitudes as Solicitud[]; 
           
           // 2. Inicializar los tipos (tu lógica actual)
@@ -113,6 +114,17 @@ export class IniciosoliPage implements OnInit {
     this.tipoOptions.forEach((tipo) => {
       this.filters.tipo[tipo.id] = false;
     });
+  }
+
+  formatSolicitudDate(dateString: string | null): string | null {
+    if (!dateString || dateString.toLowerCase() === 'null') {
+      return null;
+    }
+    // Convertimos el string 'YYYY-MM-DD HH:MM:SS' a un objeto Date
+    const date = new Date(dateString.replace(' ', 'T')); 
+    
+    // Opcional: Usar Intl.DateTimeFormat para un formato más legible (ej. 30/10/2025)
+    return new Intl.DateTimeFormat('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
   }
 
   handleRefresh(event: any) {
@@ -203,18 +215,22 @@ export class IniciosoliPage implements OnInit {
   }
 
   getDateRange(solicitud: Solicitud): string {
-    if (solicitud.fecha_inicio && !solicitud.fecha_fin) {
-      return `${solicitud.fecha_inicio} - Decisión pendiente`
+    // Manejar la posibilidad de que la API devuelva la cadena "null"
+    const inicio = this.formatSolicitudDate(solicitud.fecha_inicio);
+    const fin = this.formatSolicitudDate(solicitud.fecha_fin);
+
+    if (inicio && !fin) {
+      return `${inicio} - Decisión pendiente`;
     }
 
-    if (solicitud.fecha_inicio && solicitud.fecha_fin) {
-      if (solicitud.fecha_inicio === solicitud.fecha_fin) {
-        return solicitud.fecha_inicio
+    if (inicio && fin) {
+      if (inicio === fin) {
+        return inicio; // Si son el mismo día, muestra solo una vez
       }
-      return `${solicitud.fecha_inicio} - ${solicitud.fecha_fin}`
+      return `${inicio} - ${fin}`;
     }
 
-    return "En revisión"
+    return "En revisión"; // Si ambas fechas son nulas
   }
 
   cancelRequest(id: string) {
@@ -234,8 +250,9 @@ export class IniciosoliPage implements OnInit {
   }
 
   viewDetails(id: string) {
-    console.log("Ver detalles", id)
-    this.router.navigateByUrl(`/detallesoli`);
+    console.log("Ver detalles de solicitud ID:", id);
+    // 💡 Navegar a la ruta de detalle, pasando el ID como parámetro de ruta
+    this.router.navigate(['/detallesoli', id]);
   }
 
   showSuccess(message: string) {
