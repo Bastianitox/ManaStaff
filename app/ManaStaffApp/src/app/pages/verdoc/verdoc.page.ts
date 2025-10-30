@@ -69,7 +69,7 @@ export class VerdocPage implements OnInit {
   // Volver a la lista "Mis documentos"
   goBack() {
     console.log("[verdoc] Volver a Mis documentos (goBack)")
-    this.router.navigate(['/iniciodoc'])
+    this.router.navigate(['/tabs/iniciodoc'])
   }
 
   // Función para volver a la lista de documentos
