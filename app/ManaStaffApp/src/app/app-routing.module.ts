@@ -45,6 +45,26 @@ const routes: Routes = [
   {
     path: 'configuracion',
     loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule)
+  },
+  {
+    path: 'cambiarcontra',
+    loadChildren: () => import('./pages/cambiarcontra/cambiarcontra.module').then( m => m.CambiarcontraPageModule)
+  },
+  {
+    path: 'cambiarpin',
+    loadChildren: () => import('./pages/cambiarpin/cambiarpin.module').then( m => m.CambiarpinPageModule)
+  },
+  {
+    path: 'recuperarpin',
+    loadChildren: () => import('./pages/recuperarpin/recuperarpin.module').then( m => m.RecuperarpinPageModule)
+  },
+  {
+    path: 'recuperarcontra',
+    loadChildren: () => import('./pages/recuperarcontra/recuperarcontra.module').then( m => m.RecuperarcontraPageModule)
+  },
+  {
+    path: 'login',
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
   }
 
 
