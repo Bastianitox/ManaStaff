@@ -151,6 +151,7 @@ export class InicioperfilPage implements OnInit {
   }
 
   goToConfig() {
-    console.log("Ya estás en Configuración")
+    console.log("[verdoc] Navegar a Configuración")
+    this.router.navigate(["/configuracion"])
   }
 }

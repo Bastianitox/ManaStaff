@@ -41,6 +41,10 @@ const routes: Routes = [
   {
     path: 'inicioperfil',
     loadChildren: () => import('./pages/inicioperfil/inicioperfil.module').then( m => m.InicioperfilPageModule)
+  },
+  {
+    path: 'configuracion',
+    loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule)
   }
 
 

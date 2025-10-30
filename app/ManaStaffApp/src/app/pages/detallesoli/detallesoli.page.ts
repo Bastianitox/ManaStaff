@@ -89,6 +89,7 @@ export class DetallesoliPage implements OnInit {
   }
 
   goToConfig() {
-    console.log("Navegar a Configuración")
+    console.log("[verdoc] Navegar a Configuración")
+    this.router.navigate(["/configuracion"])
   }
 }

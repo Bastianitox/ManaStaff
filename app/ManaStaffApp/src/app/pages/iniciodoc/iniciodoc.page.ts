@@ -301,6 +301,7 @@ export class IniciodocPage implements OnInit {
   }
 
   goToConfig() {
-    console.log("Navegando a Configuración")
+    console.log("[verdoc] Navegar a Configuración")
+    this.router.navigate(["/configuracion"])
   }
 }
