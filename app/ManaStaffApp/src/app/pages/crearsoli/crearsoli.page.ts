@@ -52,6 +52,7 @@ export class CrearsoliPage implements OnInit {
 
   goToNoticias() {
     console.log("Navegar a Noticias y avisos")
+    this.router.navigateByUrl("/inicioavisos")
   }
 
   goToConfig() {

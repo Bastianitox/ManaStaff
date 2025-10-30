@@ -292,6 +292,7 @@ export class IniciodocPage implements OnInit {
 
   goToNoticias() {
     console.log("Navegando a Noticias y avisos")
+    this.router.navigate(["/inicioavisos"])
   }
 
   goToSolicitudes() {

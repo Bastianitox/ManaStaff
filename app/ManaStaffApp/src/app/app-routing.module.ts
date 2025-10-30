@@ -9,7 +9,8 @@ const routes: Routes = [
   {
     path: 'ejemplo',
     loadChildren: () => import('./pages/ejemplo/ejemplo.module').then( m => m.EjemploPageModule)
-  },  {
+  },
+  {
     path: 'iniciodoc',
     loadChildren: () => import('./pages/iniciodoc/iniciodoc.module').then( m => m.IniciodocPageModule)
   },
@@ -28,6 +29,10 @@ const routes: Routes = [
   {
     path: 'detallesoli',
     loadChildren: () => import('./pages/detallesoli/detallesoli.module').then( m => m.DetallesoliPageModule)
+  },
+  {
+    path: 'inicioavisos',
+    loadChildren: () => import('./pages/inicioavisos/inicioavisos.module').then( m => m.InicioavisosPageModule)
   }
 
 

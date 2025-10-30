@@ -276,6 +276,7 @@ export class IniciosoliPage implements OnInit {
 
   goToNoticias() {
     console.log("Navegar a Noticias")
+    this.router.navigateByUrl("/inicioavisos")
   }
 
   goToConfig() {

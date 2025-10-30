@@ -1,0 +1,201 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-toolbar">
+    <div class="header-container">
+      <div class="header-left">
+        <div class="company-logo">
+          <img src="assets/img/logo_grande.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
+      </div>
+      
+      <!-- Título -->
+      <div class="header-right">
+        <h1 class="header-title">Noticias y avisos</h1>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Buscador y filtro -->
+  <div class="search-filter-container">
+    <ion-searchbar
+      class="search-bar"
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      debounce="300"
+      placeholder="Busca noticias y avisos…"
+    ></ion-searchbar>
+    <button class="filter-button" (click)="openFilterModal()">
+      <ion-icon name="funnel-outline"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Título de sección -->
+  <div class="section-title">Publicaciones recientes</div>
+
+  <!-- Cargando -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner color="primary"></ion-spinner>
+    <p>Cargando publicaciones…</p>
+  </div>
+
+  <!-- Lista de publicaciones -->
+  <div class="publications-list" *ngIf="!isLoading && filteredPublicaciones.length > 0">
+    <div class="publication-card" *ngFor="let pub of filteredPublicaciones">
+      <!-- Badge de tipo -->
+      <div class="type-badge" [ngClass]="pub.tipo">
+        <span *ngIf="pub.tipo === 'noticia'">Noticia</span>
+        <span *ngIf="pub.tipo === 'aviso'">Aviso</span>
+      </div>
+
+      <!-- Contenido principal -->
+      <div class="card-content">
+        <div class="icon-container" [ngClass]="pub.tipo">
+          <ion-icon [name]="pub.tipo === 'noticia' ? 'newspaper-outline' : 'megaphone-outline'"></ion-icon>
+        </div>
+        <div class="info-container">
+          <h3 class="publication-title">{{ pub.titulo }}</h3>
+          <p class="publication-summary">{{ pub.resumen }}</p>
+          <div class="publication-meta">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>{{ pub.fecha_publicacion }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de detalles -->
+      <div class="action-buttons">
+        <button class="btn-primary" (click)="viewDetails(pub.id)">
+          Ver detalles
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && filteredPublicaciones.length === 0">
+    <ion-icon name="newspaper-outline" class="empty-icon"></ion-icon>
+    <h3>No se encontraron publicaciones</h3>
+    <p>Intenta ajustar tus filtros de búsqueda</p>
+  </div>
+
+  <div style="height: 80px;"></div>
+</ion-content>
+
+<!-- Modal de filtros -->
+<ion-modal 
+  [isOpen]="showFilterModal"
+  class="filter-modal">
+  <ng-template ionModalContent>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="filter-toolbar">
+        <ion-title class="filter-modal-title">Filtrar publicaciones</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeFilterModal()" class="close-btn">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+      <div class="filter-description">
+        <p>Refina por tipo de publicación o fecha</p>
+      </div>
+    </ion-header>
+
+    <ion-content class="filter-content">
+      <!-- Tipo de publicación -->
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <ion-icon name="list-outline" class="filter-icon"></ion-icon>
+          <h3 class="filter-label">Tipo de publicación</h3>
+        </div>
+        <div class="filter-options">
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="tipoFilter" 
+              value="todas"
+              [(ngModel)]="filters.tipo"
+              (change)="applyFilters()">
+            <span class="radio-label">Ver todo</span>
+          </label>
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="tipoFilter" 
+              value="noticia"
+              [(ngModel)]="filters.tipo"
+              (change)="applyFilters()">
+            <span class="radio-label">Solo noticias</span>
+          </label>
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="tipoFilter" 
+              value="aviso"
+              [(ngModel)]="filters.tipo"
+              (change)="applyFilters()">
+            <span class="radio-label">Solo avisos</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Ordenar por -->
+      <div class="filter-card">
+        <div class="filter-card-header">
+          <ion-icon name="swap-vertical-outline" class="filter-icon"></ion-icon>
+          <h3 class="filter-label">Ordenar por</h3>
+        </div>
+        <div class="filter-options">
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="sortBy" 
+              value="desc"
+              [(ngModel)]="filters.sort"
+              (change)="applyFilters()">
+            <span class="radio-label">Más recientes</span>
+          </label>
+          <label class="filter-radio">
+            <input 
+              type="radio" 
+              name="sortBy" 
+              value="asc"
+              [(ngModel)]="filters.sort"
+              (change)="applyFilters()">
+            <span class="radio-label">Más antiguos</span>
+          </label>
+        </div>
+      </div>
+    </ion-content>
+
+    <!-- botones-->
+    <div class="filter-footer">
+      <button class="btn-secondary" (click)="clearFilters()">
+        Limpiar
+      </button>
+      <button class="btn-primary" (click)="closeFilterModal()">
+        Aplicar filtros
+      </button>
+    </div>
+  </ng-template>
+</ion-modal>
+
+<!-- navegación-->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>

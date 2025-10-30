@@ -97,6 +97,7 @@ export class VerdocPage implements OnInit {
 
   goToNoticias() {
     console.log("[verdoc] Navegar a Noticias y avisos")
+    this.router.navigateByUrl("/inicioavisos")
   }
 
   goToSolicitudes() {

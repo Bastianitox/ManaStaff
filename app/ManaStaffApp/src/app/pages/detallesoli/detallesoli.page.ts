@@ -85,6 +85,7 @@ export class DetallesoliPage implements OnInit {
 
   goToNoticias() {
     console.log("Navegar a Noticias y avisos")
+    this.router.navigateByUrl("/inicioavisos")
   }
 
   goToConfig() {
