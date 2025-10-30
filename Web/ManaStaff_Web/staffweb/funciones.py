@@ -9,7 +9,6 @@ from requests.exceptions import HTTPError
 from datetime import datetime, timedelta
 
 from django.http import JsonResponse, HttpResponse
-from django.core.mail import send_mail, EmailMultiAlternatives
 from django.utils.html import format_html
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST,require_GET
@@ -19,7 +18,7 @@ import requests
 import mimetypes
 from .firebase import authP, auth, database, storage, db
 from .utils.decorators import admin_required
-
+from .utils.email_utils import enviar_correo
 
 from .utils.auditoria import registrar_auditoria_manual
 
@@ -468,13 +467,19 @@ def crear_usuario_funcion(request):
         userFIREBASE = auth.create_user(email=email, password=password)
         verification_link = auth.generate_email_verification_link(email)
 
-        send_mail(
-            subject="Verifica tu cuenta",
-            message=f"Por favor verifica tu cuenta haciendo clic en el siguiente enlace:\n\n{verification_link}",
-            from_email="manastaffnoreply@gmail.com",
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        asunto = "Verifica tu cuenta"
+        texto = f"Por favor verifica tu cuenta haciendo clic en el siguiente enlace."
+        html = f"""
+        <div style="font-family: Arial, sans-serif; color: #333;">
+        <h2 style="color: #1cc88a;">Link de Verificación de Cuenta</h2>
+        <p>Para verificar tu cuenta, haz click en el siguiente enlance.</p>
+        <p style="background-color:#f2f2f2; padding:10px; border-radius:5px; font-size:18px;">
+            <strong>{verification_link}</strong>
+        </p>
+        </div>
+        """
+
+        enviar_correo(email, asunto, texto, html)
         registrar_auditoria_manual(request, "Seis", "éxito", f"Al correo {email} se le envió un link de verificación.")
 
     except Exception as e:
@@ -643,12 +648,20 @@ def modificar_usuario_funcion(request, rut):
         correo_actual = email
         auth.update_user(uid = uid, email = correo_actual)
         verification_link = auth.generate_email_verification_link(email)
-        send_mail(
-            subject="Verifica tu nuevo correo",
-            message=f"Por favor confirma tu nuevo correo aquí:\n{verification_link}",
-            from_email="manastaffnoreply@gmail.com",
-            recipient_list=[email],
-        )
+
+        asunto = "Verifica tu nuevo correo"
+        texto = f"Por favor verifica tu nuevo correo haciendo clic en el siguiente enlace."
+        html = f"""
+        <div style="font-family: Arial, sans-serif; color: #333;">
+        <h2 style="color: #1cc88a;">Link de verificación</h2>
+        <p>Tu nuevo link de verificación de correo es:</p>
+        <p style="background-color:#f2f2f2; padding:10px; border-radius:5px; font-size:18px;">
+            <strong>{verification_link}</strong>
+        </p>
+        </div>
+        """
+
+        enviar_correo(email, asunto, texto, html)
         registrar_auditoria_manual(request, "Seis", "éxito", f"Link de verificación nuevo a usuario {rut}, correo anterior: {correo_actual}, correo nuevo: {email}, modificado por el usuario {obtener_rut_actual(request)}")
 
 
@@ -1046,6 +1059,7 @@ def asignarme_solicitud(request, id_solicitud):
 
     # ENVIAR CORREO AL USUARIO QUE HIZO LA SOLICITUD
     usuario_solicitud = db.reference("Usuario").child(solicitud_id_rut).get() or {}
+    nombre_usuario = usuario_solicitud.get("Nombre", "")
     correo = usuario_solicitud.get("correo")
 
     if correo:
@@ -1064,16 +1078,9 @@ def asignarme_solicitud(request, id_solicitud):
             <p>Puedes seguir el estado de tu solicitud en tu portal <strong>ManaStaff</strong>.</p>
             <p>Gracias por utilizar nuestro sistema.</p>
         </div>
-        """, nombre=usuario_solicitud.get("nombre", ""), asunto=solicitud.get("Asunto", ""), id_solicitud=id_solicitud)
+        """, nombre=nombre_usuario, asunto=solicitud.get("Asunto", ""), id_solicitud=id_solicitud)
 
-        email = EmailMultiAlternatives(
-            subject=asunto,
-            body=texto_plano,
-            from_email="manastaffnoreply@gmail.com",
-            to=[correo]
-        )
-        email.attach_alternative(html_mensaje, "text/html")
-        email.send(fail_silently=False)
+        enviar_correo(correo, asunto, texto_plano, html_mensaje)
 
     #OBTENER LA REF DE SOLICITUD A ASIGNAR
     ref = db.reference('/Solicitudes/'+id_solicitud)
@@ -1182,14 +1189,8 @@ def cerrar_solicitud(request, id_solicitud, estado, razon = None):
         </div>
         """, nombre=nombre_usuario, asunto=asunto_solicitud, id_solicitud=id_solicitud, razon=razon)
 
-    email = EmailMultiAlternatives(
-        subject=asunto,
-        body=texto_plano,
-        from_email="manastaffnoreply@gmail.com",
-        to=[correo]
-    )
-    email.attach_alternative(html_mensaje, "text/html")
-    email.send(fail_silently=False)
+    
+    enviar_correo(correo, asunto, texto_plano, html_mensaje)
 
     #OBTENER LA REF DE SOLICITUD A CERRAR
     ref = db.reference('/Solicitudes/'+id_solicitud)
@@ -1266,14 +1267,21 @@ def solicitar_recuperacion_pin(request):
         "expira": expiracion
     })
 
-    # Enviar correo
-    send_mail(
-        subject="Recuperación de PIN",
-        message=f"Tu código de recuperación es: {codigo}. Válido por 10 minutos.",
-        from_email="no-reply@tuempresa.com",
-        recipient_list=[email],
-        fail_silently=False,
-    )
+    asunto = "Recuperación de PIN"
+    texto = f"Tu código de recuperación es: {codigo}. Válido por 10 minutos."
+    html = f"""
+    <div style="font-family: Arial, sans-serif; color: #333;">
+    <h2 style="color: #1cc88a;">Recuperación de PIN</h2>
+    <p>Tu código de recuperación es:</p>
+    <p style="background-color:#f2f2f2; padding:10px; border-radius:5px; font-size:18px;">
+        <strong>{codigo}</strong>
+    </p>
+    <p>Válido por 10 minutos.</p>
+    </div>
+    """
+
+    enviar_correo(email, asunto, texto, html)
+
     registrar_auditoria_manual(request, "Seis", "éxito", f"El usuario {obtener_rut_actual(request)} solicito un codigo de recuperación de PIN.")
     return JsonResponse({"status": "success", "message": "Código enviado a tu correo."})
 

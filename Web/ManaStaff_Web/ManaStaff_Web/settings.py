@@ -41,14 +41,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Reinicia el tiempo de sesión cada vez que el usuario haga algo
 SESSION_SAVE_EVERY_REQUEST = True
 
-#CORREO CONFIGURACION
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'manastaffnoreply@gmail.com'
-EMAIL_HOST_PASSWORD = 'dyjr urwp iosg fmxy'
-
 # Application definition
 
 INSTALLED_APPS = [
