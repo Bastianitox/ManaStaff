@@ -134,7 +134,8 @@ export class InicioavisosPage implements OnInit {
   }
 
   viewDetails(id: string) {
-    console.log("Ver detalles de publicación:", id)
+    this.router.navigateByUrl(`/detalleavisos`);
+    //console.log("Ver detalles de publicación:", id)
   }
 
   // Navegación

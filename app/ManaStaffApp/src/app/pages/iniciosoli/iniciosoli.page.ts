@@ -241,6 +241,7 @@ export class IniciosoliPage implements OnInit {
 
   viewDetails(id: string) {
     console.log("Ver detalles", id)
+    this.router.navigateByUrl(`/detallesoli`);
   }
 
   showSuccess(message: string) {

@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <!-- header título -->
+    <ion-title class="header-title-centered">Detalle de publicación</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="content-wrapper">
+    <!-- Tarjeta principal con detalle de la publicación -->
+    <div class="detail-card">
+      <!-- Badge de tipo -->
+      <div class="type-badge-large" [ngClass]="publicacion.tipo">
+        <span *ngIf="publicacion.tipo === 'noticia'">Noticia</span>
+        <span *ngIf="publicacion.tipo === 'aviso'">Aviso</span>
+      </div>
+
+      <!-- Título -->
+      <h1 class="publication-title">{{ publicacion.titulo }}</h1>
+
+      <!-- Fecha con texto descriptivo -->
+      <div class="publication-date">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>Se realizará / aplica el día: <strong>{{ publicacion.fecha_publicacion }}</strong></span>
+      </div>
+
+      <!-- Contenido completo -->
+      <div class="publication-content">
+        <p>{{ publicacion.contenido }}</p>
+      </div>
+
+      <!-- Bloque de información -->
+      <div class="info-block">
+        <h3 class="info-title">Información</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Tipo</span>
+            <span class="info-value" [ngClass]="publicacion.tipo">
+              {{ publicacion.tipo === 'noticia' ? 'Noticia' : 'Aviso' }}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Fecha</span>
+            <span class="info-value">{{ publicacion.fecha_publicacion }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </div>
+</ion-content>
+
+<!-- Navegación -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>

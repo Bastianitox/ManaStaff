@@ -33,6 +33,10 @@ const routes: Routes = [
   {
     path: 'inicioavisos',
     loadChildren: () => import('./pages/inicioavisos/inicioavisos.module').then( m => m.InicioavisosPageModule)
+  },
+  {
+    path: 'detalleavisos',
+    loadChildren: () => import('./pages/detalleavisos/detalleavisos.module').then( m => m.DetalleavisosPageModule)
   }
 
 
