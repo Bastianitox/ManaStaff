@@ -1,0 +1,53 @@
+<ion-content fullscreen>
+  <!-- header -->
+  <div class="ms-header">
+    <div class="header-left">
+      <div class="company-logo">
+        <img src="assets/img/logo_grande.png" alt="Logo empresa" />
+      </div>
+    </div>
+    <div class="header-right">
+      <h1 class="header-title">{{ pageTitle }}</h1>
+    </div>
+  </div>
+
+  <!-- contenido de las páginas -->
+  <div class="tabs-content">
+    <ion-router-outlet></ion-router-outlet>
+  </div>
+
+  <!-- menú -->
+  <div class="bottom-nav">
+    <div
+      class="bottom-nav-item"
+      [class.bottom-nav-active]="activeTab === 'documentos'"
+      (click)="goTo('documentos')">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <span>Mis documentos</span>
+    </div>
+
+    <div
+      class="bottom-nav-item"
+      [class.bottom-nav-active]="activeTab === 'solicitudes'"
+      (click)="goTo('solicitudes')">
+      <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+      <span>Solicitudes</span>
+    </div>
+
+    <div
+      class="bottom-nav-item"
+      [class.bottom-nav-active]="activeTab === 'noticias'"
+      (click)="goTo('noticias')">
+      <ion-icon name="megaphone-outline"></ion-icon>
+      <span>Noticias y avisos</span>
+    </div>
+
+    <div
+      class="bottom-nav-item"
+      [class.bottom-nav-active]="activeTab === 'configuracion'"
+      (click)="goTo('configuracion')">
+      <ion-icon name="settings-outline"></ion-icon>
+      <span>Configuración</span>
+    </div>
+  </div>
+</ion-content>
