@@ -1,5 +1,6 @@
 import { Component, type OnInit } from "@angular/core"
 import { Router } from '@angular/router'
+import { SolicitudesApiService } from "src/app/services/solicitudes-api"
 
 interface Solicitud {
   id: string
@@ -14,69 +15,6 @@ interface Solicitud {
   tipo_solicitud_nombre: string
 }
 
-const MOCK_SOLICITUDES: Solicitud[] = [
-  {
-    id: "1",
-    asunto: "Solicitud de vacaciones",
-    descripcion: "Vacaciones de verano del 10 al 15 de noviembre",
-    estado: "pendiente",
-    fecha_solicitud: "2024-10-25",
-    fecha_inicio: "2024-11-10",
-    fecha_fin: "2024-11-15",
-    fecha_vista: null,
-    tipo_solicitud_id: "vac",
-    tipo_solicitud_nombre: "Vacaciones",
-  },
-  {
-    id: "2",
-    asunto: "Permiso médico",
-    descripcion: "Cita médica de control programada",
-    estado: "aprobada",
-    fecha_solicitud: "2024-10-20",
-    fecha_inicio: "2024-10-28",
-    fecha_fin: "2024-10-28",
-    fecha_vista: "2024-10-21",
-    tipo_solicitud_id: "med",
-    tipo_solicitud_nombre: "Permiso médico",
-  },
-  {
-    id: "3",
-    asunto: "Solicitud de teletrabajo",
-    descripcion: "Trabajo remoto por motivos personales",
-    estado: "rechazada",
-    fecha_solicitud: "2024-10-15",
-    fecha_inicio: "2024-10-22",
-    fecha_fin: "2024-10-26",
-    fecha_vista: "2024-10-16",
-    tipo_solicitud_id: "tel",
-    tipo_solicitud_nombre: "Teletrabajo",
-  },
-  {
-    id: "4",
-    asunto: "Permiso por asuntos personales",
-    descripcion: "Trámites bancarios urgentes",
-    estado: "aprobada",
-    fecha_solicitud: "2024-10-18",
-    fecha_inicio: "2024-10-30",
-    fecha_fin: "2024-10-30",
-    fecha_vista: "2024-10-19",
-    tipo_solicitud_id: "per",
-    tipo_solicitud_nombre: "Permiso personal",
-  },
-  {
-    id: "5",
-    asunto: "Solicitud de capacitación",
-    descripcion: "Curso de actualización profesional",
-    estado: "pendiente",
-    fecha_solicitud: "2024-10-22",
-    fecha_inicio: null,
-    fecha_fin: null,
-    fecha_vista: null,
-    tipo_solicitud_id: "cap",
-    tipo_solicitud_nombre: "Capacitación",
-  },
-]
-
 @Component({
   selector: "app-iniciosoli",
   templateUrl: "./iniciosoli.page.html",
@@ -84,8 +22,8 @@ const MOCK_SOLICITUDES: Solicitud[] = [
   standalone: false
 })
 export class IniciosoliPage implements OnInit {
-  solicitudes: Solicitud[] = [...MOCK_SOLICITUDES]
-  filteredSolicitudes: Solicitud[] = [...MOCK_SOLICITUDES]
+  solicitudes: Solicitud[] = []
+  filteredSolicitudes: Solicitud[] = []
   searchQuery = ""
   isLoading = false
 
@@ -110,25 +48,80 @@ export class IniciosoliPage implements OnInit {
   toastType: "success" | "error" | null = null
 
   constructor(
-    private router: Router
+    private router: Router,
+    private solicitudesApi: SolicitudesApiService
   ) {}
 
   ngOnInit() {
-    // Extraer tipos únicos de solicitudes
-    const tiposMap = new Map<string, string>()
+    this.cargarSolicitudes();
+  }
+
+  cargarSolicitudes() {
+    this.isLoading = true; // Activar spinner
+    
+    this.solicitudesApi.obtenerSolicitudes().subscribe({
+      next: (response) => {
+        this.isLoading = false; // Desactivar spinner
+        
+        if (response.status === 'success') {
+          // 1. Asignar los datos del API
+          this.solicitudes = response.solicitudes as Solicitud[]; 
+          
+          // 2. Inicializar los tipos (tu lógica actual)
+          this.inicializarTipos();
+          
+          // 3. Aplicar filtros iniciales (muestra todo por defecto)
+          this.applyFilters();
+
+        } else {
+          // Manejar respuesta de API con error (e.g., status: "error")
+          this.showError(response.message || "Error al obtener la lista de solicitudes.");
+          this.solicitudes = []; // Limpiar lista
+        }
+      },
+      error: (httpError) => {
+        // Manejar errores HTTP (e.g., 401 Unauthorized, 500 Server Error)
+        this.isLoading = false;
+        
+        let message = "Error de conexión con el servidor.";
+        if (httpError.status === 401) {
+          message = "Su sesión ha expirado o no está autorizado. Inicie sesión nuevamente.";
+          // Aquí podrías forzar un logout
+        } else if (httpError.error && httpError.error.error) {
+            // Si Django devuelve un error JSON estándar (ej: {"error": "..."})
+            message = httpError.error.error;
+        }
+        
+        this.showError(message);
+        this.solicitudes = [];
+      }
+    });
+  }
+
+  private inicializarTipos() {
+    const tiposMap = new Map<string, string>();
     this.solicitudes.forEach((sol) => {
-      tiposMap.set(sol.tipo_solicitud_id, sol.tipo_solicitud_nombre)
-    })
+      tiposMap.set(sol.tipo_solicitud_id, sol.tipo_solicitud_nombre);
+    });
 
     this.tipoOptions = Array.from(tiposMap.entries()).map(([id, nombre]) => ({
       id,
       nombre,
-    }))
+    }));
 
     // Inicializar filtros de tipo
     this.tipoOptions.forEach((tipo) => {
-      this.filters.tipo[tipo.id] = false
-    })
+      this.filters.tipo[tipo.id] = false;
+    });
+  }
+
+  handleRefresh(event: any) {
+    this.cargarSolicitudes();
+    // Una vez que la carga finalice, debes detener el evento de refresh (después del subscribe)
+    // Se recomienda hacerlo dentro del .subscribe().finally o en el .next/.error
+    setTimeout(() => { // Simulación: En la vida real se hace al final de la carga
+        event.target.complete();
+    }, 1000); 
   }
 
   createNewRequest() {

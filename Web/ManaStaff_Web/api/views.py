@@ -1,46 +1,25 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .firebase_utils import get_data, set_data, update_data, delete_data, upload_file
-
 from django.http import JsonResponse
-from staffweb.firebase import auth, db
+from staffweb.firebase import auth, db, storage
+from django.views.decorators.http import require_POST,require_GET
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-import json
+from urllib.parse import unquote_plus
+from staffweb.utils.auditoria import registrar_auditoria_manual
+from staffweb.utils.decorators import firebase_auth_required
+
+#----------------------------------- SESIÓN -----------------------------------
+
+
+
 
 #----------------------------------- SOLICITUDES -----------------------------------
 @csrf_exempt
+@require_GET
+@firebase_auth_required
 def obtener_solicitudes(request):
+    
+    rut_usuario_actual = request.rut_usuario_actual
 
-    if request.method != "GET":
-        return JsonResponse({"error": "Método no permitido"}, status=405)
-
-    # 🔐 Leer header de autorización
-    auth_header = request.headers.get("Authorization")
-
-    if not auth_header:
-        return JsonResponse({"error": "Token faltante"}, status=401)
-
-    # Limpiar token si viene con "Bearer "
-    if auth_header.startswith("Bearer "):
-        id_token = auth_header.split("Bearer ")[1]
-    else:
-        id_token = auth_header
-
-    # 🔍 Verificar token Firebase
-    try:
-        decoded = auth.verify_id_token(id_token)
-        uid = decoded.get("uid")
-    except Exception as e:
-        return JsonResponse({"error": f"Token inválido o expirado: {str(e)}"}, status=401)
-
-    # 🔎 Consultar en Firebase Realtime Database
-    try:
-        ref = db.reference("Solicitudes").get() or {}
-    except Exception as e:
-        return JsonResponse({"error": "Error al acceder a Firebase"}, status=500)
+    ref = db.reference("Solicitudes").order_by_child("id_rut").equal_to(rut_usuario_actual).get() or {}
 
     # 🔄 Convertir a lista
     tipo_solicitud = db.reference("TiposSolicitud").get() or {}
@@ -66,7 +45,76 @@ def obtener_solicitudes(request):
 
     return JsonResponse({"solicitudes": solicitudes_list})
 
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def cancelar_solicitud(request, id_solicitud):
+    
+    rut_usuario_actual = request.rut_usuario_actual
+    
+    #OBTENEMOS LA SOLICITUD A ELIMINAR
+    solicitud_a_cancelar = db.reference("Solicitudes").child(id_solicitud).get() or {}
 
+    #VALIDAMOS QUE LA SOLICITUD EXISTA
+    if solicitud_a_cancelar == {}:
+        return JsonResponse({"status": "false", "message": "No se pudo encontrar la solicitud."})
+
+    #VALIDAMOS QUE LA SOLICITUD PERTENEZCA AL USUARIO
+    rut_usuario_solicitud = solicitud_a_cancelar.get("id_rut")
+
+    if rut_usuario_actual != rut_usuario_solicitud:
+        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no le pertenece {rut_usuario_solicitud}.")
+        return JsonResponse({"status": "false", "message": "Esa no es su solicitud."})
+    
+    if solicitud_a_cancelar.get("Estado") != "pendiente":
+        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no esta en estado pendiente.")
+        return JsonResponse({"status": "false", "message": "Esa solicitud ya fue resuelta."})
+
+    #VALIDAMOS QUE EXISTA UN ARCHIVO EN LA SOLICITUD (PARA ELIMINARLO DE STORAGE) 
+    archivo_solicitud_a_cancelar = solicitud_a_cancelar.get("archivo")
+    
+    if archivo_solicitud_a_cancelar:
+        try:
+            #SI EXISTE LO ELIMINAMOS
+            bucket = storage.bucket()
+
+            #OBTENEMOS EL NOMBREL DEL ARCHIVO A ELIMINAR
+            nombre_archivo = archivo_solicitud_a_cancelar.split("/")[-1]
+            nombre_archivo = str(nombre_archivo.split("?")[0])
+            nombre_archivo = unquote_plus(nombre_archivo)
+            blob = bucket.blob(f"{rut_usuario_actual}/Solicitudes/{id_solicitud}/{nombre_archivo}")
+
+            blob.delete()
+        except Exception as e:
+            return JsonResponse({"status": "false", "message": f"Error al eliminar el archivo: {e}"})
+
+    #AHORA SE ELIMINA DE FIREBASE
+    db.reference('/Solicitudes/'+id_solicitud).delete()
+    registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {rut_usuario_actual} ha eliminado su solicitud {solicitud_a_cancelar.get("Asunto")} con éxito.")
+    return JsonResponse({"status": "success", "message": "Solicitud cancelada (eliminada)."})
+
+@csrf_exempt
+@require_GET
+@firebase_auth_required
+def detalle_solicitud(request, id_solicitud):
+    rut_usuario_actual = request.rut_usuario_actual
+    
+    #OBTENEMOS LA SOLICITUD A ELIMINAR
+    solicitud_a_ver = db.reference("Solicitudes").child(id_solicitud).get() or {}
+
+    #VALIDAMOS QUE LA SOLICITUD EXISTA
+    if not solicitud_a_ver:
+        return JsonResponse({"error": "No se pudo encontrar la solicitud."}, status=404)
+
+    #VALIDAMOS QUE LA SOLICITUD PERTENEZCA AL USUARIO
+    rut_usuario_solicitud = solicitud_a_ver.get("id_rut")
+
+    if rut_usuario_actual != rut_usuario_solicitud:
+        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento ver el detalle de una solicitud que no le pertenece {rut_usuario_solicitud}.")
+        return JsonResponse({"error": "Esa no es su solicitud."}, status=403)
+    
+    #OBTENER LOS DETALLES DE LA SOLICITUD Y DEVOLVERLOS
+    return JsonResponse({"status": "success", "message": "Solicitud obtenida", "solicitud": solicitud_a_ver}, status=200)
 
 
 #----------------------------------- ANUNCIOS -----------------------------------
@@ -98,70 +146,3 @@ def test_token(request):
         return JsonResponse({"uid": decoded["uid"], "email": decoded.get("email")})
     except Exception as e:
         return JsonResponse({"error": f"Token inválido: {str(e)}"}, status=401)
-
-
-# === EJEMPLO 1: Lectura general ===
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def listar_solicitudes(request):
-    data = get_data('Solicitudes')  # nodo Firebase
-    return Response(data or {}, status=status.HTTP_200_OK)
-
-
-# === EJEMPLO 2: Creación ===
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def crear_solicitud(request):
-    solicitud = request.data
-    ref_path = f"Solicitudes/{solicitud.get('id')}"
-    set_data(ref_path, solicitud)
-    return Response({"message": "Solicitud creada", "path": ref_path}, status=status.HTTP_201_CREATED)
-
-
-# === EJEMPLO 3: Actualización ===
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def actualizar_usuario(request, rut):
-    """Solo el usuario dueño o admin puede modificar."""
-    user_claims = request.user
-    uid = user_claims.get('uid')
-    is_admin = user_claims.get('admin', False)
-
-    nodo_usuario = get_data(f'Usuario/{rut}')
-    if not nodo_usuario:
-        return Response({"error": "Usuario no encontrado"}, status=404)
-
-    if not is_admin and nodo_usuario.get('uid') != uid:
-        return Response({"error": "No autorizado"}, status=403)
-
-    campos_permitidos = ['Direccion', 'Telefono', 'PIN']
-    update = {k: v for k, v in request.data.items() if k in campos_permitidos or is_admin}
-    update_data(f'Usuario/{rut}', update)
-    return Response({"message": "Actualizado", "data": update})
-
-
-# === EJEMPLO 4: Subir archivo a Storage ===
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def subir_imagen(request):
-    file = request.FILES.get('file')
-    if not file:
-        return Response({"error": "No se envió archivo"}, status=400)
-
-    path = f"uploads/{file.name}"
-    res = upload_file(file, path)
-    return Response(res, status=200)
-
-
-# === EJEMPLO 5: Perfil del usuario (Auth) ===
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def perfil(request):
-    uid = request.user.get('uid')
-    user = auth.get_user(uid)
-    return Response({
-        "uid": user.uid,
-        "email": user.email,
-        "display_name": user.display_name,
-        "custom_claims": user.custom_claims or {}
-    })
