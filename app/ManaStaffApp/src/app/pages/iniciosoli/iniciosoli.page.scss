@@ -15,59 +15,6 @@ ion-content {
   --background: #{$background};
 }
 
-.header-toolbar {
-  --background: #{$primary-blue};
-  --border-color: transparent;
-  border-bottom: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.header-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 8px 16px; 
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.company-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: $white; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
-  border: 1px solid rgba(0,0,0,0.05);
-  overflow: hidden; 
-}
-
-.company-logo-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.header-right {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-
-  .header-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: $white;
-    margin: 0;
-    letter-spacing: -0.3px;
-  }
-}
-
 // Buscador y filtro 
 .search-filter-container {
   display: flex;
