@@ -2,10 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('solicitudes/', views.obtener_solicitudes),
-    path('solicitud/crear/', views.crear_solicitud),
-    path('usuario/<str:rut>/editar/', views.actualizar_usuario),
-    path('upload/', views.subir_imagen),
-    path('perfil/', views.perfil),
+
     path('test_token/', views.test_token),
+    #FUNCIONES API
+    path('solicitudes/', views.obtener_solicitudes),
+    path('cancelar_solicitud/<str:id_solicitud>/', views.cancelar_solicitud, name='cancelar_solicitud'),
+    path('detalle_solicitud/<str:id_solicitud>/', views.detalle_solicitud, name='detalle_solicitud'),
+
 ]

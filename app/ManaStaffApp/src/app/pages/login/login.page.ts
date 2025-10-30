@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { AuthService } from 'src/app/services/auth-service';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +25,10 @@ export class LoginPage implements OnInit {
   toastType: "success" | "error" = "success"
   toastMessage = ""
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {}
 
@@ -47,32 +51,55 @@ export class LoginPage implements OnInit {
   // Login
   async login() {
     if (!this.isFormValid || this.isLoggingIn) {
-      return
+      return;
     }
 
-    this.isLoggingIn = true
-
-    // Simular llamada a API
-    setTimeout(() => {
-      this.isLoggingIn = false
-
-      // Simular éxito
-      const success = true
-
-      if (success) {
-        this.toastType = "success"
-        this.toastMessage = "¡Bienvenido a ManaStaff!"
-        this.showToast = true
+    this.isLoggingIn = true;
+    
+    this.authService.login(this.email, this.password).subscribe({
+      next: (userCredential) => {
+        this.isLoggingIn = false;
+        
+        this.toastType = "success";
+        this.toastMessage = "¡Bienvenido a ManaStaff!";
+        this.showToast = true;
 
         setTimeout(() => {
-          this.showToast = false
-          // Redirigir a la página principal después del login
-          this.router.navigateByUrl("/inicioavisos")
-        }, 1500)
-      } else {
-        this.showError("Credenciales incorrectas. Intenta nuevamente.")
+          this.showToast = false;
+          this.router.navigateByUrl("/inicioavisos");
+        }, 1500);
+      },
+      error: (err) => {
+        this.isLoggingIn = false;
+        let errorMessage = "Ocurrió un error desconocido. Intenta nuevamente.";
+
+        if (err.code) {
+          errorMessage = this.handleFirebaseError(err.code);
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        this.showError(errorMessage);
       }
-    }, 1500)
+    });
+  }
+
+  private handleFirebaseError(errorCode: string): string {
+    switch (errorCode) {
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return "Credenciales incorrectas (Correo o contraseña).";
+      case 'auth/invalid-email':
+        return "El formato del correo electrónico es inválido.";
+      case 'auth/user-disabled':
+        return "Tu cuenta ha sido deshabilitada.";
+      case 'auth/too-many-requests':
+        return "Demasiados intentos fallidos. Intenta más tarde.";
+      default:
+        console.error("Firebase Auth Error Code:", errorCode);
+        return "Error de autenticación inesperado.";
+    }
   }
 
   // Mostrar error

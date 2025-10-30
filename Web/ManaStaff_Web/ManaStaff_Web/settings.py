@@ -30,7 +30,9 @@ ALLOWED_HOSTS = ['manastaff.onrender.com','127.0.0.1', 'http://127.0.0.1:8000', 
 CORS_ALLOWED_ORIGINS = [
     "https://manastaff.onrender.com",
     "http://localhost:8000",           
-    "http://127.0.0.1:8000"
+    "http://127.0.0.1:8000",
+    "http://localhost",                
+    "http://127.0.0.1",     
 ]
 # Tiempo de expiración de sesión en segundos (ej: 30 min)
 SESSION_COOKIE_AGE = 30 * 60  

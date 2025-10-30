@@ -12,7 +12,8 @@ export const environment = {
     storageBucket: "manastaff-7ef1d.firebasestorage.app",
     messagingSenderId: "409038016605",
     appId: "1:409038016605:web:0ff9ded9533dcc28c1fdb4",
-  }
+  },
+  apiBaseUrl: 'https://manastaff.onrender.com/api/',
 };
 
 /*
