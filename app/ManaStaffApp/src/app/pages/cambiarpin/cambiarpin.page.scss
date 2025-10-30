@@ -1,7 +1,7 @@
 // colores corporativos
-$primary-blue: #2563EB;
-$dark-blue: #1E3A8A;
-$light-blue: #3B82F6;
+$primary-blue: #062f63;
+$dark-blue: #041d3d;
+$light-blue: #0a4a8f;
 $text-primary: #0F172A;
 $text-secondary: #6B7280;
 $background: #F8FAFC;
@@ -16,8 +16,8 @@ ion-content {
 
 // Header
 .header-toolbar {
-  --background: #{$white};
-  --border-color: #{$border-color};
+  --background: #{$primary-blue};
+  --border-color: transparent;
   --color: #{$text-primary};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   position: relative;
@@ -26,16 +26,18 @@ ion-content {
 .header-title {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   font-size: 17px;
   font-weight: 600;
-  color: $text-primary;
+  color: $white;
+  text-align: center;
   width: auto;
-  padding: 0;
+  line-height: 1;
 }
 
 .back-button {
-  --color: #{$primary-blue};
+  --color: #{$white};
   font-size: 24px;
 }
 
