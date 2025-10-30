@@ -1,0 +1,291 @@
+// colores corporativos
+$primary-blue: #2563EB;
+$dark-blue: #1E3A8A;
+$light-blue: #3B82F6;
+$text-primary: #0F172A;
+$text-secondary: #6B7280;
+$background: #F8FAFC;
+$border-color: #E5E7EB;
+$white: #FFFFFF;
+$danger: #DC2626;
+$success: #10B981;
+$warning: #F59E0B;
+
+ion-content {
+  --background: #{$background};
+}
+
+// Header
+.header-toolbar {
+  --background: #{$white};
+  --border-color: #{$border-color};
+  border-bottom: 1px solid $border-color;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.company-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: $white; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(0,0,0,0.05);
+  overflow: hidden; 
+}
+
+.company-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+
+  .header-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+}
+
+// Contenedor principal
+.content-wrapper {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// Secciones
+.section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 4px;
+}
+
+// Tarjetas de opciones
+.option-card {
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.toggle-card {
+    cursor: default;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.option-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, $light-blue 0%, $primary-blue 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 24px;
+    color: $white;
+  }
+
+  &.security {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  }
+
+  &.interface {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  }
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0 0 4px 0;
+}
+
+.option-description {
+  font-size: 13px;
+  color: $text-secondary;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.chevron-icon {
+  font-size: 20px;
+  color: $text-secondary;
+  flex-shrink: 0;
+}
+
+// Toggle
+.custom-toggle {
+  --background: #{$border-color};
+  --background-checked: #{$primary-blue};
+  --handle-background: #{$white};
+  --handle-background-checked: #{$white};
+  --handle-width: 24px;
+  --handle-height: 24px;
+  --handle-spacing: 2px;
+  width: 52px;
+  height: 32px;
+}
+
+// Sección de cerrar sesión
+.logout-section {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid $border-color;
+}
+
+.logout-button {
+  width: 100%;
+  height: 56px;
+  background: $white;
+  color: $danger;
+  border: 2px solid $danger;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  ion-icon {
+    font-size: 24px;
+  }
+
+  &:hover {
+    background: $danger;
+    color: $white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// navegación
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: $primary-blue;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  z-index: 1000;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 8px 4px;
+  color: rgba($white, 0.7);
+
+  ion-icon {
+    font-size: 24px;
+    transition: all 0.2s ease;
+  }
+
+  span {
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  &:hover {
+    color: $white;
+  }
+
+  &.bottom-nav-active {
+    color: $white;
+    font-weight: 600;
+
+    ion-icon {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .content-wrapper {
+    padding: 24px;
+  }
+
+  .option-card {
+    padding: 20px;
+  }
+}

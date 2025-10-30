@@ -135,7 +135,7 @@ export class InicioperfilPage implements OnInit {
 
   // Navegación
   goBack() {
-    this.router.navigateByUrl("/iniciosoli")
+    this.router.navigate(["/configuracion"])
   }
 
   goToDocumentos() {

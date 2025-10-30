@@ -1,13 +1,126 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>configuracion</ion-title>
+<!-- Header corporativo igual a iniciodoc/iniciosoli -->
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-toolbar">
+    <div class="header-container">
+      <!-- Logo -->
+      <div class="header-left">
+        <div class="company-logo">
+          <img src="assets/img/logo_grande.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
+      </div>
+      
+      <!-- Título -->
+      <div class="header-right">
+        <h1 class="header-title">Configuración</h1>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">configuracion</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="content-wrapper">
+    
+    <!-- Sección: Mi perfil -->
+    <div class="section">
+      <h2 class="section-title">Mi perfil</h2>
+      <div class="option-card" (click)="goToPerfil()">
+        <div class="option-icon">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
+        <div class="option-content">
+          <h3 class="option-title">Ver mi perfil</h3>
+          <p class="option-description">Edita tu información personal</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron-icon"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Sección: Seguridad -->
+    <div class="section">
+      <h2 class="section-title">Seguridad</h2>
+      
+      <div class="option-card" (click)="cambiarContrasena()">
+        <div class="option-icon security">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+        </div>
+        <div class="option-content">
+          <h3 class="option-title">Cambiar contraseña</h3>
+          <p class="option-description">Actualiza tu contraseña de acceso</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron-icon"></ion-icon>
+      </div>
+
+      <div class="option-card" (click)="cambiarPIN()">
+        <div class="option-icon security">
+          <ion-icon name="keypad-outline"></ion-icon>
+        </div>
+        <div class="option-content">
+          <h3 class="option-title">Cambiar PIN</h3>
+          <p class="option-description">Modifica tu código PIN de seguridad</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron-icon"></ion-icon>
+      </div>
+
+      <div class="option-card" (click)="recuperarPIN()">
+        <div class="option-icon security">
+          <ion-icon name="help-circle-outline"></ion-icon>
+        </div>
+        <div class="option-content">
+          <h3 class="option-title">Recuperar PIN</h3>
+          <p class="option-description">Restablece tu PIN olvidado</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron-icon"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Sección: Interfaz -->
+    <div class="section">
+      <h2 class="section-title">Interfaz</h2>
+      
+      <div class="option-card toggle-card">
+        <div class="option-icon interface">
+          <ion-icon [name]="isDarkMode ? 'moon' : 'sunny-outline'"></ion-icon>
+        </div>
+        <div class="option-content">
+          <h3 class="option-title">Modo oscuro</h3>
+          <p class="option-description">Cambia el tema de la aplicación</p>
+        </div>
+        <ion-toggle 
+          [(ngModel)]="isDarkMode" 
+          (ionChange)="toggleDarkMode()"
+          class="custom-toggle">
+        </ion-toggle>
+      </div>
+    </div>
+
+    <!-- Sección: Cerrar sesión -->
+    <div class="section logout-section">
+      <button class="logout-button" (click)="cerrarSesion()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </div>
 </ion-content>
+
+<!-- Navegación -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>
