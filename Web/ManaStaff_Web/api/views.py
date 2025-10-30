@@ -43,7 +43,7 @@ def obtener_solicitudes(request):
             "tipo_solicitud_nombre": tipo_nombre
         })
 
-    return JsonResponse({"solicitudes": solicitudes_list})
+    return JsonResponse({"status":"success", "solicitudes": solicitudes_list}, status = 200)
 
 @csrf_exempt
 @require_POST
