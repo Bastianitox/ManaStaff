@@ -133,6 +133,7 @@ export class IniciosoliPage implements OnInit {
 
   createNewRequest() {
     console.log("Crear nueva solicitud")
+    this.router.navigate(["/crearsoli"])
   }
 
   onSearch(event: any) {
