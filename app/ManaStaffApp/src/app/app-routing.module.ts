@@ -37,6 +37,10 @@ const routes: Routes = [
   {
     path: 'detalleavisos',
     loadChildren: () => import('./pages/detalleavisos/detalleavisos.module').then( m => m.DetalleavisosPageModule)
+  },
+  {
+    path: 'inicioperfil',
+    loadChildren: () => import('./pages/inicioperfil/inicioperfil.module').then( m => m.InicioperfilPageModule)
   }
 
 

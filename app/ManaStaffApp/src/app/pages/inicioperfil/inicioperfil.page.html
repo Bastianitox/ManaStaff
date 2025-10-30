@@ -1,0 +1,188 @@
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="header-title">Mi perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="content-wrapper">
+    <div class="profile-card">
+      <!-- Foto de perfil -->
+      <div class="profile-photo-section">
+        <div class="profile-photo-container" (click)="photoInput.click()">
+          <img 
+            [src]="profilePhoto" 
+            alt="Foto de perfil" 
+            class="profile-photo"
+          />
+          <div class="photo-overlay">
+            <ion-icon name="camera-outline"></ion-icon>
+            <span>Cambiar foto</span>
+          </div>
+        </div>
+        <input 
+          type="file" 
+          #photoInput 
+          (change)="onPhotoSelected($event)"
+          accept="image/*"
+          style="display: none"
+        />
+      </div>
+
+      <!-- Formulario de datos -->
+      <form class="profile-form">
+        <!-- Nombres -->
+        <div class="form-field">
+          <label class="field-label">Nombres</label>
+          <input
+            type="text"
+            [(ngModel)]="userData.nombres"
+            name="nombres"
+            class="custom-input readonly"
+            readonly
+          />
+        </div>
+
+        <!-- Apellidos  -->
+        <div class="form-field">
+          <label class="field-label">Apellidos</label>
+          <input
+            type="text"
+            [(ngModel)]="userData.apellidos"
+            name="apellidos"
+            class="custom-input readonly"
+            readonly
+          />
+        </div>
+
+        <!-- RUT  -->
+        <div class="form-field">
+          <label class="field-label">RUT</label>
+          <input
+            type="text"
+            [(ngModel)]="userData.rut"
+            name="rut"
+            class="custom-input readonly"
+            readonly
+          />
+        </div>
+
+        <!-- Correo -->
+        <div class="form-field">
+          <label class="field-label">Correo electrónico</label>
+          <input
+            type="email"
+            [(ngModel)]="userData.correo"
+            name="correo"
+            class="custom-input readonly"
+            readonly
+          />
+        </div>
+
+        <!-- Cargo -->
+        <div class="form-field">
+          <label class="field-label">Cargo</label>
+          <input
+            type="text"
+            [(ngModel)]="userData.cargo"
+            name="cargo"
+            class="custom-input readonly"
+            readonly
+          />
+        </div>
+
+        <!-- Rol  -->
+        <div class="form-field">
+          <label class="field-label">Rol</label>
+          <input
+            type="text"
+            [(ngModel)]="userData.rol"
+            name="rol"
+            class="custom-input readonly"
+            readonly
+          />
+        </div>
+
+        <!-- Celular  -->
+        <div class="form-field">
+          <label class="field-label">
+            Celular
+            <ion-icon name="create-outline" class="editable-icon"></ion-icon>
+          </label>
+          <input
+            type="tel"
+            [(ngModel)]="userData.celular"
+            name="celular"
+            (ngModelChange)="onFieldChange()"
+            class="custom-input editable"
+            placeholder="+56 9 1234 5678"
+          />
+        </div>
+
+        <!-- Dirección  -->
+        <div class="form-field">
+          <label class="field-label">
+            Dirección
+            <ion-icon name="create-outline" class="editable-icon"></ion-icon>
+          </label>
+          <textarea
+            [(ngModel)]="userData.direccion"
+            name="direccion"
+            (ngModelChange)="onFieldChange()"
+            rows="3"
+            class="custom-textarea editable"
+            placeholder="Ingresa tu dirección completa"
+          ></textarea>
+        </div>
+
+        <!-- Botón guardar -->
+        <div class="form-actions">
+          <ion-button
+            expand="block"
+            class="save-button"
+            (click)="saveChanges()"
+            [disabled]="!hasChanges || isSaving">
+            <ion-spinner name="crescent" *ngIf="isSaving"></ion-spinner>
+            <span *ngIf="!isSaving">Guardar cambios</span>
+          </ion-button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="app-toast" *ngIf="showToast" [ngClass]="toastType">
+    <ion-icon
+      [name]="toastType === 'success' ? 'checkmark-circle' : 'alert-circle'"
+      class="toast-icon">
+    </ion-icon>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <div style="height: 80px;"></div>
+</ion-content>
+
+<!-- Navegación-->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>
