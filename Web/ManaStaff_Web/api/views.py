@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import unquote_plus
 from staffweb.utils.auditoria import registrar_auditoria_manual
 from staffweb.utils.decorators import firebase_auth_required
+from datetime import datetime, timedelta
 
 #----------------------------------- SESIÓN -----------------------------------
 
@@ -116,7 +117,79 @@ def detalle_solicitud(request, id_solicitud):
     #OBTENER LOS DETALLES DE LA SOLICITUD Y DEVOLVERLOS
     return JsonResponse({"status": "success", "message": "Solicitud obtenida", "solicitud": solicitud_a_ver}, status=200)
 
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def crear_solicitud(request):
+    #OBTENEMOS LAS VARIABLES DEL FORM
+    tipo_solicitud = request.POST.get("tipos_solicitud", None)
+    asunto = request.POST.get("asunto", None)
+    descripcion = request.POST.get("descripcion", None)
+    archivo = request.FILES.get("archivo", None)
 
+    #OBTENEMOS LA INFORMACION DEL USUARIO ACTUAL (QUE HAYA INICIADO SESION)
+    rut_usuario_actual = request.rut_usuario_actual
+
+    #VALIDAMOS QUE LOS CAMPOS NO ESTEN VACIOS
+    if not all([tipo_solicitud, asunto, descripcion]):
+        return JsonResponse({"error": "Los campos obligatorios no pueden estar vacíos."}, status=400)
+    
+    #OBTENEMOS EL ID DE LA SOLICITUD
+    try:
+        ref = db.reference('/Solicitudes').push()
+        id_solicitud = ref.key
+    except Exception:
+        # Error si Firebase DB no está accesible
+        return JsonResponse({"error": "Error al generar ID de solicitud."}, status=500)
+
+    #VALIDAMOS EXISTENCIA DE UN ARCHIVO (SI NO HAY LO DEJAMOS COMO "None")
+    urlArchivo = None
+    archivoName = None
+    if archivo:
+        #SI ES QUE HAY ARCHIVO SE SUBE A STORAGE
+        try:
+            ext = archivo.name.split(".")[-1].lower()
+            if ext not in ["jpg", "jpeg", "png", "pdf", "doc", "docx"]:
+                return JsonResponse({"error": "Formato de archivo no permitido."}, status=415)
+            
+            bucket = storage.bucket()
+            blob = bucket.blob(f"{rut_usuario_actual}/Solicitudes/{id_solicitud}/{archivo.name}")
+
+            archivoName = archivo.name
+
+            blob.upload_from_file(archivo, content_type=archivo.content_type)
+            blob.cache_control = "public, max-age=3600, s-maxage=86400"
+            blob.patch()
+            
+            urlArchivo = blob.generate_signed_url(
+                expiration=timedelta(weeks=150),
+                method="GET"
+            )
+        except Exception as e:
+            return JsonResponse({"error": f"Error al procesar el archivo: {e}"}, status=500)
+    
+    #AHORA LO CREAMOS EN FIREBASE
+    try:
+        ref.set({
+            "Asunto": asunto,
+            "Descripcion": descripcion,
+            "Estado": "pendiente",
+            "Fecha_fin": "null", 
+            "Fecha_inicio": "null",
+            "Fecha_solicitud": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "id_aprobador": "null", 
+            "id_rut": rut_usuario_actual,
+            "tipo_solicitud": tipo_solicitud,
+            "archivo": urlArchivo,
+            "archivo_name": archivoName
+        })
+    except Exception as e:
+        ref.delete()
+        return JsonResponse({"error": f"Error al guardar en la base de datos: {e}"}, status=500)
+
+    registrar_auditoria_manual(request, "Dos", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
+    
+    return JsonResponse({"status": "success", "message": "Solicitud creada con éxito.", "id": id_solicitud}, status=201)
 #----------------------------------- ANUNCIOS -----------------------------------
 
 

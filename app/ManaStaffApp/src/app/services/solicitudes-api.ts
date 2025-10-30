@@ -25,9 +25,14 @@ export class SolicitudesApiService {
    */
   obtenerSolicitudes(): Observable<ApiResponse> {
     const url = this.API_URL + 'obtener_solicitudes/';
-    
-    // Tu Interceptor HTTP (AuthTokenInterceptor) añade el header Authorization: Bearer <token>
-    // automáticamente aquí. Si el token no está disponible, la API de Django lo rechazará (401).
     return this.http.get<ApiResponse>(url);
+  }
+
+  crearSolicitud(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'crear_solicitud/';
+    
+    // HttpClient detecta automáticamente que es FormData y establece el header correcto.
+    // El AuthTokenInterceptor se encarga de añadir el token Bearer.
+    return this.http.post<any>(url, formData);
   }
 }
