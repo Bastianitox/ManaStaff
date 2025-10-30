@@ -1,9 +1,10 @@
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
+import os
 
 # Configurar clave API
 configuration = sib_api_v3_sdk.Configuration()
-configuration.api_key['api-key'] = "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"
+configuration.api_key['api-key'] = os.environ.get("BREVO_API_KEY")
 
 # Función para enviar correos
 def enviar_correo(destinatario, asunto, texto, html):

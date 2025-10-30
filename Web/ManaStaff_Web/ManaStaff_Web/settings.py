@@ -41,6 +41,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Reinicia el tiempo de sesión cada vez que el usuario haga algo
 SESSION_SAVE_EVERY_REQUEST = True
 
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -158,6 +160,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
 
 import staffweb.firebase
