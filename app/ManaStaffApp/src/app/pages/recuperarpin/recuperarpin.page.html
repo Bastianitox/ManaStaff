@@ -1,13 +1,213 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>recuperarpin</ion-title>
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" class="back-button">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="header-title">Recuperar PIN</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">recuperarpin</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="content-wrapper">
+    <div class="form-card">
+      <div class="form-header">
+        <h2 class="form-title">Recuperar PIN</h2>
+        <p class="form-subtitle">Sigue los pasos para restablecer tu PIN de seguridad</p>
+      </div>
+
+      <form class="recovery-form">
+        <!-- Mostrar correo y solicitar código -->
+        <div class="form-section">
+          <div class="form-field">
+            <label class="field-label">Correo electrónico</label>
+            <input
+              type="email"
+              [value]="userEmail"
+              class="custom-input"
+              disabled
+            />
+            <p class="field-hint">Se enviará un código de verificación a este correo</p>
+          </div>
+
+          <div class="form-actions">
+            <ion-button
+              expand="block"
+              class="submit-button"
+              (click)="solicitarCodigo()"
+              [disabled]="isRequestingCode || showCodeSection">
+              <ion-spinner name="crescent" *ngIf="isRequestingCode"></ion-spinner>
+              <span *ngIf="!isRequestingCode">
+                {{ showCodeSection ? 'Código enviado' : 'Solicitar código' }}
+              </span>
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Ingresar código de verificación -->
+        <div class="form-section" *ngIf="showCodeSection">
+          <div class="section-divider"></div>
+          
+          <div class="form-field">
+            <label class="field-label">
+              Código de verificación <span class="required">*</span>
+            </label>
+            <input
+              type="tel"
+              inputmode="numeric"
+              [(ngModel)]="verificationCode"
+              name="verificationCode"
+              placeholder="000000"
+              maxlength="6"
+              class="custom-input code-input"
+              (input)="onCodeInput($event)"
+              (keypress)="onlyNumbers($event)"
+            />
+            <p class="field-hint">Ingresa el código de 6 dígitos enviado a tu correo</p>
+          </div>
+
+          <div class="form-actions">
+            <ion-button
+              expand="block"
+              class="submit-button"
+              (click)="verificarCodigo()"
+              [disabled]="verificationCode.length !== 6 || isVerifyingCode || showPinSection">
+              <ion-spinner name="crescent" *ngIf="isVerifyingCode"></ion-spinner>
+              <span *ngIf="!isVerifyingCode">
+                {{ showPinSection ? 'Código verificado' : 'Verificar código' }}
+              </span>
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Ingresar nuevo PIN -->
+        <div class="form-section" *ngIf="showPinSection">
+          <div class="section-divider"></div>
+          
+          <!-- ojo -->
+          <div class="form-field">
+            <label class="field-label">
+              Nuevo PIN <span class="required">*</span>
+            </label>
+            <div class="pin-input-wrapper">
+              <input
+                [type]="showNewPin ? 'tel' : 'password'"
+                inputmode="numeric"
+                [(ngModel)]="newPin"
+                name="newPin"
+                placeholder="••••"
+                maxlength="4"
+                class="custom-input pin-input"
+                (input)="onPinInput($event, 'new')"
+                (keypress)="onlyNumbers($event)"
+              />
+              <button 
+                type="button"
+                class="toggle-pin-btn"
+                (click)="showNewPin = !showNewPin">
+                <ion-icon [name]="showNewPin ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </button>
+            </div>
+            <p class="field-hint">Ingresa tu nuevo PIN de 4 dígitos</p>
+          </div>
+
+          <!-- ojo-->
+          <div class="form-field">
+            <label class="field-label">
+              Confirmar nuevo PIN <span class="required">*</span>
+            </label>
+            <div class="pin-input-wrapper">
+              <input
+                [type]="showConfirmPin ? 'tel' : 'password'"
+                inputmode="numeric"
+                [(ngModel)]="confirmPin"
+                name="confirmPin"
+                placeholder="••••"
+                maxlength="4"
+                class="custom-input pin-input"
+                (input)="onPinInput($event, 'confirm')"
+                (keypress)="onlyNumbers($event)"
+              />
+              <button 
+                type="button"
+                class="toggle-pin-btn"
+                (click)="showConfirmPin = !showConfirmPin">
+                <ion-icon [name]="showConfirmPin ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </button>
+            </div>
+            <p class="field-hint">Confirma tu nuevo PIN</p>
+          </div>
+
+          <!-- validaciones  -->
+          <div class="validation-box" *ngIf="newPin.length > 0 || confirmPin.length > 0">
+            <div class="validation-item" [class.valid]="newPin.length === 4">
+              <ion-icon [name]="newPin.length === 4 ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>Nuevo PIN completo (4 dígitos)</span>
+            </div>
+            <div class="validation-item" [class.valid]="confirmPin.length === 4">
+              <ion-icon [name]="confirmPin.length === 4 ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>Confirmación completa (4 dígitos)</span>
+            </div>
+            <div class="validation-item" [class.valid]="pinsMatch && newPin.length === 4">
+              <ion-icon [name]="pinsMatch && newPin.length === 4 ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+              <span>Los PIN coinciden</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <ion-button
+              expand="block"
+              class="submit-button"
+              (click)="actualizarPin()"
+              [disabled]="!isPinFormValid || isUpdatingPin">
+              <ion-spinner name="crescent" *ngIf="isUpdatingPin"></ion-spinner>
+              <span *ngIf="!isUpdatingPin">Actualizar PIN</span>
+            </ion-button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </div>
 </ion-content>
+
+<!-- Overlay de carga -->
+<div class="loading-overlay" *ngIf="isRequestingCode || isVerifyingCode || isUpdatingPin">
+  <div class="loading-content">
+    <ion-spinner name="crescent" class="loading-spinner"></ion-spinner>
+    <p class="loading-text">
+      {{ isRequestingCode ? 'Enviando código...' : isVerifyingCode ? 'Verificando código...' : 'Actualizando PIN...' }}
+    </p>
+  </div>
+</div>
+
+<!-- Toast  -->
+<div class="app-toast" *ngIf="showToast" [ngClass]="toastType">
+  <ion-icon
+    [name]="toastType === 'success' ? 'checkmark-circle' : 'alert-circle'"
+    class="toast-icon">
+  </ion-icon>
+  <span>{{ toastMessage }}</span>
+</div>
+
+<!-- navegación-->
+<div class="bottom-nav">
+  <div class="bottom-nav-item" (click)="goToDocumentos()">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <span>Mis documentos</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToSolicitudes()">
+    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+    <span>Solicitudes</span>
+  </div>
+  <div class="bottom-nav-item" (click)="goToNoticias()">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <span>Noticias y avisos</span>
+  </div>
+  <div class="bottom-nav-item bottom-nav-active" (click)="goToConfig()">
+    <ion-icon name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </div>
+</div>
