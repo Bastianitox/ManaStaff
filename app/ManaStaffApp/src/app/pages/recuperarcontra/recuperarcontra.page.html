@@ -1,13 +1,73 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>recuperarcontra</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">recuperarcontra</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="recuperar-container">
+    <div class="recuperar-screen">
+      <!-- Logo -->
+      <div class="logo-container">
+        <div class="logo-placeholder">
+          <img src="assets/img/logo_blanco.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
+        <h2 class="brand-name">ManaStaff</h2>
+      </div>
+
+      <!-- Formulario -->
+      <div class="form-card">
+        <div class="form-header">
+          <h3 class="form-title">Recuperar contraseña</h3>
+          <p class="form-subtitle">
+            Ingresa tu correo y te enviaremos un código para restaurar tu cuenta
+          </p>
+        </div>
+
+        <form class="recuperar-form">
+          <!-- Email -->
+          <div class="form-field">
+            <label class="field-label">
+              Correo electrónico <span class="required">*</span>
+            </label>
+            <input
+              type="email"
+              class="custom-input"
+              placeholder="ejemplo@empresa.com"
+              [(ngModel)]="email"
+              name="email"
+              autocomplete="email"
+            />
+          </div>
+
+          <!-- Botón de enviar -->
+          <div class="form-actions">
+            <ion-button
+              class="submit-button"
+              expand="block"
+              [disabled]="!isFormValid || isSending"
+              (click)="enviarCorreo()"
+            >
+              <ion-spinner name="crescent" *ngIf="isSending"></ion-spinner>
+              <span *ngIf="!isSending">Enviar código</span>
+              <span *ngIf="isSending">Enviando...</span>
+            </ion-button>
+          </div>
+
+          <!-- Enlace de volver -->
+          <div class="back-to-login">
+            <a (click)="goToLogin()">Volver a iniciar sesión</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div class="loading-overlay" *ngIf="isSending">
+    <div class="loading-content">
+      <ion-spinner class="loading-spinner" name="crescent"></ion-spinner>
+      <p class="loading-text">Enviando código...</p>
+    </div>
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div class="app-toast" [class.success]="toastType === 'success'" [class.error]="toastType === 'error'" *ngIf="showToast">
+    <ion-icon class="toast-icon" [name]="toastType === 'success' ? 'checkmark-circle-outline' : 'close-circle-outline'"></ion-icon>
+    <span>{{ toastMessage }}</span>
+  </div>
 </ion-content>
