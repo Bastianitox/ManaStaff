@@ -81,6 +81,13 @@ const routes: Routes = [
           )
       },
       {
+        path: 'configuracion/cambiar-pin',
+        loadChildren: () =>
+          import('../pages/cambiarpin/cambiarpin.module').then(
+            m => m.CambiarpinPageModule
+          )
+      },
+      {
         path: '',
         redirectTo: 'documentos',
         pathMatch: 'full'

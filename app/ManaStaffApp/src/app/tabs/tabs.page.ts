@@ -69,6 +69,14 @@ export class TabsPage {
           return;
         }
 
+        // cambiar pin
+        if (url.includes('/tabs/configuracion/cambiar-pin')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'configuracion';
+          this.pageTitle = 'Cambiar PIN';
+          return;
+        }
+
         // listas (header con logo)
         this.isDetailHeader = false;
 
@@ -94,6 +102,12 @@ export class TabsPage {
 
   goBack() {
     const current = this.router.url;
+
+    // cambiar pin a configuración
+    if (current.includes('/tabs/configuracion/cambiar-pin')) {
+      this.router.navigate(['/tabs/configuracion']);
+      return;
+    }
 
     // cambiar contraseña a configuración
     if (current.includes('/tabs/configuracion/cambiar-contrasena')) {

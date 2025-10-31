@@ -36,7 +36,7 @@ export class ConfiguracionPage implements OnInit {
 
   cambiarPIN() {
     console.log("Navegar a cambiar PIN")
-    this.router.navigateByUrl("/cambiarpin")
+    this.router.navigateByUrl("/tabs/configuracion/cambiar-pin")
   }
 
   recuperarPIN() {
