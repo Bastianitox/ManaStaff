@@ -1,17 +1,5 @@
-<ion-header>
-  <ion-toolbar class="header-toolbar">
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()" class="back-button">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title class="header-title">Detalle de la solicitud</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
   <div class="content-wrapper">
-
     <!-- ⚠️ PANTALLA DE CARGA / ERROR -->
     <div class="loading-error-container" *ngIf="isLoading || errorMessage">
       <div class="loading-content" *ngIf="isLoading">
@@ -197,23 +185,3 @@
     <div style="height: 80px;"></div>
   </div>
 </ion-content>
-
-<!-- navegación -->
-<div class="bottom-nav">
-  <div class="bottom-nav-item" (click)="goToDocumentos()">
-    <ion-icon name="document-text-outline"></ion-icon>
-    <span>Mis documentos</span>
-  </div>
-  <div class="bottom-nav-item bottom-nav-active" (click)="goToSolicitudes()">
-    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-    <span>Solicitudes</span>
-  </div>
-  <div class="bottom-nav-item" (click)="goToNoticias()">
-    <ion-icon name="megaphone-outline"></ion-icon>
-    <span>Noticias y avisos</span>
-  </div>
-  <div class="bottom-nav-item" (click)="goToConfig()">
-    <ion-icon name="settings-outline"></ion-icon>
-    <span>Configuración</span>
-  </div>
-</div>

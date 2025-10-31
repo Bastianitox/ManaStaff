@@ -107,7 +107,7 @@ export class DetallesoliPage implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(["/iniciosoli"])
+    this.router.navigate(["/tabs/solicitudes"])
   }
 
   /**

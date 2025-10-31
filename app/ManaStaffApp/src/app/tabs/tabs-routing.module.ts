@@ -36,6 +36,13 @@ const routes: Routes = [
             m => m.CrearsoliPageModule
           )
       },
+      {
+        path: 'solicitudes/detalle/:id',
+        loadChildren: () =>
+          import('../pages/detallesoli/detallesoli.module').then(
+            m => m.DetallesoliPageModule
+          )
+      },
       //Noticias
       {
         path: 'noticias',

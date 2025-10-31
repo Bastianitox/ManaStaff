@@ -37,6 +37,14 @@ export class TabsPage {
           return;
         }
 
+        // detalle de solicitud
+        if (url.includes('/tabs/solicitudes/detalle/')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'solicitudes';
+          this.pageTitle = 'Detalle de la solicitud';
+          return;
+        }
+
         // listas (header con logo)
         this.isDetailHeader = false;
 
@@ -62,6 +70,12 @@ export class TabsPage {
 
   goBack() {
     const current = this.router.url;
+
+    // detalle solicitud a listado de solicitudes
+     if (current.includes('/tabs/solicitudes/detalle/')) {
+      this.router.navigate(['/tabs/solicitudes']);
+      return;
+    }
 
     // crear solicitud a listado de solicitudes
     if (current.includes('/tabs/solicitudes/crear')) {

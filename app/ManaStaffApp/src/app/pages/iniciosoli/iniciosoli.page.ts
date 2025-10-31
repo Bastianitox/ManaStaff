@@ -253,7 +253,7 @@ export class IniciosoliPage implements OnInit {
   }
 
   viewDetails(id: string) {
-    this.router.navigate(['/detallesoli', id]);
+    this.router.navigate(['/tabs/solicitudes/detalle', id]);
   }
 
   showSuccess(message: string) {
