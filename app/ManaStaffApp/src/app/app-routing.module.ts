@@ -27,7 +27,7 @@ const routes: Routes = [
     loadChildren: () => import('./pages/crearsoli/crearsoli.module').then( m => m.CrearsoliPageModule)
   },
   {
-    path: 'detallesoli',
+    path: 'detallesoli/:id',
     loadChildren: () => import('./pages/detallesoli/detallesoli.module').then( m => m.DetallesoliPageModule)
   },
   {
@@ -61,7 +61,8 @@ const routes: Routes = [
   {
     path: 'recuperarcontra',
     loadChildren: () => import('./pages/recuperarcontra/recuperarcontra.module').then( m => m.RecuperarcontraPageModule)
-  },  {
+  },
+  {
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
   }

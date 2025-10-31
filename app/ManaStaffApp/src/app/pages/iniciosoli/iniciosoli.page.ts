@@ -56,7 +56,7 @@ export class IniciosoliPage implements OnInit {
     this.cargarSolicitudes();
   }
 
-  cargarSolicitudes() {
+  cargarSolicitudes(refresher?: any) {
     this.isLoading = true; // Activar spinner
     
     this.solicitudesApi.obtenerSolicitudes().subscribe({
@@ -65,7 +65,7 @@ export class IniciosoliPage implements OnInit {
         
         if (response.status === 'success') {
           // 1. Asignar los datos del API
-          console.log(response.solicitudes)
+          console.log(response.solicitudes);
           this.solicitudes = response.solicitudes as Solicitud[]; 
           
           // 2. Inicializar los tipos (tu lógica actual)
@@ -79,6 +79,10 @@ export class IniciosoliPage implements OnInit {
           this.showError(response.message || "Error al obtener la lista de solicitudes.");
           this.solicitudes = []; // Limpiar lista
         }
+        
+        if (refresher) {
+          refresher.target.complete(); // Detener el pull-to-refresh
+        }
       },
       error: (httpError) => {
         // Manejar errores HTTP (e.g., 401 Unauthorized, 500 Server Error)
@@ -87,7 +91,7 @@ export class IniciosoliPage implements OnInit {
         let message = "Error de conexión con el servidor.";
         if (httpError.status === 401) {
           message = "Su sesión ha expirado o no está autorizado. Inicie sesión nuevamente.";
-          // Aquí podrías forzar un logout
+          // Aquí podrías forzar un logout: this.router.navigateByUrl('/login');
         } else if (httpError.error && httpError.error.error) {
             // Si Django devuelve un error JSON estándar (ej: {"error": "..."})
             message = httpError.error.error;
@@ -95,6 +99,10 @@ export class IniciosoliPage implements OnInit {
         
         this.showError(message);
         this.solicitudes = [];
+
+        if (refresher) {
+          refresher.target.complete(); // Detener el pull-to-refresh en caso de error
+        }
       }
     });
   }
@@ -120,20 +128,15 @@ export class IniciosoliPage implements OnInit {
     if (!dateString || dateString.toLowerCase() === 'null') {
       return null;
     }
-    // Convertimos el string 'YYYY-MM-DD HH:MM:SS' a un objeto Date
+    // Reemplaza el espacio por 'T' para asegurar compatibilidad ISO 8601
     const date = new Date(dateString.replace(' ', 'T')); 
     
-    // Opcional: Usar Intl.DateTimeFormat para un formato más legible (ej. 30/10/2025)
+    // Formato día/mes/año
     return new Intl.DateTimeFormat('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
   }
 
   handleRefresh(event: any) {
-    this.cargarSolicitudes();
-    // Una vez que la carga finalice, debes detener el evento de refresh (después del subscribe)
-    // Se recomienda hacerlo dentro del .subscribe().finally o en el .next/.error
-    setTimeout(() => { // Simulación: En la vida real se hace al final de la carga
-        event.target.complete();
-    }, 1000); 
+    this.cargarSolicitudes(event);
   }
 
   createNewRequest() {
@@ -250,8 +253,6 @@ export class IniciosoliPage implements OnInit {
   }
 
   viewDetails(id: string) {
-    console.log("Ver detalles de solicitud ID:", id);
-    // 💡 Navegar a la ruta de detalle, pasando el ID como parámetro de ruta
     this.router.navigate(['/detallesoli', id]);
   }
 

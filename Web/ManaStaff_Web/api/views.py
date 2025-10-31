@@ -28,9 +28,11 @@ def obtener_solicitudes(request):
     for key, value in ref.items():
 
         tipo_nombre = "Sin tipo"
+        id_tipo = "Sin id tipo"
         for key_tipo, value_tipo in tipo_solicitud.items():
             if key_tipo == value.get("tipo_solicitud"):
                 tipo_nombre = value_tipo.get("nombre")
+                id_tipo = key_tipo
                 break
 
         solicitudes_list.append({
@@ -41,7 +43,8 @@ def obtener_solicitudes(request):
             "fecha_solicitud": value.get("Fecha_solicitud"),
             "fecha_inicio": value.get("Fecha_inicio"),
             "fecha_fin": value.get("Fecha_fin"),
-            "tipo_solicitud_nombre": tipo_nombre
+            "tipo_solicitud_nombre": tipo_nombre,
+            "tipo_solicitud_id": id_tipo
         })
 
     return JsonResponse({"status":"success", "solicitudes": solicitudes_list}, status = 200)
@@ -188,7 +191,7 @@ def crear_solicitud(request):
         return JsonResponse({"error": f"Error al guardar en la base de datos: {e}"}, status=500)
 
     registrar_auditoria_manual(request, "Dos", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
-    
+
     return JsonResponse({"status": "success", "message": "Solicitud creada con éxito.", "id": id_solicitud}, status=201)
 #----------------------------------- ANUNCIOS -----------------------------------
 

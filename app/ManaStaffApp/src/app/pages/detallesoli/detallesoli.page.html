@@ -11,13 +11,30 @@
 
 <ion-content [fullscreen]="true">
   <div class="content-wrapper">
-    <div class="detail-card">
+
+    <!-- ⚠️ PANTALLA DE CARGA / ERROR -->
+    <div class="loading-error-container" *ngIf="isLoading || errorMessage">
+      <div class="loading-content" *ngIf="isLoading">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando detalle...</p>
+      </div>
+      <div class="error-content" *ngIf="errorMessage">
+        <ion-icon name="warning-outline" color="danger"></ion-icon>
+        <p class="error-message">{{ errorMessage }}</p>
+        <ion-button (click)="cargarDetalle(solicitudId!)" fill="outline">
+            Reintentar
+        </ion-button>
+      </div>
+    </div>
+    
+    <!-- CONTENIDO PRINCIPAL (SOLO SI NO ESTÁ CARGANDO Y NO HAY ERROR) -->
+    <div class="detail-card" *ngIf="!isLoading && !errorMessage">
       <!-- título -->
       <div class="detail-header">
         <div class="icon-container">
           <ion-icon name="document-text-outline"></ion-icon>
         </div>
-        <h2 class="detail-title">{{ solicitud.asunto }}</h2>
+        <h2 class="detail-title">{{ solicitud.Asunto }}</h2>
       </div>
 
       <!-- Información -->
@@ -25,10 +42,10 @@
         <!-- Badge de estado -->
         <div class="info-row status-row">
           <span class="info-label">Estado</span>
-          <div class="status-badge-inline" [ngClass]="solicitud.estado">
-            <span *ngIf="solicitud.estado === 'aprobada'">✓ Aprobada</span>
-            <span *ngIf="solicitud.estado === 'pendiente'">⏳ Pendiente</span>
-            <span *ngIf="solicitud.estado === 'rechazada'">✗ Rechazada</span>
+          <div class="status-badge-inline" [ngClass]="solicitud.Estado">
+            <span *ngIf="solicitud.Estado === 'aprobada'">✓ Aprobada</span>
+            <span *ngIf="solicitud.Estado === 'pendiente'">⏳ Pendiente</span>
+            <span *ngIf="solicitud.Estado === 'rechazada'">✗ Rechazada</span>
           </div>
         </div>
 
@@ -39,19 +56,20 @@
 
         <div class="info-row">
           <span class="info-label">Descripción</span>
-          <span class="info-value">{{ solicitud.descripcion }}</span>
+          <span class="info-value">{{ solicitud.Descripcion }}</span>
         </div>
 
         <!-- Fechas importantes -->
         <div class="dates-grid">
           <div class="date-item">
             <span class="date-label">Fecha enviada</span>
-            <span class="date-value">{{ solicitud.fecha_solicitud }}</span>
+            <!-- Usamos formatDisplayDate en el TS para darle formato -->
+            <span class="date-value">{{ formatDisplayDate(solicitud.Fecha_solicitud) }}</span>
           </div>
 
-          <div class="date-item" *ngIf="solicitud.fecha_vista">
+          <div class="date-item" *ngIf="solicitud.fecha_vista && formatDisplayDate(solicitud.fecha_vista)">
             <span class="date-label">Fecha de revisión</span>
-            <span class="date-value">{{ solicitud.fecha_vista }}</span>
+            <span class="date-value">{{ formatDisplayDate(solicitud.fecha_vista) }}</span>
           </div>
 
           <div class="date-item">
@@ -61,120 +79,120 @@
         </div>
 
         <!-- Archivo adjunto (si es que existe) -->
-        <div class="attachment-box" *ngIf="solicitud.archivoNombre">
+        <div class="attachment-box" *ngIf="solicitud.archivo_name">
+          <!-- 💡 Podrías añadir un (click) aquí para abrir la URL del archivo -->
           <div class="attachment-icon">
             <ion-icon name="document-attach-outline"></ion-icon>
           </div>
           <div class="attachment-info">
-            <span class="attachment-name">{{ solicitud.archivoNombre }}</span>
+            <span class="attachment-name">{{ solicitud.archivo_name }}</span>
             <span class="attachment-action">Toca para ver</span>
           </div>
         </div>
       </div>
-    </div>
+    
+      <!-- Historial (Timeline) -->
+      <div class="timeline-section">
+        <h3 class="timeline-title">Historial de la solicitud</h3>
 
-    <!-- Historial -->
-    <div class="timeline-section">
-      <h3 class="timeline-title">Historial de la solicitud</h3>
-
-      <div class="timeline">
-        <!-- Solicitud enviada -->
-        <div class="timeline-item completed">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <span class="timeline-icon">📤</span>
-              <h4 class="timeline-step-title">Solicitud enviada</h4>
+        <div class="timeline">
+          <!-- Solicitud enviada -->
+          <div class="timeline-item completed">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-icon">📤</span>
+                <h4 class="timeline-step-title">Solicitud enviada</h4>
+              </div>
+              <p class="timeline-date">{{ formatDisplayDate(solicitud.Fecha_solicitud) }}</p>
+              <p class="timeline-description">Tu solicitud ha sido enviada correctamente</p>
             </div>
-            <p class="timeline-date">{{ solicitud.fecha_solicitud }}</p>
-            <p class="timeline-description">Tu solicitud ha sido enviada correctamente</p>
           </div>
+
+          <!-- estado: pendiente -->
+          <ng-container *ngIf="solicitud.Estado === 'pendiente'">
+            <div class="timeline-item current">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-icon">👀</span>
+                  <h4 class="timeline-step-title">Solicitud en revisión</h4>
+                </div>
+                <p class="timeline-date">{{ formatDisplayDate(solicitud.fecha_vista) || 'En proceso' }}</p>
+                <p class="timeline-description">Tu solicitud está siendo revisada por el equipo</p>
+              </div>
+            </div>
+
+            <div class="timeline-item pending">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-icon">⏳</span>
+                  <h4 class="timeline-step-title">Decisión pendiente</h4>
+                </div>
+                <p class="timeline-date">Por determinar</p>
+                <p class="timeline-description">Esperando decisión final</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- estado: aprobada -->
+          <ng-container *ngIf="solicitud.Estado === 'aprobada'">
+            <div class="timeline-item completed">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-icon">👀</span>
+                  <h4 class="timeline-step-title">Solicitud revisada</h4>
+                </div>
+                <p class="timeline-date">{{ formatDisplayDate(solicitud.fecha_vista) || formatDisplayDate(solicitud.Fecha_solicitud) }}</p>
+                <p class="timeline-description">Tu solicitud ha sido revisada</p>
+              </div>
+            </div>
+
+            <div class="timeline-item completed">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-icon">✅</span>
+                  <h4 class="timeline-step-title">Solicitud aprobada</h4>
+                </div>
+                <p class="timeline-date">{{ formatDisplayDate(solicitud.Fecha_inicio) || formatDisplayDate(solicitud.Fecha_solicitud) }}</p>
+                <p class="timeline-description">Tu solicitud ha sido aprobada exitosamente</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- estado: rechazada -->
+          <ng-container *ngIf="solicitud.Estado === 'rechazada'">
+            <div class="timeline-item completed">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-icon">👀</span>
+                  <h4 class="timeline-step-title">Solicitud revisada</h4>
+                </div>
+                <p class="timeline-date">{{ formatDisplayDate(solicitud.fecha_vista) || formatDisplayDate(solicitud.Fecha_solicitud) }}</p>
+                <p class="timeline-description">Tu solicitud ha sido revisada</p>
+              </div>
+            </div>
+
+            <div class="timeline-item rejected">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="timeline-icon">❌</span>
+                  <h4 class="timeline-step-title">Solicitud rechazada</h4>
+                </div>
+                <p class="timeline-date">{{ formatDisplayDate(solicitud.Fecha_inicio) || formatDisplayDate(solicitud.Fecha_solicitud) }}</p>
+                <p class="timeline-description" *ngIf="solicitud.Razon">{{ solicitud.Razon }}</p>
+                <p class="timeline-description" *ngIf="!solicitud.Razon">Tu solicitud no pudo ser aprobada</p>
+              </div>
+            </div>
+          </ng-container>
         </div>
-
-        <!-- estado: pendiente -->
-        <ng-container *ngIf="solicitud.estado === 'pendiente'">
-          <div class="timeline-item current">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <span class="timeline-icon">👀</span>
-                <h4 class="timeline-step-title">Solicitud en revisión</h4>
-              </div>
-              <p class="timeline-date">{{ solicitud.fecha_vista || 'En proceso' }}</p>
-              <p class="timeline-description">Tu solicitud está siendo revisada por el equipo</p>
-            </div>
-          </div>
-
-          <div class="timeline-item pending">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <span class="timeline-icon">⏳</span>
-                <h4 class="timeline-step-title">Decisión pendiente</h4>
-              </div>
-              <p class="timeline-date">Por determinar</p>
-              <p class="timeline-description">Esperando decisión final</p>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- estado: aprobada -->
-        <ng-container *ngIf="solicitud.estado === 'aprobada'">
-          <div class="timeline-item completed">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <span class="timeline-icon">👀</span>
-                <h4 class="timeline-step-title">Solicitud revisada</h4>
-              </div>
-              <p class="timeline-date">{{ solicitud.fecha_vista || solicitud.fecha_solicitud }}</p>
-              <p class="timeline-description">Tu solicitud ha sido revisada</p>
-            </div>
-          </div>
-
-          <div class="timeline-item completed">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <span class="timeline-icon">✅</span>
-                <h4 class="timeline-step-title">Solicitud aprobada</h4>
-              </div>
-              <p class="timeline-date">{{ solicitud.fecha_inicio || solicitud.fecha_solicitud }}</p>
-              <p class="timeline-description">Tu solicitud ha sido aprobada exitosamente</p>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- estado: rechazada -->
-        <ng-container *ngIf="solicitud.estado === 'rechazada'">
-          <div class="timeline-item completed">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <span class="timeline-icon">👀</span>
-                <h4 class="timeline-step-title">Solicitud revisada</h4>
-              </div>
-              <p class="timeline-date">{{ solicitud.fecha_vista || solicitud.fecha_solicitud }}</p>
-              <p class="timeline-description">Tu solicitud ha sido revisada</p>
-            </div>
-          </div>
-
-          <div class="timeline-item rejected">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <span class="timeline-icon">❌</span>
-                <h4 class="timeline-step-title">Solicitud rechazada</h4>
-              </div>
-              <p class="timeline-date">{{ solicitud.fecha_inicio || solicitud.fecha_solicitud }}</p>
-              <p class="timeline-description" *ngIf="solicitud.razon">{{ solicitud.razon }}</p>
-              <p class="timeline-description" *ngIf="!solicitud.razon">Tu solicitud no pudo ser aprobada</p>
-            </div>
-          </div>
-        </ng-container>
       </div>
     </div>
-
     <!-- navegación -->
     <div style="height: 80px;"></div>
   </div>

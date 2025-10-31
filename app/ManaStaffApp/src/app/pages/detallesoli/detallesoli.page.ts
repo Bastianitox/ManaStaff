@@ -1,95 +1,166 @@
 import { Component, OnInit } from "@angular/core"
-import { Router } from "@angular/router"
+import { Router, ActivatedRoute } from "@angular/router" // ⬅️ Importar ActivatedRoute
+import { DatePipe } from "@angular/common"; // ⬅️ Utilidad para formatear fechas
+import { SolicitudesApiService } from "src/app/services/solicitudes-api";
 
+// Interfaz para el objeto que viene de la API
 interface SolicitudDetalle {
   id: string
-  asunto: string
-  descripcion: string
-  estado: "pendiente" | "aprobada" | "rechazada"
+  Asunto: string
+  Descripcion: string
+  Estado: "pendiente" | "aprobada" | "rechazada"
+  tipo_solicitud: string
   tipo_solicitud_nombre: string
-  fecha_solicitud: string
+  Fecha_solicitud: string
   fecha_vista: string | null
-  fecha_inicio: string | null
-  fecha_fin: string | null
-  razon?: string | null
-  archivoUrl?: string | null
-  archivoNombre?: string | null
+  Fecha_inicio: string | null
+  Fecha_fin: string | null
+  Razon?: string | null
+  archivo?: string | null
+  archivo_name?: string | null 
 }
 
 @Component({
   selector: 'app-detallesoli',
   templateUrl: './detallesoli.page.html',
   styleUrls: ['./detallesoli.page.scss'],
-  standalone: false
+  standalone: false,
+  providers: [DatePipe] // Proveedor para usar el pipe en el código TS
 })
 export class DetallesoliPage implements OnInit {
-  // solicitud de ejemplo
+  solicitudId: string | null = null;
+  
+  // Inicializamos la solicitud con valores que permitan cargar la interfaz sin errores
   solicitud: SolicitudDetalle = {
-    id: "1",
-    asunto: "Solicitud de vacaciones - Verano 2024",
-    descripcion: "Solicito vacaciones del 10 al 15 de noviembre para asuntos personales. Agradezco su consideración.",
-    estado: "aprobada",
-    tipo_solicitud_nombre: "Vacaciones",
-    fecha_solicitud: "2024-10-20",
-    fecha_vista: "2024-10-22",
-    fecha_inicio: "2024-11-10",
-    fecha_fin: "2024-11-15",
-    razon: null,
-    archivoUrl: "https://example.com/archivo.pdf",
-    archivoNombre: "justificacion_vacaciones.pdf",
-  }
+    id: "",
+    Asunto: "Cargando...",
+    Descripcion: "",
+    Estado: "pendiente",
+    tipo_solicitud: "",
+    tipo_solicitud_nombre: "...",
+    Fecha_solicitud: "",
+    fecha_vista: null,
+    Fecha_inicio: null,
+    Fecha_fin: null,
+    Razon: null,
+    archivo: null,
+    archivo_name: null 
+  };
+  
+  isLoading = true;
+  errorMessage: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private solicitudesApi: SolicitudesApiService,
+    private datePipe: DatePipe
+  ) {}
 
   ngOnInit() {
-    console.log("Detalle de solicitud cargado:", this.solicitud)
+    // 1. Obtener el ID de la URL
+    this.solicitudId = this.route.snapshot.paramMap.get('id');
+
+    if (this.solicitudId) {
+      this.cargarDetalle(this.solicitudId);
+    } else {
+      this.isLoading = false;
+      this.errorMessage = "ID de solicitud no encontrado en la ruta.";
+      this.solicitud.Asunto = "Error";
+    }
+  }
+  
+  /**
+   * 📲 Carga el detalle de la solicitud desde la API de Django.
+   */
+  cargarDetalle(id: string) {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    this.solicitudesApi.obtenerDetalleSolicitud(id).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.status === 'success' && response.solicitud) {
+          
+          this.solicitud = {
+            ...response.solicitud,
+            archivo_name: response.solicitud.archivo_name || null // Usar el nombre del archivo
+          } as SolicitudDetalle;
+
+        } else {
+          this.errorMessage = response.message || "No se pudo cargar el detalle de la solicitud.";
+          this.solicitud.Asunto = "Error de Datos";
+        }
+      },
+      error: (httpError) => {
+        this.isLoading = false;
+        if (httpError.status === 404) {
+            this.errorMessage = "La solicitud no existe o fue eliminada.";
+        } else if (httpError.status === 403) {
+            this.errorMessage = "Acceso denegado: Esta solicitud no te pertenece.";
+        } else {
+            this.errorMessage = "Error de conexión con la API.";
+        }
+        this.solicitud.Asunto = "Error de Carga";
+      }
+    });
   }
 
   goBack() {
     this.router.navigate(["/iniciosoli"])
   }
 
+  /**
+   * Formatea la fecha para ser más legible
+   */
+  formatDisplayDate(dateString: string | null): string | null {
+    if (!dateString || dateString.toLowerCase() === 'null') {
+      return null;
+    }
+    // Usamos el DatePipe para formatear las fechas con un formato corto y amigable
+    return this.datePipe.transform(dateString.replace(' ', 'T'), 'dd/MM/yyyy');
+  }
+
+  /**
+   * Devuelve el rango de fechas formateado
+   */
   getDateRange(solicitud: SolicitudDetalle): string {
-    const inicio = solicitud.fecha_inicio
-    const fin = solicitud.fecha_fin
+    const inicio = this.formatDisplayDate(solicitud.Fecha_inicio);
+    const fin = this.formatDisplayDate(solicitud.Fecha_fin);
 
     if (!inicio && !fin) {
-      return "En revisión"
+      return "En revisión";
     }
 
     if (inicio && !fin) {
-      return `${inicio} - Decisión pendiente`
+      return `${inicio} - Decisión pendiente`;
     }
 
     if (inicio === fin) {
-      return inicio ?? "En revisión"
+      return inicio ?? "En revisión";
     }
 
     if (inicio && fin) {
-      return `${inicio} - ${fin}`
+      return `${inicio} - ${fin}`;
     }
 
-    return "En revisión"
+    return "En revisión";
   }
-
-  // Navegación
+  
+  // Navegación (sin cambios)
   goToDocumentos() {
-    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
     this.router.navigate(['/iniciodoc'])
   }
 
   goToSolicitudes() {
-    console.log("Navegar a Solicitudes")
     this.router.navigate(["/iniciosoli"])
   }
 
   goToNoticias() {
-    console.log("Navegar a Noticias y avisos")
     this.router.navigateByUrl("/inicioavisos")
   }
 
   goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
     this.router.navigate(["/configuracion"])
   }
 }

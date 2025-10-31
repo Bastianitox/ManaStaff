@@ -3,11 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
-// Define la estructura de la respuesta de tu API de Django
 interface ApiResponse {
-  status: string; // "success" o "error"
+  status: string;
   message: string;
-  solicitudes: any[]; // Usaremos 'any[]' por ahora, pero lo ideal es mapearlo a tu interfaz Solicitud
+  solicitudes: any[];
+}
+
+interface DetalleApiResponse {
+  status: string;
+  message: string;
+  solicitud: any;
 }
 
 @Injectable({
@@ -34,5 +39,11 @@ export class SolicitudesApiService {
     // HttpClient detecta automáticamente que es FormData y establece el header correcto.
     // El AuthTokenInterceptor se encarga de añadir el token Bearer.
     return this.http.post<any>(url, formData);
+  }
+
+  obtenerDetalleSolicitud(idSolicitud: string): Observable<DetalleApiResponse> {
+    const url = this.API_URL + `detalle_solicitud/${idSolicitud}/`; 
+    
+    return this.http.get<DetalleApiResponse>(url);
   }
 }
