@@ -134,25 +134,7 @@ export class InicioavisosPage implements OnInit {
   }
 
   viewDetails(id: string) {
-    this.router.navigateByUrl(`/detalleavisos`);
+    this.router.navigateByUrl(`/tabs/noticias/detalle/`);
     //console.log("Ver detalles de publicación:", id)
-  }
-
-  // Navegación
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
   }
 }

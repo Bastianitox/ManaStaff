@@ -51,6 +51,13 @@ const routes: Routes = [
             m => m.InicioavisosPageModule
           )
       },
+      {
+        path: 'noticias/detalle/:id',
+        loadChildren: () =>
+          import('../pages/detalleavisos/detalleavisos.module').then(
+            m => m.DetalleavisosPageModule
+          )
+      },
       //Configuración
       {
         path: 'configuracion',

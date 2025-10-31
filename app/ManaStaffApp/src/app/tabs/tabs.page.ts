@@ -45,6 +45,14 @@ export class TabsPage {
           return;
         }
 
+        // detalle noticia/aviso
+        if (url.includes('/tabs/noticias/detalle/')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'noticias';
+          this.pageTitle = 'Detalle de publicación';
+          return;
+        }
+
         // listas (header con logo)
         this.isDetailHeader = false;
 
@@ -71,8 +79,14 @@ export class TabsPage {
   goBack() {
     const current = this.router.url;
 
+    // detalle noticia a listado de noticias
+    if (current.includes('/tabs/noticias/detalle/')) {
+      this.router.navigate(['/tabs/noticias']);
+      return;
+    }
+
     // detalle solicitud a listado de solicitudes
-     if (current.includes('/tabs/solicitudes/detalle/')) {
+    if (current.includes('/tabs/solicitudes/detalle/')) {
       this.router.navigate(['/tabs/solicitudes']);
       return;
     }

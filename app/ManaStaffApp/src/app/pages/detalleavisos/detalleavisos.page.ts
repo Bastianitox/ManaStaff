@@ -48,24 +48,6 @@ Equipo de Tecnología`,
   }
 
   goBack() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  // navegación
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
+    this.router.navigateByUrl("/tabs/noticias")
   }
 }

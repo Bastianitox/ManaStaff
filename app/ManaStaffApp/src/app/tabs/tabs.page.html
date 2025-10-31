@@ -36,10 +36,18 @@
   <div class="bottom-nav">
     <div
       class="bottom-nav-item"
+      [class.bottom-nav-active]="activeTab === 'noticias'"
+      (click)="goTo('noticias')">
+      <ion-icon name="megaphone-outline"></ion-icon>
+      <span>Noticias y avisos</span>
+    </div>
+
+    <div
+      class="bottom-nav-item"
       [class.bottom-nav-active]="activeTab === 'documentos'"
       (click)="goTo('documentos')">
       <ion-icon name="document-text-outline"></ion-icon>
-      <span>Mis documentos</span>
+      <span>Documentos</span>
     </div>
 
     <div
@@ -48,14 +56,6 @@
       (click)="goTo('solicitudes')">
       <ion-icon name="chatbox-ellipses-outline"></ion-icon>
       <span>Solicitudes</span>
-    </div>
-
-    <div
-      class="bottom-nav-item"
-      [class.bottom-nav-active]="activeTab === 'noticias'"
-      (click)="goTo('noticias')">
-      <ion-icon name="megaphone-outline"></ion-icon>
-      <span>Noticias y avisos</span>
     </div>
 
     <div
