@@ -76,21 +76,4 @@ export class ConfiguracionPage implements OnInit {
       }
     });
   }
-
-  // Navegación
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    this.router.navigateByUrl("/configuracion")
-  }
 }
