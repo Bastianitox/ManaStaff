@@ -15,11 +15,22 @@ export class TabsPage {
   // cuál header mostrar
   isDetailHeader = false;
 
+  pinUnlocked = false;
+
   constructor(private router: Router) {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
         const url = event.url;
+
+        // si salimos de documentos se vuelve a bloquear el pin
+        if (!url.includes('/tabs/documentos')) {
+          this.pinUnlocked = false;
+          // mandamos un evento global para bloquear PIN si vuelve
+          localStorage.setItem('pinUnlocked', 'false');
+        }
+
+        // páginas
 
         // detalle de documento
         if (url.includes('/tabs/documentos/ver')) {

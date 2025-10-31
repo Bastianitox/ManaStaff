@@ -1,73 +1,68 @@
 <ion-content class="ion-padding" [fullscreen]="false">
   <!-- modal del PIN -->
-  <ion-modal 
-    [isOpen]="showPinModal" 
-    [backdropDismiss]="false"
-    class="pin-modal">
-    <ng-template ionModalContent>
-      <div class="pin-modal-container">
-        <div class="pin-modal-content">
-          <!-- Icono de candado -->
-          <div class="pin-icon">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-          </div>
-
-          <h2 class="pin-title">Verificación de acceso</h2>
-          <p class="pin-subtitle">Ingresa tu código PIN de 4 dígitos para ver tus documentos</p>
-
-          <!-- Inputs de PIN -->
-          <div class="pin-inputs">
-            <input 
-              type="password" 
-              maxlength="1" 
-              class="pin-input"
-              [(ngModel)]="pinInputs[0]"
-              (input)="onPinInput(0, $event)"
-              #pinField
-              inputmode="numeric">
-
-            <input 
-              type="password" 
-              maxlength="1" 
-              class="pin-input"
-              [(ngModel)]="pinInputs[1]"
-              (input)="onPinInput(1, $event)"
-              #pinField
-              inputmode="numeric">
-
-            <input 
-              type="password" 
-              maxlength="1" 
-              class="pin-input"
-              [(ngModel)]="pinInputs[2]"
-              (input)="onPinInput(2, $event)"
-              #pinField
-              inputmode="numeric">
-
-            <input 
-              type="password" 
-              maxlength="1" 
-              class="pin-input"
-              [(ngModel)]="pinInputs[3]"
-              (input)="onPinInput(3, $event)"
-              #pinField
-              inputmode="numeric">
-          </div>
-
-          <!-- Mensaje de error -->
-          <p class="pin-error" *ngIf="pinError">{{ pinError }}</p>
-
-          <!-- Botón de verificar -->
-          <button 
-            class="pin-button"
-            (click)="verifyPin()"
-            [disabled]="isPinIncomplete()">
-            Verificar código
-          </button>
+  <div class="pin-overlay" *ngIf="showPinModal">
+    <div class="pin-modal-container">
+      <div class="pin-modal-content">
+        <!-- Icono de candado -->
+        <div class="pin-icon">
+          <ion-icon name="lock-closed-outline"></ion-icon>
         </div>
+
+        <h2 class="pin-title">Verificación de acceso</h2>
+        <p class="pin-subtitle">Ingresa tu código PIN de 4 dígitos para ver tus documentos</p>
+
+        <!-- Inputs de PIN -->
+        <div class="pin-inputs">
+          <input
+            type="password"
+            maxlength="1"
+            class="pin-input"
+            [(ngModel)]="pinInputs[0]"
+            (input)="onPinInput(0, $event)"
+            #pinField
+            inputmode="numeric">
+
+          <input
+            type="password"
+            maxlength="1"
+            class="pin-input"
+            [(ngModel)]="pinInputs[1]"
+            (input)="onPinInput(1, $event)"
+            #pinField
+            inputmode="numeric">
+
+          <input
+            type="password"
+            maxlength="1"
+            class="pin-input"
+            [(ngModel)]="pinInputs[2]"
+            (input)="onPinInput(2, $event)"
+            #pinField
+            inputmode="numeric">
+
+          <input
+            type="password"
+            maxlength="1"
+            class="pin-input"
+            [(ngModel)]="pinInputs[3]"
+            (input)="onPinInput(3, $event)"
+            #pinField
+            inputmode="numeric">
+        </div>
+
+        <!-- Mensaje de error -->
+        <p class="pin-error" *ngIf="pinError">{{ pinError }}</p>
+
+        <!-- Botón de verificar -->
+        <button
+          class="pin-button"
+          (click)="verifyPin()"
+          [disabled]="isPinIncomplete()">
+          Verificar código
+        </button>
       </div>
-    </ng-template>
-  </ion-modal>
+    </div>
+  </div>
 
   <!-- modal de filtros -->
   <ion-modal 
