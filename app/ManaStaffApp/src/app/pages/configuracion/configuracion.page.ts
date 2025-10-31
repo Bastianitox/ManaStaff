@@ -9,7 +9,7 @@ import { AuthService } from 'src/app/services/auth-service';
   standalone: false
 })
 export class ConfiguracionPage implements OnInit {
-  isDarkMode = false
+  isDarkMode = false;
 
   constructor(
     private router: Router,
@@ -17,61 +17,53 @@ export class ConfiguracionPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // modo oscuro desde localStorage
-    const savedDarkMode = localStorage.getItem("darkMode")
-    this.isDarkMode = savedDarkMode === "true"
-    this.applyDarkMode()
+    const savedDarkMode = localStorage.getItem("darkMode");
+    this.isDarkMode = savedDarkMode === "true";
+    this.applyDarkMode();
   }
 
-  // Navegación a Mi perfil
+  // 👉 Mi perfil
   goToPerfil() {
-    this.router.navigateByUrl("/tabs/configuracion/perfil")
+    this.router.navigateByUrl("/tabs/configuracion/perfil");
   }
 
-  // Opciones de seguridad
+  // 👉 Seguridad
   cambiarContrasena() {
-    console.log("Navegar a cambiar contraseña")
-    this.router.navigateByUrl("/tabs/configuracion/cambiar-contrasena")
+    this.router.navigateByUrl("/tabs/configuracion/cambiar-contrasena");
   }
 
   cambiarPIN() {
-    console.log("Navegar a cambiar PIN")
-    this.router.navigateByUrl("/tabs/configuracion/cambiar-pin")
+    this.router.navigateByUrl("/tabs/configuracion/cambiar-pin");
   }
 
   recuperarPIN() {
-    console.log("Navegar a recuperar PIN")
-    this.router.navigateByUrl("/tabs/configuracion/recuperar-pin")
+    this.router.navigateByUrl("/tabs/configuracion/recuperar-pin");
   }
 
-  // Toggle modo oscuro
+  // 👉 Toggle modo oscuro
   toggleDarkMode() {
-    localStorage.setItem("darkMode", this.isDarkMode.toString())
-    this.applyDarkMode()
+    localStorage.setItem("darkMode", this.isDarkMode.toString());
+    this.applyDarkMode();
   }
 
   private applyDarkMode() {
     if (this.isDarkMode) {
-      document.body.classList.add("dark")
+      document.body.classList.add("dark");
     } else {
-      document.body.classList.remove("dark")
+      document.body.classList.remove("dark");
     }
   }
 
   cerrarSesion() {
-    console.log("Cerrando sesión...")
-    
     this.authService.logout().subscribe({
       next: () => {
         this.router.navigateByUrl("/", { replaceUrl: true });
-        
         if ((window as any)['tokenRefreshInterval']) {
-            clearInterval((window as any)['tokenRefreshInterval']);
-            (window as any)['tokenRefreshInterval'] = null;
+          clearInterval((window as any)['tokenRefreshInterval']);
+          (window as any)['tokenRefreshInterval'] = null;
         }
       },
-      error: (e) => {
-        console.error("Error al cerrar sesión:", e);
+      error: () => {
         this.router.navigateByUrl("/", { replaceUrl: true });
       }
     });

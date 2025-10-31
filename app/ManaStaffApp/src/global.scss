@@ -35,3 +35,1498 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+// ============================================
+// MODO OSCURO GLOBAL - ManaStaff
+// ============================================
+// Aplicar cuando body tenga la clase .dark
+// Mantiene la identidad visual azul corporativa
+// con fondos oscuros y contraste elegante
+// ============================================
+
+body.dark {
+  
+  // ========== VARIABLES DE COLOR MODO OSCURO ==========
+  $dark-bg-primary: #0f172a;        // Fondo general (gris azulado profundo)
+  $dark-bg-secondary: #111827;      // Tarjetas y contenedores (más oscuro)
+  $dark-bg-tertiary: #1f2937;       // Elementos elevados
+  $dark-bg-header: #062f63;         // Header y menú inferior (MISMO azul corporativo)
+  
+  $dark-text-primary: #f8fafc;      // Texto principal (blanco muy claro)
+  $dark-text-secondary: #e2e8f0;    // Texto secundario (gris muy claro)
+  $dark-text-tertiary: #94a3b8;     // Texto terciario
+  
+  $dark-border: #1f2937;            // Bordes (gris azulado oscuro)
+  $dark-border-light: #334155;      // Bordes más claros
+  
+  // Colores corporativos (mantener)
+  $dark-primary-blue: #062f63;
+  $dark-dark-blue: #041d3d;
+  $dark-light-blue: #0a4a8f;
+  
+  // Estados
+  $dark-success: #10B981;
+  $dark-warning: #F59E0B;
+  $dark-danger: #DC2626;
+
+  // ========== FONDO GENERAL ==========
+  ion-content {
+    --background: #{$dark-bg-primary};
+  }
+
+  ion-app {
+    background: $dark-bg-primary;
+  }
+
+  // ========== HEADERS - MISMO COLOR QUE BOTTOM NAV ==========
+  ion-header,
+  ion-toolbar,
+  .header-toolbar,
+  .ms-header {
+    --background: #{$dark-bg-header} !important;
+    --border-color: rgba(0, 0, 0, 0.3);
+    --color: #{$dark-text-primary};
+    background: $dark-bg-header !important;
+    color: $dark-text-primary;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  ion-title {
+    color: $dark-text-primary !important;
+  }
+
+  ion-buttons ion-button {
+    --color: #{$dark-text-primary};
+    color: $dark-text-primary;
+  }
+
+  .header-title {
+    color: $dark-text-primary;
+    font-weight: 600;
+  }
+
+  .header-logo {
+    // Cambiar logo a versión blanca
+    content: url('/assets/img/logo_grande_blanco.png');
+  }
+
+  // ========== MENÚ INFERIOR / BOTTOM NAV - MISMO COLOR QUE HEADER ==========
+  .bottom-nav,
+  ion-tab-bar {
+    --background: #{$dark-bg-header} !important;
+    background: $dark-bg-header !important;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.4);
+    border-top: 1px solid rgba(0, 0, 0, 0.3);
+  }
+
+  .bottom-nav-item {
+    color: rgba($dark-text-primary, 0.6);
+
+    &:hover {
+      color: rgba($dark-text-primary, 0.9);
+    }
+
+    &.bottom-nav-active {
+      color: $dark-text-primary;
+    }
+  }
+
+  ion-tab-button {
+    --color: rgba(#{$dark-text-primary}, 0.6);
+    --color-selected: #{$dark-text-primary};
+    --ripple-color: rgba(255, 255, 255, 0.2);
+  }
+
+  // ========== TARJETAS - MÁS OSCURAS ==========
+  .detail-card,
+  .form-card,
+  .document-card,
+  .document-info-card,
+  .option-card,
+  .card,
+  .info-card,
+  .publication-card {
+    background: $dark-bg-secondary !important;
+    border-color: $dark-border !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  // ========== MODALES ==========
+  .pin-modal-content,
+  .filter-modal,
+  .filter-card,
+  .modal-content {
+    background: $dark-bg-secondary;
+    border-color: $dark-border;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-header {
+    border-bottom-color: $dark-border;
+  }
+
+  .modal-title {
+    color: $dark-text-primary;
+  }
+
+  // ========== TEXTOS - MÁS CLAROS ==========
+  .card-title,
+  .form-title,
+  .section-title,
+  .option-title,
+  .document-title,
+  .detail-title,
+  .publication-title,
+  .info-title,
+  h1, h2, h3, h4, h5, h6 {
+    color: $dark-text-primary !important;
+    font-weight: 600;
+  }
+
+  .card-subtitle,
+  .form-subtitle,
+  .option-description,
+  .document-description,
+  .detail-subtitle,
+  .empty-subtitle,
+  .field-hint,
+  .publication-summary,
+  .publication-meta,
+  p {
+    color: $dark-text-secondary !important;
+  }
+
+  .text-primary {
+    color: $dark-text-primary !important;
+  }
+
+  .text-secondary {
+    color: $dark-text-secondary !important;
+  }
+
+  // ========== LABELS Y CAMPOS ==========
+  .field-label,
+  .form-label,
+  ion-label {
+    color: $dark-text-primary;
+  }
+
+  // ========== INPUTS ==========
+  .custom-input,
+  ion-input,
+  ion-textarea,
+  input,
+  textarea {
+    background: $dark-bg-tertiary;
+    border-color: $dark-border;
+    color: $dark-text-primary;
+
+    &::placeholder {
+      color: $dark-text-tertiary;
+    }
+
+    &:focus {
+      border-color: $dark-light-blue;
+      box-shadow: 0 0 0 3px rgba(10, 74, 143, 0.2);
+    }
+
+    &:disabled {
+      background: rgba($dark-bg-tertiary, 0.5);
+      color: $dark-text-tertiary;
+    }
+  }
+
+  // Input wrappers con botón de ojo
+  .pin-input-wrapper,
+  .password-input-wrapper {
+    .custom-input {
+      background: $dark-bg-tertiary;
+      border-color: $dark-border;
+      color: $dark-text-primary;
+    }
+
+    .toggle-pin-btn,
+    .toggle-password-btn {
+      color: $dark-text-secondary;
+
+      &:hover {
+        color: $dark-light-blue;
+      }
+    }
+  }
+
+  // ========== BOTONES PRINCIPALES ==========
+  .submit-button,
+  .primary-button,
+  .login-button,
+  .btn-primary {
+    --background: linear-gradient(135deg, #{$dark-light-blue} 0%, #{$dark-primary-blue} 100%);
+    --background-hover: #{$dark-primary-blue};
+    --background-activated: #{$dark-dark-blue};
+    --box-shadow: 0 2px 8px rgba(10, 74, 143, 0.4);
+    --color: #{$dark-text-primary};
+    background: linear-gradient(135deg, $dark-light-blue 0%, $dark-primary-blue 100%);
+    color: $dark-text-primary;
+    box-shadow: 0 2px 8px rgba(10, 74, 143, 0.4);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(10, 74, 143, 0.5);
+    }
+
+    &[disabled] {
+      --background: #{$dark-bg-tertiary};
+      --color: #{$dark-text-tertiary};
+      --box-shadow: none;
+      background: $dark-bg-tertiary;
+      color: $dark-text-tertiary;
+    }
+  }
+
+  // ========== BOTONES SECUNDARIOS ==========
+  .secondary-button,
+  .cancel-button,
+  .btn-secondary {
+    background: $dark-bg-tertiary;
+    border-color: $dark-border;
+    color: $dark-text-primary;
+
+    &:hover {
+      background: $dark-border-light;
+      border-color: $dark-text-secondary;
+    }
+  }
+
+  // ========== BOTÓN DE CERRAR SESIÓN ==========
+  .logout-button {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    color: $dark-text-primary;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  }
+
+  // ========== BADGES DE ESTADO ==========
+  .status-badge {
+    &.status-active,
+    &.status-approved {
+      background: rgba($dark-success, 0.15);
+      color: lighten($dark-success, 15%);
+      border-color: rgba($dark-success, 0.3);
+    }
+
+    &.status-pending,
+    &.status-in-progress {
+      background: rgba($dark-warning, 0.15);
+      color: lighten($dark-warning, 15%);
+      border-color: rgba($dark-warning, 0.3);
+    }
+
+    &.status-expired,
+    &.status-rejected {
+      background: rgba($dark-danger, 0.15);
+      color: lighten($dark-danger, 15%);
+      border-color: rgba($dark-danger, 0.3);
+    }
+  }
+
+  // ========== BADGES DE TIPO (NOTICIA/AVISO) ==========
+  .type-badge,
+  .type-badge-large {
+    &.noticia {
+      background: rgba($dark-success, 0.2) !important;
+      color: lighten($dark-success, 20%) !important;
+      border: 1px solid rgba($dark-success, 0.4);
+    }
+
+    &.aviso {
+      background: rgba($dark-warning, 0.2) !important;
+      color: lighten($dark-warning, 20%) !important;
+      border: 1px solid rgba($dark-warning, 0.4);
+    }
+  }
+
+  // ========== DIVIDERS / SEPARADORES ==========
+  .section-divider,
+  .divider,
+  hr {
+    background: $dark-border;
+    border-color: $dark-border;
+  }
+
+  .form-header {
+    border-bottom-color: $dark-border;
+  }
+
+  // ========== OVERLAYS Y SPINNERS ==========
+  .loading-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .loading-content {
+    background: $dark-bg-secondary;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .loading-text {
+    color: $dark-text-primary;
+  }
+
+  .loading-spinner {
+    color: $dark-light-blue;
+  }
+
+  // ========== TOASTS / ALERTAS ==========
+  .app-toast {
+    &.success {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: $dark-text-primary;
+    }
+
+    &.error {
+      background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+      color: $dark-text-primary;
+    }
+  }
+
+  // ========== VALIDACIONES ==========
+  .validation-box {
+    background: rgba($dark-light-blue, 0.08);
+    border-color: rgba($dark-light-blue, 0.2);
+  }
+
+  .validation-item {
+    color: $dark-text-secondary;
+
+    ion-icon {
+      color: $dark-text-secondary;
+    }
+
+    &.valid {
+      color: $dark-success;
+
+      ion-icon {
+        color: $dark-success;
+      }
+    }
+  }
+
+  // ========== LISTAS Y GRIDS ==========
+  .document-list,
+  .solicitud-list,
+  .aviso-list {
+    .list-item {
+      background: $dark-bg-secondary;
+      border-color: $dark-border;
+
+      &:hover {
+        background: $dark-bg-tertiary;
+      }
+    }
+  }
+
+  // ========== TOGGLES ==========
+  ion-toggle {
+    --background: #{$dark-bg-tertiary};
+    --background-checked: #{$dark-light-blue};
+    --handle-background: #{$dark-text-primary};
+    --handle-background-checked: #{$dark-text-primary};
+  }
+
+  // ========== SELECTS Y DROPDOWNS ==========
+  ion-select,
+  select {
+    background: $dark-bg-tertiary;
+    border-color: $dark-border;
+    color: $dark-text-primary;
+  }
+
+  ion-select-popover {
+    --background: #{$dark-bg-secondary};
+    
+    ion-item {
+      --background: #{$dark-bg-secondary};
+      --color: #{$dark-text-primary};
+      
+      &:hover {
+        --background: #{$dark-bg-tertiary};
+      }
+    }
+  }
+
+  // ========== CHECKBOXES Y RADIOS ==========
+  ion-checkbox {
+    --background: #{$dark-bg-tertiary};
+    --background-checked: #{$dark-light-blue};
+    --border-color: #{$dark-border};
+    --border-color-checked: #{$dark-light-blue};
+    --checkmark-color: #{$dark-text-primary};
+  }
+
+  ion-radio {
+    --color: #{$dark-border};
+    --color-checked: #{$dark-light-blue};
+  }
+
+  // ========== LINKS ==========
+  a {
+    color: lighten($dark-light-blue, 15%);
+
+    &:hover {
+      color: lighten($dark-light-blue, 25%);
+    }
+  }
+
+  .forgot-password a {
+    color: lighten($dark-light-blue, 15%);
+
+    &:hover {
+      color: lighten($dark-light-blue, 25%);
+    }
+  }
+
+  // ========== ICONOS ==========
+  ion-icon {
+    color: $dark-text-secondary;
+  }
+
+  .icon-primary {
+    color: $dark-light-blue;
+  }
+
+  .icon-success {
+    color: $dark-success;
+  }
+
+  .icon-warning {
+    color: $dark-warning;
+  }
+
+  .icon-danger {
+    color: $dark-danger;
+  }
+
+  // ========== PANTALLA DE LOGIN ==========
+  .login-container {
+    ion-content {
+      --background: #{$dark-primary-blue};
+    }
+  }
+
+  .welcome-screen {
+    .logo-placeholder {
+      background: linear-gradient(135deg, rgba($dark-text-primary, 0.15) 0%, rgba($dark-text-primary, 0.08) 100%);
+    }
+
+    .brand-name {
+      color: $dark-text-primary;
+    }
+
+    .welcome-message {
+      color: rgba($dark-text-primary, 0.85);
+    }
+  }
+
+  .login-form-screen {
+    .logo-placeholder-small {
+      background: linear-gradient(135deg, rgba($dark-text-primary, 0.15) 0%, rgba($dark-text-primary, 0.08) 100%);
+    }
+
+    .brand-name-small {
+      color: $dark-text-primary;
+    }
+
+    .back-btn {
+      --color: #{$dark-text-primary};
+    }
+  }
+
+  // ========== PANTALLA DE RECUPERAR CONTRASEÑA ==========
+  .recovery-container {
+    ion-content {
+      --background: #{$dark-primary-blue};
+    }
+  }
+
+  // ========== EMPTY STATES ==========
+  .empty-state {
+    .empty-icon {
+      color: $dark-text-tertiary;
+    }
+
+    .empty-title {
+      color: $dark-text-primary;
+    }
+
+    .empty-subtitle {
+      color: $dark-text-secondary;
+    }
+  }
+
+  // ========== SOMBRAS AJUSTADAS ==========
+  .card,
+  .form-card,
+  .detail-card,
+  .document-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-content,
+  .pin-modal-content {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  // ========== SCROLLBARS (WEBKIT) ==========
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: $dark-bg-primary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: $dark-bg-tertiary;
+    border-radius: 4px;
+
+    &:hover {
+      background: $dark-border-light;
+    }
+  }
+
+  // ========== CONFIGURACIÓN - OPCIONES CON GRADIENTES ==========
+  .option-card {
+    .option-icon {
+      // Mantener gradientes pero con menos brillo
+      &.gradient-blue {
+        background: linear-gradient(135deg, rgba($dark-light-blue, 0.8) 0%, rgba($dark-primary-blue, 0.8) 100%);
+      }
+
+      &.gradient-green {
+        background: linear-gradient(135deg, rgba($dark-success, 0.8) 0%, rgba(#059669, 0.8) 100%);
+      }
+
+      &.gradient-orange {
+        background: linear-gradient(135deg, rgba($dark-warning, 0.8) 0%, rgba(#D97706, 0.8) 100%);
+      }
+
+      &.gradient-red {
+        background: linear-gradient(135deg, rgba($dark-danger, 0.8) 0%, rgba(#B91C1C, 0.8) 100%);
+      }
+    }
+  }
+
+  // ========== AJUSTES ESPECÍFICOS DE IONIC ==========
+  ion-item {
+    --background: #{$dark-bg-secondary};
+    --color: #{$dark-text-primary};
+    --border-color: #{$dark-border};
+  }
+
+  ion-list {
+    background: $dark-bg-primary;
+  }
+
+  ion-card {
+    --background: #{$dark-bg-secondary};
+    --color: #{$dark-text-primary};
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  
+  // ========== PANTALLA DE PUBLICACIONES - LISTA ==========
+  
+  // Buscador y filtro
+  .search-filter-container {
+    background: $dark-bg-primary;
+  }
+
+  .search-bar {
+    --background: #{$dark-bg-secondary};
+    --border-radius: 12px;
+    --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --placeholder-color: #{$dark-text-tertiary};
+    --icon-color: #{$dark-text-secondary};
+    --color: #{$dark-text-primary};
+    border-color: $dark-border;
+  }
+
+  .filter-button {
+    background: $dark-bg-secondary;
+    border-color: $dark-border;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    ion-icon {
+      color: $dark-text-secondary;
+    }
+
+    &:hover {
+      border-color: $dark-light-blue;
+      box-shadow: 0 2px 8px rgba(10, 74, 143, 0.3);
+
+      ion-icon {
+        color: $dark-light-blue;
+      }
+    }
+  }
+
+  // Título de sección
+  .section-title {
+    color: $dark-text-primary;
+  }
+
+  // Cargando
+  .loading-container {
+    ion-spinner {
+      --color: #{$dark-light-blue};
+    }
+
+    p {
+      color: $dark-text-secondary;
+    }
+  }
+
+  // Lista de publicaciones
+  .publications-list {
+    background: transparent;
+  }
+
+  .card-content {
+    .icon-container {
+      &.noticia {
+        background: linear-gradient(135deg, rgba($dark-success, 0.25) 0%, rgba($dark-success, 0.15) 100%);
+      }
+
+      &.aviso {
+        background: linear-gradient(135deg, rgba($dark-warning, 0.25) 0%, rgba($dark-warning, 0.15) 100%);
+      }
+
+      ion-icon {
+        .noticia & {
+          color: lighten($dark-success, 15%);
+        }
+        
+        .aviso & {
+          color: lighten($dark-warning, 15%);
+        }
+      }
+    }
+  }
+
+  .info-container {
+    .publication-title {
+      color: $dark-text-primary;
+      font-weight: 600;
+    }
+
+    .publication-summary {
+      color: $dark-text-secondary;
+    }
+
+    .publication-meta {
+      color: $dark-text-secondary;
+
+      ion-icon {
+        color: $dark-text-secondary;
+      }
+    }
+  }
+
+  .action-buttons {
+    .btn-primary {
+      background: linear-gradient(135deg, $dark-light-blue 0%, $dark-primary-blue 100%);
+      color: $dark-text-primary;
+      box-shadow: 0 2px 8px rgba(10, 74, 143, 0.3);
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(10, 74, 143, 0.4);
+      }
+    }
+  }
+
+  // ========== MODAL DE FILTROS ==========
+  
+  .filter-modal {
+    --background: #{$dark-bg-secondary};
+  }
+
+  .filter-toolbar {
+    --background: #{$dark-bg-secondary};
+    --border-width: 0;
+  }
+
+  .filter-modal-title {
+    color: $dark-text-primary;
+  }
+
+  .filter-description {
+    background: $dark-bg-secondary;
+    border-bottom-color: $dark-border;
+
+    p {
+      color: $dark-text-secondary;
+    }
+  }
+
+  .close-btn {
+    --color: #{$dark-text-secondary};
+    
+    ion-icon {
+      color: $dark-text-secondary;
+    }
+  }
+
+  .filter-content {
+    --background: #{$dark-bg-primary};
+  }
+
+  .filter-card {
+    background: $dark-bg-secondary;
+    border-color: $dark-border;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .filter-card-header {
+    .filter-icon {
+      color: $dark-light-blue;
+    }
+
+    .filter-label {
+      color: $dark-text-primary;
+    }
+  }
+
+  .filter-options {
+    .filter-radio {
+      &:hover {
+        background-color: rgba($dark-light-blue, 0.08);
+      }
+
+      input[type="radio"] {
+        accent-color: $dark-light-blue;
+      }
+
+      .radio-label {
+        color: $dark-text-primary;
+      }
+    }
+  }
+
+  .filter-footer {
+    background: $dark-bg-secondary;
+    border-top-color: $dark-border;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+
+    .btn-primary {
+      background: linear-gradient(135deg, $dark-light-blue 0%, $dark-primary-blue 100%);
+      color: $dark-text-primary;
+      box-shadow: 0 2px 8px rgba(10, 74, 143, 0.3);
+
+      &:hover {
+        box-shadow: 0 8px 20px rgba(10, 74, 143, 0.4);
+      }
+    }
+
+    .btn-secondary {
+      background: $dark-bg-tertiary;
+      color: $dark-text-secondary;
+      border-color: $dark-border;
+
+      &:hover {
+        border-color: $dark-text-secondary;
+        color: $dark-text-primary;
+      }
+    }
+  }
+
+  // ========== PANTALLA DE DETALLE DE PUBLICACIÓN ==========
+  
+  .content-wrapper {
+    background: transparent;
+  }
+
+  .publication-date {
+    background: rgba($dark-primary-blue, 0.3) !important;
+    border-left-color: $dark-light-blue;
+
+    ion-icon {
+      color: $dark-light-blue;
+    }
+
+    span {
+      color: $dark-text-secondary !important;
+    }
+
+    strong {
+      color: $dark-text-primary !important;
+      font-weight: 600;
+    }
+  }
+
+  .publication-content {
+    background: $dark-bg-tertiary !important;
+    border-color: $dark-border !important;
+
+    p {
+      color: $dark-text-primary !important;
+      line-height: 1.7;
+    }
+  }
+
+  .info-block {
+    border-top-color: $dark-border;
+  }
+
+  .info-grid {
+    .info-item {
+      .info-label {
+        color: $dark-text-secondary !important;
+        font-weight: 600;
+      }
+
+      .info-value {
+        color: $dark-text-primary !important;
+        font-weight: 500;
+
+        &.noticia {
+          color: lighten($dark-success, 20%) !important;
+        }
+
+        &.aviso {
+          color: lighten($dark-warning, 20%) !important;
+        }
+      }
+    }
+  }
+
+  // ========== TRANSICIONES SUAVES ==========
+  * {
+    transition: background-color 0.3s ease, 
+                border-color 0.3s ease, 
+                color 0.3s ease,
+                box-shadow 0.3s ease;
+  }
+
+  // ========== AJUSTES PUNTUALES DE CONTRASTE ==========
+  
+  .documents-grid .document-card .card-icon,
+  .document-card .card-icon {
+    background: rgba($dark-light-blue, 0.15);
+    
+    ion-icon {
+      color: #60A5FA !important; // Azul claro para mejor contraste
+    }
+  }
+
+  .filter-modal,
+  .document-filter-modal {
+    .filter-label,
+    .checkbox-label,
+    .radio-label,
+    .filter-option-label {
+      color: $dark-text-primary !important;
+    }
+
+    .filter-card {
+      background: $dark-bg-secondary;
+      border-color: $dark-border-light;
+    }
+  }
+
+  // ========== SOLICITUDES - LISTA (iniciosoli) ==========
+  .solicitud-card,
+  .request-card,
+  .iniciosoli-page .detail-card,
+  .solicitudes-grid .solicitud-card,
+  .solicitudes-list .solicitud-card {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: $dark-text-primary;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    .solicitud-title,
+    .request-title,
+    .card-title {
+      color: $dark-text-primary !important;
+      font-weight: 600;
+    }
+
+    .solicitud-description,
+    .request-description,
+    .card-description {
+      color: $dark-text-secondary !important;
+    }
+
+    .solicitud-date,
+    .request-date,
+    .card-date {
+      color: $dark-text-secondary !important;
+    }
+
+    .solicitud-meta,
+    .request-meta {
+      color: $dark-text-secondary !important;
+      
+      ion-icon {
+        color: $dark-text-secondary;
+      }
+    }
+  }
+
+  
+  // ========== SOLICITUDES - DETALLE (detallesoli) ==========
+  
+   /* ----- CONTENEDOR PRINCIPAL ----- */
+  .detallesoli-page,
+  app-detallesoli,
+  ion-content.detallesoli-page {
+    --background: #0F172A !important;
+  }
+
+  /* ----- TARJETAS PRINCIPALES ----- */
+  .detallesoli-page .detail-card,
+  .detallesoli-page .timeline-section,
+  .detallesoli-page .dates-grid {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: #E2E8F0 !important;
+  }
+
+  /* ----- ETIQUETAS E INFORMACIÓN ----- */
+  .detallesoli-page .info-label,
+  .detallesoli-page .date-label {
+    color: #E2E8F0 !important;
+  }
+
+  .detallesoli-page .info-value,
+  .detallesoli-page .date-value,
+  .detallesoli-page .detail-title {
+    color: #F8FAFC !important;
+  }
+
+  /* ----- LÍNEAS DE DIVISIÓN ----- */
+  .detallesoli-page .info-row {
+    border-bottom-color: #334155 !important;
+  }
+
+  /* ----- ESTADOS DE SOLICITUD ----- */
+  .detallesoli-page .status-badge-inline.aprobada {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10B981 !important;
+  }
+
+  .detallesoli-page .status-badge-inline.pendiente {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #FACC15 !important;
+  }
+
+  .detallesoli-page .status-badge-inline.rechazada {
+    background: rgba(220, 38, 38, 0.15) !important;
+    color: #F87171 !important;
+  }
+
+  /* ----- CAJAS DE FECHAS ----- */
+  .detallesoli-page .dates-grid {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+  }
+
+  /* ----- TIMELINE ----- */
+  .detallesoli-page .timeline-item {
+    border-color: #334155 !important;
+  }
+
+  .detallesoli-page .timeline-step-title {
+    color: #F8FAFC !important;
+  }
+
+  .detallesoli-page .timeline-description,
+  .detallesoli-page .timeline-date {
+    color: #E2E8F0 !important;
+  }
+
+  .detallesoli-page .timeline-marker {
+    background: #1E293B !important;
+    border-color: #475569 !important;
+  }
+
+  .detallesoli-page .timeline-item.completed .timeline-marker {
+    background: #10B981 !important;
+    border-color: #10B981 !important;
+  }
+
+  .detallesoli-page .timeline-item.rejected .timeline-marker {
+    background: #DC2626 !important;
+    border-color: #DC2626 !important;
+  }
+
+  .detallesoli-page .timeline-item.current .timeline-marker {
+    background: #F59E0B !important;
+    border-color: #F59E0B !important;
+  }
+
+  /* ----- ARCHIVO ADJUNTO ----- */
+  .detallesoli-page .attachment-box {
+    background: rgba(37, 99, 235, 0.1) !important;
+    border-color: rgba(37, 99, 235, 0.3) !important;
+  }
+
+  .detallesoli-page .attachment-name,
+  .detallesoli-page .attachment-action {
+    color: #E2E8F0 !important;
+  }
+
+  .detallesoli-page .info-row .info-value,
+  app-detallesoli .info-row .info-value {
+    color: #F8FAFC !important;
+  }
+
+  /* el asunto/título ya está claro, pero por si viene muy largo */
+  .detallesoli-page .detail-title {
+    color: #ffffff !important;
+  }
+
+  /* las líneas separadoras muy claras se notan mucho en oscuro, las bajamos */
+  .detallesoli-page .info-row {
+    border-bottom-color: rgba(248, 250, 252, 0.08) !important;
+  }
+
+  /* el bloque de "Fecha enviada / Rango solicitado" que quedó blanco */
+  .detallesoli-page .dates-grid {
+    background: #0f172a !important;
+    border-color: #1f2937 !important;
+  }
+
+  /* los labels de fechas para que no se pierdan */
+  .detallesoli-page .date-label {
+    color: #cbd5f5 !important;
+  }
+
+  /* y por si algún valor viene nulo/vacío */
+  .detallesoli-page .date-value {
+    color: #ffffff !important;
+  }
+
+    .detallesoli-page .dates-grid,
+  app-detallesoli .dates-grid {
+    background: #111827 !important;        /* fondo oscuro suave */
+    border: 1px solid rgba(248, 250, 252, 0.04) !important;
+    box-shadow: none !important;
+  }
+
+  /* textos dentro de la tarjeta de fechas */
+  .detallesoli-page .dates-grid .date-label,
+  app-detallesoli .dates-grid .date-label {
+    color: #d1d5db !important;             /* gris claro */
+  }
+
+  .detallesoli-page .dates-grid .date-value,
+  app-detallesoli .dates-grid .date-value {
+    color: #ffffff !important;             /* valor bien blanco */
+  }
+
+  
+  // ========== TIMELINE / HISTORIAL DE SOLICITUDES ==========
+  
+  .timeline-section,
+  .timeline-container,
+  .historial-section {
+    background: transparent;
+    
+    .timeline-title,
+    .historial-title {
+      color: $dark-text-primary !important;
+      font-weight: 600;
+    }
+  }
+
+  .timeline-item,
+  .history-item,
+  .historial-item {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    .timeline-step-title,
+    .timeline-title,
+    .history-title {
+      color: $dark-text-primary !important;
+      font-weight: 600;
+    }
+
+    .timeline-description,
+    .history-description,
+    .timeline-step-description {
+      color: $dark-text-secondary !important;
+      line-height: 1.6;
+    }
+
+    .timeline-date,
+    .history-date,
+    .timeline-step-date {
+      color: $dark-text-secondary !important;
+      
+      ion-icon {
+        color: $dark-text-secondary;
+      }
+    }
+
+    .timeline-user,
+    .history-user {
+      color: $dark-text-secondary !important;
+    }
+  }
+
+  // Estados del timeline (mantener colores originales)
+  .timeline-status,
+  .history-status,
+  .solicitud-status {
+    &.approved,
+    &.aprobada,
+    &.aprobado {
+      background: rgba($dark-success, 0.2) !important;
+      color: lighten($dark-success, 20%) !important;
+      border-color: rgba($dark-success, 0.4) !important;
+    }
+
+    &.pending,
+    &.pendiente,
+    &.en-proceso {
+      background: rgba($dark-warning, 0.2) !important;
+      color: lighten($dark-warning, 20%) !important;
+      border-color: rgba($dark-warning, 0.4) !important;
+    }
+
+    &.rejected,
+    &.rechazada,
+    &.rechazado {
+      background: rgba($dark-danger, 0.2) !important;
+      color: lighten($dark-danger, 20%) !important;
+      border-color: rgba($dark-danger, 0.4) !important;
+    }
+  }
+
+  // Iconos de estado en timeline
+  .timeline-icon,
+  .history-icon {
+    &.success,
+    &.approved {
+      background: rgba($dark-success, 0.2);
+      color: lighten($dark-success, 20%);
+    }
+
+    &.warning,
+    &.pending {
+      background: rgba($dark-warning, 0.2);
+      color: lighten($dark-warning, 20%);
+    }
+
+    &.danger,
+    &.rejected {
+      background: rgba($dark-danger, 0.2);
+      color: lighten($dark-danger, 20%);
+    }
+  }
+
+  ion-header,
+  ion-toolbar,
+  .header-toolbar,
+  .ms-header {
+    --background: #062F63 !important;
+    background: #062F63 !important;
+  }
+
+  .bottom-nav,
+  ion-tab-bar {
+    --background: #062F63 !important;
+    background: #062F63 !important;
+  }
+}
+/* --- Unificar color de los recuadros internos del historial de solicitud --- */
+  .detallesoli-page .timeline-section,
+  app-detallesoli .timeline-section {
+    background: #1E293B !important; /* Fondo oscuro principal del historial */
+    border-color: #334155 !important;
+  }
+
+  /* Cada item del timeline (los recuadros internos) */
+  .detallesoli-page .timeline-item,
+  app-detallesoli .timeline-item {
+    background: #1E293B !important; /* Mismo color del fondo exterior */
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: none !important;
+  }
+
+  /* El contenido del texto dentro del timeline */
+  .detallesoli-page .timeline-content,
+  app-detallesoli .timeline-content {
+    background: transparent !important;
+  }
+
+  /* Mejor contraste para los títulos y textos */
+  .detallesoli-page .timeline-step-title,
+  .detallesoli-page .timeline-description,
+  .detallesoli-page .timeline-date,
+  app-detallesoli .timeline-step-title,
+  app-detallesoli .timeline-description,
+  app-detallesoli .timeline-date {
+    color: #F8FAFC !important;
+  }
+
+  /* Línea vertical del timeline ligeramente más visible */
+  .detallesoli-page .timeline-item::before,
+  app-detallesoli .timeline-item::before {
+    background: #334155 !important;
+  }
+  
+/* ============================
+   PERFIL (inicioperfil) - MODO OSCURO
+   ============================ */
+body.dark {
+
+  /* fondo general de la página de perfil */
+  .inicioperfil-page ion-content,
+  app-inicioperfil ion-content {
+    --background: #0f172a !important;
+  }
+
+  /* wrapper */
+  .inicioperfil-page .content-wrapper,
+  app-inicioperfil .content-wrapper {
+    background: transparent;
+  }
+
+  /* tarjeta principal */
+  .inicioperfil-page .profile-card,
+  app-inicioperfil .profile-card {
+    background: #111827 !important;     
+    border: 1px solid #1f2937 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+  }
+
+  /* separador bajo la foto */
+  .inicioperfil-page .profile-photo-section,
+  app-inicioperfil .profile-photo-section {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+  }
+
+  /* labels */
+  .inicioperfil-page .field-label,
+  app-inicioperfil .field-label {
+    color: #e2e8f0 !important;
+  }
+
+  .inicioperfil-page .editable-icon,
+  app-inicioperfil .editable-icon {
+    color: #38bdf8 !important;
+  }
+
+  /* inputs de solo lectura */
+  .inicioperfil-page .custom-input.readonly,
+  app-inicioperfil .custom-input.readonly {
+    background: #0f172a !important;
+    border: 1px solid #1f2937 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed;
+  }
+
+  /* inputs editables */
+  .inicioperfil-page .custom-input.editable,
+  .inicioperfil-page .custom-textarea.editable,
+  app-inicioperfil .custom-input.editable,
+  app-inicioperfil .custom-textarea.editable {
+    background: #1f2937 !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    &:focus {
+      border-color: #0ea5e9 !important;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18) !important;
+    }
+  }
+
+  /* textarea base */
+  .inicioperfil-page .custom-textarea,
+  app-inicioperfil .custom-textarea {
+    background: #1f2937 !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+  }
+
+  /* botón guardar */
+  .inicioperfil-page .save-button,
+  app-inicioperfil .save-button {
+    --background: linear-gradient(135deg, #0a4a8f 0%, #062f63 100%);
+    --color: #ffffff;
+    --box-shadow: 0 4px 14px rgba(6, 47, 99, 0.4);
+  }
+  .inicioperfil-page .save-button[disabled],
+  app-inicioperfil .save-button[disabled] {
+    --background: #1f2937;
+    --color: #94a3b8;
+    opacity: 0.7;
+    --box-shadow: none;
+  }
+
+  /* foto de perfil */
+  .inicioperfil-page .profile-photo-container,
+  app-inicioperfil .profile-photo-container {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+  }
+
+  /* overlay de "cambiar foto" mantiene el azul corporativo */
+  .inicioperfil-page .photo-overlay,
+  app-inicioperfil .photo-overlay {
+    background: rgba(6, 47, 99, 0.85) !important;
+  }
+
+  /* toast en modo oscuro */
+  .inicioperfil-page .app-toast,
+  app-inicioperfil .app-toast {
+    background: #111827 !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+  }
+  .inicioperfil-page .app-toast.success,
+  app-inicioperfil .app-toast.success {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    color: #ecfdf3 !important;
+  }
+  .inicioperfil-page .app-toast.error,
+  app-inicioperfil .app-toast.error {
+    background: rgba(220, 38, 38, 0.15) !important;
+    border-color: rgba(220, 38, 38, 0.4) !important;
+    color: #fee2e2 !important;
+  }
+}
+
+body.dark {
+
+  .crearsoli-page ion-content {
+    --background: #0f172a !important;
+  }
+
+  .crearsoli-page .solicitud-form-card {
+    background: #111827 !important;
+    border: 1px solid #1f2937 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+  }
+
+  .crearsoli-page .form-title {
+    color: #f8fafc !important;
+  }
+
+  .crearsoli-page .form-subtitle {
+    color: #94a3b8 !important;
+  }
+
+  .crearsoli-page .section-header .section-icon {
+    background: rgba(56, 189, 248, 0.06) !important;
+
+    ion-icon {
+      color: #38bdf8 !important;
+    }
+  }
+
+  .crearsoli-page .section-title,
+  .crearsoli-page .field-label {
+    color: #e2e8f0 !important;
+  }
+
+  /* inputs oscuros */
+  .crearsoli-page .custom-input,
+  .crearsoli-page .custom-textarea,
+  .crearsoli-page ion-input.custom-input,
+  .crearsoli-page ion-textarea.custom-textarea {
+    background: #1f2937 !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    &:focus,
+    &:focus-within {
+      border-color: #0ea5e9 !important;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.17) !important;
+    }
+  }
+
+  /* ion-select cerrado en oscuro */
+  .crearsoli-page ion-select.select-field {
+    --background: #1f2937 !important;
+    --color: #e2e8f0 !important;
+    --placeholder-color: #94a3b8 !important;
+    background: #1f2937 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 12px !important;
+  }
+
+  /* popup de ion-select (alert/action-sheet) en oscuro
+     esto es lo que te estaba dando blanco */
+  ion-alert,
+  .alert-wrapper,
+  .alert-viewport,
+  ion-action-sheet,
+  .action-sheet-wrapper {
+    --background: #0f172a !important;
+    background: #0f172a !important;
+    --ion-text-color: #e2e8f0 !important;
+    color: #e2e8f0 !important;
+  }
+
+  .alert-radio-group button,
+  .action-sheet-group button,
+  .alert-radio-label,
+  .action-sheet-button-inner {
+    color: #e2e8f0 !important;
+  }
+
+  /* opción activa */
+  .alert-radio-group button[aria-checked="true"],
+  .action-sheet-group button[aria-checked="true"],
+  .action-sheet-group button.activated {
+    background: #374151 !important;
+    color: #ffffff !important;
+  }
+
+  /* botón Cancelar al final */
+  .alert-button.alert-button-role-cancel,
+  .action-sheet-button.action-sheet-cancel {
+    background: #0f172a !important;
+    color: #f43f5e !important;
+  }
+
+  /* área de archivo en oscuro */
+  .crearsoli-page .upload-box {
+    background: #111827 !important;
+    border: 1px dashed #475569 !important;
+  }
+
+  .crearsoli-page .upload-title {
+    color: #e2e8f0 !important;
+  }
+
+  .crearsoli-page .upload-subtitle {
+    color: #94a3b8 !important;
+  }
+
+  .crearsoli-page .upload-button {
+    background: #062f63 !important;
+    border-color: transparent !important;
+    color: #fff !important;
+  }
+
+  /* botón enviar */
+  .crearsoli-page .submit-button,
+  .crearsoli-page .primary-btn {
+    --background: linear-gradient(135deg, #0a4a8f 0%, #062f63 100%);
+    --color: #ffffff;
+    --box-shadow: 0 4px 14px rgba(6, 47, 99, 0.4);
+  }
+}

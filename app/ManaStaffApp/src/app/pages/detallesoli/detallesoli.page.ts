@@ -146,21 +146,4 @@ export class DetallesoliPage implements OnInit {
 
     return "En revisión";
   }
-  
-  // Navegación (sin cambios)
-  goToDocumentos() {
-    this.router.navigate(['/iniciodoc'])
-  }
-
-  goToSolicitudes() {
-    this.router.navigate(["/iniciosoli"])
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    this.router.navigate(["/configuracion"])
-  }
 }
