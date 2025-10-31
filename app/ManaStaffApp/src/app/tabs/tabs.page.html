@@ -1,22 +1,38 @@
 <ion-content fullscreen>
-  <!-- header -->
-  <div class="ms-header">
-    <div class="header-left">
-      <div class="company-logo">
-        <img src="assets/img/logo_grande.png" alt="Logo empresa" />
+  <!-- header lista (iniciodoc / iniciosoli / inicioavisos) -->
+  <div class="ms-header" *ngIf="!isDetailHeader">
+    <div class="header-container">
+      <div class="header-left">
+        <div class="company-logo">
+          <img src="assets/img/logo_grande.png" alt="Logo empresa" class="company-logo-img" />
+        </div>
       </div>
-    </div>
-    <div class="header-right">
-      <h1 class="header-title">{{ pageTitle }}</h1>
+      <div class="header-right">
+        <h1 class="header-title">{{ pageTitle }}</h1>
+      </div>
     </div>
   </div>
 
-  <!-- contenido de las páginas -->
+  <!-- header detalle -->
+  <div class="ms-header-detail" *ngIf="isDetailHeader">
+    <div class="detail-left">
+      <ion-button fill="clear" class="back-button" (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <div class="detail-center">
+      <h1 class="header-title-detail">{{ pageTitle }}</h1>
+    </div>
+    <!-- vacío para equilibrar -->
+    <div class="detail-right"></div>
+  </div>
+
+  <!-- contenido -->
   <div class="tabs-content">
     <ion-router-outlet></ion-router-outlet>
   </div>
 
-  <!-- menú -->
+  <!-- menú inferior -->
   <div class="bottom-nav">
     <div
       class="bottom-nav-item"

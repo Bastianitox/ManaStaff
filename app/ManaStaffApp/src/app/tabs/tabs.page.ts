@@ -12,20 +12,36 @@ export class TabsPage {
   activeTab: 'documentos' | 'solicitudes' | 'noticias' | 'configuracion' = 'documentos';
   pageTitle = 'Mis documentos';
 
+  // cuál header mostrar
+  isDetailHeader = false;
+
   constructor(private router: Router) {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
-        if (event.url.includes('/tabs/documentos')) {
+        const url = event.url;
+
+        // detalles (header con botón de volver y texto centrado)
+        if (url.includes('/tabs/documentos/ver')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'documentos';
+          this.pageTitle = 'Detalle del documento';
+          return;
+        }
+
+        // listas (header con logo)
+        this.isDetailHeader = false;
+
+        if (url.includes('/tabs/documentos')) {
           this.activeTab = 'documentos';
           this.pageTitle = 'Mis documentos';
-        } else if (event.url.includes('/tabs/solicitudes')) {
+        } else if (url.includes('/tabs/solicitudes')) {
           this.activeTab = 'solicitudes';
           this.pageTitle = 'Mis solicitudes';
-        } else if (event.url.includes('/tabs/noticias')) {
+        } else if (url.includes('/tabs/noticias')) {
           this.activeTab = 'noticias';
           this.pageTitle = 'Noticias y avisos';
-        } else if (event.url.includes('/tabs/configuracion')) {
+        } else if (url.includes('/tabs/configuracion')) {
           this.activeTab = 'configuracion';
           this.pageTitle = 'Configuración';
         }
@@ -34,5 +50,9 @@ export class TabsPage {
 
   goTo(path: string) {
     this.router.navigate(['/tabs', path]);
+  }
+
+  goBack() {
+    this.router.navigate(['/tabs/documentos']);
   }
 }

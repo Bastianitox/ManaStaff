@@ -2,14 +2,72 @@ $primary-blue: #062f63;
 $white: #FFFFFF;
 $background: #F8FAFC;
 
-:host {
-  ion-content {
-    --background: #{$background};
+/* para bajar el contenido */
+.tabs-content {
+  padding-top: 72px;
+  padding-bottom: 84px;
+  min-height: 100vh;
+}
+
+/* header listas */
+.ms-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: $primary-blue;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  z-index: 1001;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.company-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.company-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+
+  .header-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $white;
+    margin: 0;
+    letter-spacing: -0.3px;
   }
 }
 
-/* header */
-.ms-header {
+/* header detalle */
+.ms-header-detail {
   position: fixed;
   top: 0;
   left: 0;
@@ -18,57 +76,41 @@ $background: #F8FAFC;
   background: $primary-blue;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
+  padding: 0 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   z-index: 1001;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.company-logo {
-  width: 40px;
-  height: 40px;
-  background: $white;
-  border-radius: 12px;
+.detail-left,
+.detail-right {
+  width: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
 
-  img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+.detail-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.back-button {
+  --color: #FFFFFF;
+  ion-icon {
+    font-size: 24px;
   }
 }
 
-.header-right {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.header-title {
-  color: $white;
-  font-size: 18px;
+.header-title-detail {
+  font-size: 17px;
   font-weight: 600;
+  color: #FFFFFF;
+  text-align: center;
   margin: 0;
 }
 
-/* contenido */
-.tabs-content {
-  padding-top: 72px;  
-  padding-bottom: 84px; 
-  min-height: 100vh;
-}
-
-/* navegación */
+/* menú inferior */
 .bottom-nav {
   position: fixed;
   bottom: 0;

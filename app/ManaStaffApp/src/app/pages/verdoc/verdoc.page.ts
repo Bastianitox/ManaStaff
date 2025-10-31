@@ -69,13 +69,13 @@ export class VerdocPage implements OnInit {
   // Volver a la lista "Mis documentos"
   goBack() {
     console.log("[verdoc] Volver a Mis documentos (goBack)")
-    this.router.navigate(['/tabs/iniciodoc'])
+    this.router.navigate(['/tabs/documentos'])
   }
 
   // Función para volver a la lista de documentos
   goBackToList() {
     console.log("[verdoc] Volver a Mis documentos (goBackToList)")
-    this.router.navigate(['/iniciodoc'])
+    this.router.navigate(['/tabs/documentos'])
   }
 
   async downloadDocument() {
@@ -88,25 +88,5 @@ export class VerdocPage implements OnInit {
     })
 
     await alert.present()
-  }
-
-  goToDocumentos() {
-    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
-    this.router.navigate(['/iniciodoc'])
-  }
-
-  goToNoticias() {
-    console.log("[verdoc] Navegar a Noticias y avisos")
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToSolicitudes() {
-    console.log("Navegar a Solicitudes")
-    this.router.navigate(["/iniciosoli"])
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
   }
 }

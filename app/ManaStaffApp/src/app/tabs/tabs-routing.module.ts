@@ -16,6 +16,11 @@ const routes: Routes = [
           )
       },
       {
+        path: 'documentos/ver',
+        loadChildren: () =>
+          import('../pages/verdoc/verdoc.module').then(m => m.VerdocPageModule)
+      },
+      {
         path: 'solicitudes',
         loadChildren: () =>
           import('../pages/iniciosoli/iniciosoli.module').then(

@@ -12,38 +12,8 @@ $red-error: #DC2626;
 // Fondo general de la página
 ion-content {
   --background: #{$background-app};
-}
-
-// Header
-.header-toolbar {
-  --background: #{$primary-blue};
-  --border-color: transparent;
-  --color: #{$text-primary};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  position: relative;
-}
-
-.header-title {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 17px;
-  font-weight: 600;
-  color: $white;
-  text-align: center;
-  width: auto;
-  line-height: 1;
-}
-
-.back-button {
-  --color: #{$white};
-  font-size: 24px;
-}
-
-.download-header-button {
-  --color: #{$white};
-  font-size: 22px;
+  --padding-top: 72px; 
+  --padding-bottom: 84px; 
 }
 
 // Contenedor principal
@@ -199,66 +169,6 @@ ion-content {
   font-size: 14px;
   text-transform: none;
   letter-spacing: 0;
-}
-
-// Barra de navegación inferior
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  background: $primary-blue;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 8px 0 12px 0;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  z-index: 1000;
-}
-
-.bottom-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  max-width: 100px;
-
-  ion-icon {
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.7);
-    transition: color 0.2s ease;
-  }
-
-  span {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.7);
-    text-align: center;
-    line-height: 1.2;
-    transition: color 0.2s ease;
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-.bottom-nav-active {
-  ion-icon {
-    color: $white;
-  }
-
-  span {
-    color: $white;
-    font-weight: 600;
-  }
 }
 
 // Responsive

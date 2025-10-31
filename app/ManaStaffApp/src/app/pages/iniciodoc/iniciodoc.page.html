@@ -1,21 +1,3 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="header-toolbar">
-    <div class="header-container">
-      <!-- Logo -->
-      <div class="header-left">
-        <div class="company-logo">
-          <img src="assets/img/logo_grande.png" alt="Logo empresa" class="company-logo-img" />
-        </div>
-      </div>
-      
-      <!-- Título -->
-      <div class="header-right">
-        <h1 class="header-title">Mis documentos</h1>
-      </div>
-    </div>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ion-padding" [fullscreen]="false">
   <!-- modal del PIN -->
   <ion-modal 
@@ -293,26 +275,3 @@
     <p>Cargando documentos...</p>
   </div>
 </ion-content>
-
-<!-- barra de navegación inferior -->
-<div class="bottom-nav">
-  <div class="bottom-nav-item bottom-nav-active" (click)="goToDocumentos()">
-    <ion-icon name="document-text-outline"></ion-icon>
-    <span>Mis documentos</span>
-  </div>
-  
-  <div class="bottom-nav-item" (click)="goToSolicitudes()">
-    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-    <span>Solicitudes</span>
-  </div>
-  
-  <div class="bottom-nav-item" (click)="goToNoticias()">
-    <ion-icon name="megaphone-outline"></ion-icon>
-    <span>Noticias y avisos</span>
-  </div>
-
-  <div class="bottom-nav-item" (click)="goToConfig()">
-    <ion-icon name="settings-outline"></ion-icon>
-    <span>Configuración</span>
-  </div>
-</div>

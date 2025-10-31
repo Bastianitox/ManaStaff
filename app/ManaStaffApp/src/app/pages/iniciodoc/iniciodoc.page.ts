@@ -271,7 +271,7 @@ export class IniciodocPage implements OnInit {
 
   viewDocument(doc: Document) {
     console.log("[iniciodoc] Abriendo documento:", doc.name)
-    this.router.navigate(['/verdoc'], {
+    this.router.navigate(['/tabs/documentos/ver'], {
       state: { document: doc } 
     })
   }
@@ -285,23 +285,4 @@ export class IniciodocPage implements OnInit {
     await alert.present()
   }
 
-  goToDocumentos() {
-    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
-    this.router.navigate(['/iniciodoc'])
-  }
-
-  goToNoticias() {
-    console.log("Navegando a Noticias y avisos")
-    this.router.navigate(["/inicioavisos"])
-  }
-
-  goToSolicitudes() {
-    console.log("Navegar a Solicitudes")
-    this.router.navigate(["/iniciosoli"])
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
-  }
 }
