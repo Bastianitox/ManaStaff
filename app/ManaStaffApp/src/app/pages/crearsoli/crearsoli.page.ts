@@ -1,5 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { finalize } from 'rxjs';
+import { SolicitudesApiService } from 'src/app/services/solicitudes-api';
+
+
+interface tipoSolicitud {
+  id: string
+  nombre: string
+}
 
 @Component({
   selector: 'app-crearsoli',
@@ -8,13 +16,7 @@ import { Router } from "@angular/router"
   standalone: false
 })
 export class CrearsoliPage implements OnInit {
-  tipoOptions = [
-    { id: "vac", nombre: "Vacaciones" },
-    { id: "med", nombre: "Permiso médico" },
-    { id: "tel", nombre: "Teletrabajo" },
-    { id: "per", nombre: "Permiso personal" },
-    { id: "cap", nombre: "Capacitación" },
-  ]
+  tipoOptions: tipoSolicitud[] = []
 
   selectOptions = {
     header: "Tipo de solicitud",
@@ -25,16 +27,53 @@ export class CrearsoliPage implements OnInit {
   selectedTipo = ""
   titulo = ""
   descripcion = ""
-  selectedFile: { name: string; size: number } | null = null
+  selectedFile: File | null = null
   isSubmitting = false
+  isLoadingTypes = false
 
   showToast = false
   toastMessage = ""
   toastType: "success" | "error" | null = null
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private solicitudApi: SolicitudesApiService
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.cargarTiposSolicitud();
+  }
+
+  cargarTiposSolicitud(refresher?: any){
+    this.isLoadingTypes = true;
+    
+    this.solicitudApi.obtenerTiposSolicitud()
+      .pipe(finalize(() => {
+        this.isLoadingTypes = false;
+        if (refresher) { refresher.target.complete(); }
+      }))
+      .subscribe({
+        next: (response) => {
+          if (response.status === "success") {
+            this.tipoOptions = response.tipos as tipoSolicitud[]; 
+            console.log("Tipos de solicitud cargados:", this.tipoOptions);
+          } else {
+            this.showError(response.message || "Error al obtener los tipos de solicitud.");
+            this.tipoOptions = [];
+          }
+        },
+        error: (httpError) => {
+          let message = "Error de conexión con el servidor.";
+          if (httpError.status === 401) {
+            message = "Su sesión ha expirado o no está autorizado.";
+          } else if (httpError.error && httpError.error.error) {
+              message = httpError.error.error;
+          }
+          this.showError(message);
+          this.tipoOptions = [];
+        }
+      });
+  }
 
   goBack() {
     this.router.navigate(["/tabs/solicitudes"])
@@ -50,10 +89,9 @@ export class CrearsoliPage implements OnInit {
         return
       }
 
-      this.selectedFile = {
-        name: file.name,
-        size: file.size,
-      }
+      this.selectedFile = file
+    } else {
+        this.selectedFile = null;
     }
   }
 
@@ -77,35 +115,45 @@ export class CrearsoliPage implements OnInit {
   }
 
   submitRequest() {
-    // Validar campos requeridos
-    if (!this.selectedTipo) {
-      this.showError("Por favor selecciona un tipo de solicitud")
+    // 1. Validar campos requeridos
+    if (!this.selectedTipo || !this.titulo.trim() || !this.descripcion.trim()) {
+      this.showError("Por favor completa todos los campos obligatorios.")
       return
     }
 
-    if (!this.titulo.trim()) {
-      this.showError("Por favor ingresa un título para la solicitud")
-      return
+    // 2. Crear FormData
+    const formData = new FormData();
+    formData.append('tipos_solicitud', this.selectedTipo);
+    formData.append('asunto', this.titulo);
+    formData.append('descripcion', this.descripcion);
+    
+    if (this.selectedFile) {
+      formData.append('archivo', this.selectedFile, this.selectedFile.name);
     }
-
-    if (!this.descripcion.trim()) {
-      this.showError("Por favor ingresa una descripción")
-      return
-    }
-
-    // Simular envío
+    
     this.isSubmitting = true
 
-    setTimeout(() => {
-      this.isSubmitting = false
-      this.showSuccess("Solicitud enviada correctamente")
+    // 3. Llamar a la API
+    this.solicitudApi.crearSolicitud(formData)
+      .pipe(finalize(() => {
+        this.isSubmitting = false; // Detener spinner en éxito o error
+      }))
+      .subscribe({
+        next: (response) => {
+          this.showSuccess(response.message || "Solicitud enviada correctamente")
 
-      // Resetear formulario después de 2 segundos
-      setTimeout(() => {
-        this.resetForm()
-        this.goBack()
-      }, 2000)
-    }, 1500)
+          // Resetear formulario y navegar
+          setTimeout(() => {
+            this.resetForm()
+            this.goBack() 
+          }, 2000)
+        },
+        error: (httpError) => {
+          // Manejar errores de Django (400, 415, 500)
+          const errorMessage = httpError.error?.error || httpError.error?.message || "Error desconocido al enviar la solicitud.";
+          this.showError(errorMessage);
+        }
+      });
   }
 
   showSuccess(message: string) {
