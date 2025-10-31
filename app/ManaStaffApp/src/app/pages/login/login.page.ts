@@ -66,6 +66,8 @@ export class LoginPage implements OnInit {
 
         setTimeout(() => {
           this.showToast = false;
+          this.email = ""
+          this.password = ""
           this.router.navigateByUrl("/tabs/noticias");
         }, 1500);
       },

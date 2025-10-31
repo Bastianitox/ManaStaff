@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { AuthService } from 'src/app/services/auth-service';
 
 @Component({
   selector: 'app-configuracion',
@@ -10,7 +11,10 @@ import { Router } from "@angular/router"
 export class ConfiguracionPage implements OnInit {
   isDarkMode = false
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     // modo oscuro desde localStorage
@@ -54,9 +58,22 @@ export class ConfiguracionPage implements OnInit {
     }
   }
 
-  // Cerrar sesión
   cerrarSesion() {
     console.log("Cerrando sesión...")
-    this.router.navigateByUrl("/login")
+    
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigateByUrl("/", { replaceUrl: true });
+        
+        if ((window as any)['tokenRefreshInterval']) {
+            clearInterval((window as any)['tokenRefreshInterval']);
+            (window as any)['tokenRefreshInterval'] = null;
+        }
+      },
+      error: (e) => {
+        console.error("Error al cerrar sesión:", e);
+        this.router.navigateByUrl("/", { replaceUrl: true });
+      }
+    });
   }
 }
