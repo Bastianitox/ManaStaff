@@ -74,6 +74,13 @@ const routes: Routes = [
           )
       },
       {
+        path: 'configuracion/cambiar-contrasena',
+        loadChildren: () =>
+          import('../pages/cambiarcontra/cambiarcontra.module').then(
+            m => m.CambiarcontraPageModule
+          )
+      },
+      {
         path: '',
         redirectTo: 'documentos',
         pathMatch: 'full'

@@ -137,22 +137,6 @@ export class CambiarcontraPage implements OnInit {
 
   // Navegación
   goBack() {
-    this.router.navigateByUrl("/configuracion")
-  }
-
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    this.router.navigateByUrl("/configuracion")
+    this.router.navigateByUrl("/tabs/configuracion")
   }
 }

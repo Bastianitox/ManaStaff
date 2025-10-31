@@ -61,6 +61,14 @@ export class TabsPage {
           return;
         }
 
+        // cambiar contraseña
+        if (url.includes('/tabs/configuracion/cambiar-contrasena')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'configuracion';
+          this.pageTitle = 'Cambiar contraseña';
+          return;
+        }
+
         // listas (header con logo)
         this.isDetailHeader = false;
 
@@ -86,6 +94,12 @@ export class TabsPage {
 
   goBack() {
     const current = this.router.url;
+
+    // cambiar contraseña a configuración
+    if (current.includes('/tabs/configuracion/cambiar-contrasena')) {
+      this.router.navigate(['/tabs/configuracion']);
+      return;
+    }
 
     // perfil a configuración
     if (current.includes('/tabs/configuracion/perfil')) {
