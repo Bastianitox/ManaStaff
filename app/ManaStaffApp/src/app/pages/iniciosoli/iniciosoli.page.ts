@@ -155,6 +155,7 @@ export class IniciosoliPage implements OnInit {
 
   closeFilterModal() {
     this.showFilterModal = false
+    this.applyFilters()
   }
 
   applyFilters() {
@@ -197,7 +198,6 @@ export class IniciosoliPage implements OnInit {
     })
 
     this.filteredSolicitudes = filtered
-    this.closeFilterModal()
   }
 
   clearFilters() {
