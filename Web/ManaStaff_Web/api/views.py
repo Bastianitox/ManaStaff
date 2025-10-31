@@ -126,7 +126,7 @@ def detalle_solicitud(request, id_solicitud):
             tipo_data = db.reference("TiposSolicitud").child(tipo_id).get()
             
             if tipo_data and isinstance(tipo_data, dict):
-                 tipo_solicitud_nombre = tipo_data.get("Nombre", "Tipo no encontrado")
+                 tipo_solicitud_nombre = tipo_data.get("nombre", "Tipo no encontrado")
             
         except Exception as e:
             print(f"Error al obtener el nombre del tipo {tipo_id}: {e}")
