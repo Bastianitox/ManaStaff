@@ -61,18 +61,18 @@ def cancelar_solicitud(request, id_solicitud):
 
     #VALIDAMOS QUE LA SOLICITUD EXISTA
     if solicitud_a_cancelar == {}:
-        return JsonResponse({"status": "false", "message": "No se pudo encontrar la solicitud."})
+        return JsonResponse({"status": "false","message": "No se pudo encontrar la solicitud."}, status=404)
 
     #VALIDAMOS QUE LA SOLICITUD PERTENEZCA AL USUARIO
     rut_usuario_solicitud = solicitud_a_cancelar.get("id_rut")
 
     if rut_usuario_actual != rut_usuario_solicitud:
         registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no le pertenece {rut_usuario_solicitud}.")
-        return JsonResponse({"status": "false", "message": "Esa no es su solicitud."})
+        return JsonResponse({"status": "false","message": "Esa no es su solicitud."}, status=403)
     
     if solicitud_a_cancelar.get("Estado") != "pendiente":
         registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no esta en estado pendiente.")
-        return JsonResponse({"status": "false", "message": "Esa solicitud ya fue resuelta."})
+        return JsonResponse({"status": "false","message": "Esa solicitud ya fue resuelta."}, status=403)
 
     #VALIDAMOS QUE EXISTA UN ARCHIVO EN LA SOLICITUD (PARA ELIMINARLO DE STORAGE) 
     archivo_solicitud_a_cancelar = solicitud_a_cancelar.get("archivo")
@@ -90,12 +90,12 @@ def cancelar_solicitud(request, id_solicitud):
 
             blob.delete()
         except Exception as e:
-            return JsonResponse({"status": "false", "message": f"Error al eliminar el archivo: {e}"})
+            return JsonResponse({"status": "false","message": f"Error al eliminar el archivo: {e}"}, status=500)
 
     #AHORA SE ELIMINA DE FIREBASE
     db.reference('/Solicitudes/'+id_solicitud).delete()
     registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {rut_usuario_actual} ha eliminado su solicitud {solicitud_a_cancelar.get("Asunto")} con éxito.")
-    return JsonResponse({"status": "success", "message": "Solicitud cancelada (eliminada)."})
+    return JsonResponse({"status": "success","message": "Solicitud cancelada (eliminada)."}, status=200)
 
 @csrf_exempt
 @require_GET
@@ -152,7 +152,7 @@ def crear_solicitud(request):
 
     #VALIDAMOS QUE LOS CAMPOS NO ESTEN VACIOS
     if not all([tipo_solicitud, asunto, descripcion]):
-        return JsonResponse({"error": "Los campos obligatorios no pueden estar vacíos."}, status=400)
+        return JsonResponse({"status": "false","error": "Los campos obligatorios no pueden estar vacíos."}, status=400)
     
     #OBTENEMOS EL ID DE LA SOLICITUD
     try:
@@ -160,7 +160,7 @@ def crear_solicitud(request):
         id_solicitud = ref.key
     except Exception:
         # Error si Firebase DB no está accesible
-        return JsonResponse({"error": "Error al generar ID de solicitud."}, status=500)
+        return JsonResponse({"status": "false","error": "Error al generar ID de solicitud."}, status=500)
 
     #VALIDAMOS EXISTENCIA DE UN ARCHIVO (SI NO HAY LO DEJAMOS COMO "None")
     urlArchivo = None
@@ -170,7 +170,7 @@ def crear_solicitud(request):
         try:
             ext = archivo.name.split(".")[-1].lower()
             if ext not in ["jpg", "jpeg", "png", "pdf", "doc", "docx"]:
-                return JsonResponse({"error": "Formato de archivo no permitido."}, status=415)
+                return JsonResponse({"status": "false","error": "Formato de archivo no permitido."}, status=415)
             
             bucket = storage.bucket()
             blob = bucket.blob(f"{rut_usuario_actual}/Solicitudes/{id_solicitud}/{archivo.name}")
@@ -186,7 +186,7 @@ def crear_solicitud(request):
                 method="GET"
             )
         except Exception as e:
-            return JsonResponse({"error": f"Error al procesar el archivo: {e}"}, status=500)
+            return JsonResponse({"status": "false","error": f"Error al procesar el archivo: {e}"}, status=500)
     
     #AHORA LO CREAMOS EN FIREBASE
     try:
@@ -205,11 +205,35 @@ def crear_solicitud(request):
         })
     except Exception as e:
         ref.delete()
-        return JsonResponse({"error": f"Error al guardar en la base de datos: {e}"}, status=500)
+        return JsonResponse({"status": "false","error": f"Error al guardar en la base de datos: {e}"}, status=500)
 
     registrar_auditoria_manual(request, "Dos", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
 
     return JsonResponse({"status": "success", "message": "Solicitud creada con éxito.", "id": id_solicitud}, status=201)
+
+@csrf_exempt
+@require_GET
+@firebase_auth_required
+def obtener_tipos_solicitud(request):
+    
+    try:
+        tipo_solicitud = db.reference("TiposSolicitud").get() or {}
+
+        if not tipo_solicitud:
+            return JsonResponse({"status": "false","message": "No se pudo encontrar la solicitud."}, status = 404)
+    except Exception as e:
+        return JsonResponse({"status": "false","message": "Ocurrio un error al obtener los tipos de solicitud."}, status = 500)
+
+    tipos_list = []
+    for key, value in tipo_solicitud.items():
+        tipos_list.append({
+            "id": key,
+            "nombre": value.get("nombre", "Sin nombre")
+        })
+
+    return JsonResponse({"status": "success","tipos": tipos_list}, status = 200)
+
+
 #----------------------------------- ANUNCIOS -----------------------------------
 
 

@@ -57,31 +57,27 @@ export class IniciosoliPage implements OnInit {
   }
 
   cargarSolicitudes(refresher?: any) {
-    this.isLoading = true; // Activar spinner
+    this.isLoading = true;
     
     this.solicitudesApi.obtenerSolicitudes().subscribe({
       next: (response) => {
-        this.isLoading = false; // Desactivar spinner
+        this.isLoading = false;
         
         if (response.status === 'success') {
-          // 1. Asignar los datos del API
           console.log(response.solicitudes);
           this.solicitudes = response.solicitudes as Solicitud[]; 
           
-          // 2. Inicializar los tipos (tu lógica actual)
           this.inicializarTipos();
           
-          // 3. Aplicar filtros iniciales (muestra todo por defecto)
           this.applyFilters();
 
         } else {
-          // Manejar respuesta de API con error (e.g., status: "error")
           this.showError(response.message || "Error al obtener la lista de solicitudes.");
-          this.solicitudes = []; // Limpiar lista
+          this.solicitudes = [];
         }
         
         if (refresher) {
-          refresher.target.complete(); // Detener el pull-to-refresh
+          refresher.target.complete();
         }
       },
       error: (httpError) => {
@@ -91,9 +87,7 @@ export class IniciosoliPage implements OnInit {
         let message = "Error de conexión con el servidor.";
         if (httpError.status === 401) {
           message = "Su sesión ha expirado o no está autorizado. Inicie sesión nuevamente.";
-          // Aquí podrías forzar un logout: this.router.navigateByUrl('/login');
         } else if (httpError.error && httpError.error.error) {
-            // Si Django devuelve un error JSON estándar (ej: {"error": "..."})
             message = httpError.error.error;
         }
         
@@ -101,7 +95,7 @@ export class IniciosoliPage implements OnInit {
         this.solicitudes = [];
 
         if (refresher) {
-          refresher.target.complete(); // Detener el pull-to-refresh en caso de error
+          refresher.target.complete();
         }
       }
     });

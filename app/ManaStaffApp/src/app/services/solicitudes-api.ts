@@ -15,6 +15,12 @@ interface DetalleApiResponse {
   solicitud: any;
 }
 
+interface TiposApiResponse {
+  status: string;
+  message: string;
+  tipos: { id: string; nombre: string }[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -35,15 +41,16 @@ export class SolicitudesApiService {
 
   crearSolicitud(formData: FormData): Observable<any> {
     const url = this.API_URL + 'crear_solicitud/';
-    
-    // HttpClient detecta automáticamente que es FormData y establece el header correcto.
-    // El AuthTokenInterceptor se encarga de añadir el token Bearer.
     return this.http.post<any>(url, formData);
   }
 
   obtenerDetalleSolicitud(idSolicitud: string): Observable<DetalleApiResponse> {
     const url = this.API_URL + `detalle_solicitud/${idSolicitud}/`; 
-    
     return this.http.get<DetalleApiResponse>(url);
+  }
+
+  obtenerTiposSolicitud(): Observable<TiposApiResponse> {
+    const url = this.API_URL + `obtener_tipos_solicitud/`; 
+    return this.http.get<TiposApiResponse>(url);
   }
 }
