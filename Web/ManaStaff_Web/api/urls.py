@@ -8,5 +8,6 @@ urlpatterns = [
     path('obtener_solicitudes/', views.obtener_solicitudes),
     path('cancelar_solicitud/<str:id_solicitud>/', views.cancelar_solicitud, name='cancelar_solicitud'),
     path('detalle_solicitud/<str:id_solicitud>/', views.detalle_solicitud, name='detalle_solicitud'),
+    path('crear_solicitud/', views.crear_solicitud, name='crear_solicitud'),
 
 ]
