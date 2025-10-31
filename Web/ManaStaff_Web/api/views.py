@@ -117,6 +117,23 @@ def detalle_solicitud(request, id_solicitud):
         registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento ver el detalle de una solicitud que no le pertenece {rut_usuario_solicitud}.")
         return JsonResponse({"error": "Esa no es su solicitud."}, status=403)
     
+    tipo_id = solicitud_a_ver.get("tipo_solicitud")
+    tipo_solicitud_nombre = "Desconocido"
+    
+    if tipo_id:
+        try:
+            # Intentamos obtener el nodo completo del TipoSolicitud
+            tipo_data = db.reference("TiposSolicitud").child(tipo_id).get()
+            
+            if tipo_data and isinstance(tipo_data, dict):
+                 tipo_solicitud_nombre = tipo_data.get("Nombre", "Tipo no encontrado")
+            
+        except Exception as e:
+            print(f"Error al obtener el nombre del tipo {tipo_id}: {e}")
+            tipo_solicitud_nombre = "Error de base de datos"
+
+    solicitud_a_ver["tipo_solicitud_nombre"] = tipo_solicitud_nombre
+
     #OBTENER LOS DETALLES DE LA SOLICITUD Y DEVOLVERLOS
     return JsonResponse({"status": "success", "message": "Solicitud obtenida", "solicitud": solicitud_a_ver}, status=200)
 
