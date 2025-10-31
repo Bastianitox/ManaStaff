@@ -1,14 +1,3 @@
-<ion-header>
-  <ion-toolbar class="header-toolbar">
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()" class="back-button">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title class="header-title">Mi Perfil</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content>
   <div class="content-wrapper">
     <div class="profile-card">
@@ -166,23 +155,3 @@
 
   <div style="height: 80px;"></div>
 </ion-content>
-
-<!-- Navegación-->
-<div class="bottom-nav">
-  <div class="bottom-nav-item" (click)="goToDocumentos()">
-    <ion-icon name="document-text-outline"></ion-icon>
-    <span>Mis documentos</span>
-  </div>
-  <div class="bottom-nav-item" (click)="goToSolicitudes()">
-    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-    <span>Solicitudes</span>
-  </div>
-  <div class="bottom-nav-item" (click)="goToNoticias()">
-    <ion-icon name="megaphone-outline"></ion-icon>
-    <span>Noticias y avisos</span>
-  </div>
-  <div class="bottom-nav-item bottom-nav-active" (click)="goToConfig()">
-    <ion-icon name="settings-outline"></ion-icon>
-    <span>Configuración</span>
-  </div>
-</div>

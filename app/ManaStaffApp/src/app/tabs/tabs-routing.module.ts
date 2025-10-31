@@ -67,6 +67,13 @@ const routes: Routes = [
           )
       },
       {
+        path: 'configuracion/perfil',
+        loadChildren: () =>
+          import('../pages/inicioperfil/inicioperfil.module').then(
+            m => m.InicioperfilPageModule
+          )
+      },
+      {
         path: '',
         redirectTo: 'documentos',
         pathMatch: 'full'

@@ -133,25 +133,7 @@ export class InicioperfilPage implements OnInit {
     }, 3000)
   }
 
-  // Navegación
   goBack() {
-    this.router.navigate(["/configuracion"])
-  }
-
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
+    this.router.navigate(["/tabs/configuracion"])
   }
 }

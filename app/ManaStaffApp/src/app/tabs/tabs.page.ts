@@ -53,6 +53,14 @@ export class TabsPage {
           return;
         }
 
+        // perfil
+        if (url.includes('/tabs/configuracion/perfil')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'configuracion';
+          this.pageTitle = 'Mi perfil';
+          return;
+        }
+
         // listas (header con logo)
         this.isDetailHeader = false;
 
@@ -78,6 +86,12 @@ export class TabsPage {
 
   goBack() {
     const current = this.router.url;
+
+    // perfil a configuración
+    if (current.includes('/tabs/configuracion/perfil')) {
+      this.router.navigate(['/tabs/configuracion']);
+      return;
+    }
 
     // detalle noticia a listado de noticias
     if (current.includes('/tabs/noticias/detalle/')) {

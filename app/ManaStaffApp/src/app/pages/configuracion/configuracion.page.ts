@@ -21,7 +21,7 @@ export class ConfiguracionPage implements OnInit {
 
   // Navegación a Mi perfil
   goToPerfil() {
-    this.router.navigateByUrl("/inicioperfil")
+    this.router.navigateByUrl("/tabs/configuracion/perfil")
   }
 
   // Opciones de seguridad
