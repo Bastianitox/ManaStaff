@@ -21,11 +21,19 @@ export class TabsPage {
       .subscribe((event) => {
         const url = event.url;
 
-        // detalles (header con botón de volver y texto centrado)
+        // detalle de documento
         if (url.includes('/tabs/documentos/ver')) {
           this.isDetailHeader = true;
           this.activeTab = 'documentos';
           this.pageTitle = 'Detalle del documento';
+          return;
+        }
+
+        // nueva solicitud
+        if (url.includes('/tabs/solicitudes/crear')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'solicitudes';
+          this.pageTitle = 'Nueva solicitud';
           return;
         }
 
@@ -53,6 +61,21 @@ export class TabsPage {
   }
 
   goBack() {
+    const current = this.router.url;
+
+    // crear solicitud a listado de solicitudes
+    if (current.includes('/tabs/solicitudes/crear')) {
+      this.router.navigate(['/tabs/solicitudes']);
+      return;
+    }
+
+    // ver documento a listado de documentos
+    if (current.includes('/tabs/documentos/ver')) {
+      this.router.navigate(['/tabs/documentos']);
+      return;
+    }
+
+    // fallback
     this.router.navigate(['/tabs/documentos']);
   }
 }

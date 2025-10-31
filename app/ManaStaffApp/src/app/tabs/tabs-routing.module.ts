@@ -8,6 +8,7 @@ const routes: Routes = [
     path: '',
     component: TabsPage,
     children: [
+      //Documentos
       {
         path: 'documentos',
         loadChildren: () =>
@@ -20,6 +21,7 @@ const routes: Routes = [
         loadChildren: () =>
           import('../pages/verdoc/verdoc.module').then(m => m.VerdocPageModule)
       },
+      //Solicitudes
       {
         path: 'solicitudes',
         loadChildren: () =>
@@ -28,12 +30,21 @@ const routes: Routes = [
           )
       },
       {
+        path: 'solicitudes/crear',
+        loadChildren: () =>
+          import('../pages/crearsoli/crearsoli.module').then(
+            m => m.CrearsoliPageModule
+          )
+      },
+      //Noticias
+      {
         path: 'noticias',
         loadChildren: () =>
           import('../pages/inicioavisos/inicioavisos.module').then(
             m => m.InicioavisosPageModule
           )
       },
+      //Configuración
       {
         path: 'configuracion',
         loadChildren: () =>

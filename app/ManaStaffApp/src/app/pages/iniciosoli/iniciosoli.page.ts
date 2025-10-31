@@ -141,7 +141,7 @@ export class IniciosoliPage implements OnInit {
 
   createNewRequest() {
     console.log("Crear nueva solicitud")
-    this.router.navigate(["/crearsoli"])
+    this.router.navigate(["/tabs/solicitudes/crear"])
   }
 
   onSearch(event: any) {

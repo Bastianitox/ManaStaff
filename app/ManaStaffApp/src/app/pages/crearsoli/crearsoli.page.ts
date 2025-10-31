@@ -37,27 +37,7 @@ export class CrearsoliPage implements OnInit {
   ngOnInit() {}
 
   goBack() {
-    this.router.navigate(["/iniciosoli"])
-  }
-
-  goToDocumentos() {
-    console.log("Navegar a Mis documentos")
-    this.router.navigate(["/iniciodoc"])
-  }
-
-  goToSolicitudes() {
-    console.log("Navegar a Solicitudes")
-    this.router.navigate(["/iniciosoli"])
-  }
-
-  goToNoticias() {
-    console.log("Navegar a Noticias y avisos")
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
+    this.router.navigate(["/tabs/solicitudes"])
   }
 
   onFileSelected(event: any) {
