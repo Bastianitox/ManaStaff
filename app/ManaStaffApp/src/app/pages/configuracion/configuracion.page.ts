@@ -41,7 +41,7 @@ export class ConfiguracionPage implements OnInit {
 
   recuperarPIN() {
     console.log("Navegar a recuperar PIN")
-    this.router.navigateByUrl("/recuperarpin")
+    this.router.navigateByUrl("/tabs/configuracion/recuperar-pin")
   }
 
   // Toggle modo oscuro

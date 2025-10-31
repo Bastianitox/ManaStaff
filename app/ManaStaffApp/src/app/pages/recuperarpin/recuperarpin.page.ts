@@ -128,7 +128,7 @@ export class RecuperarpinPage implements OnInit {
         setTimeout(() => {
           this.showToast = false
           // Redirigir a configuración después de éxito
-          this.router.navigateByUrl("/configuracion")
+          this.router.navigateByUrl("/tabs/configuracion")
         }, 2000)
       } else {
         this.toastType = "error"
@@ -178,23 +178,7 @@ export class RecuperarpinPage implements OnInit {
 
   // Navegación
   goBack() {
-    this.router.navigateByUrl("/configuracion")
-  }
-
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    this.router.navigateByUrl("/configuracion")
+    this.router.navigateByUrl("/tabs/configuracion")
   }
 
   // Getters

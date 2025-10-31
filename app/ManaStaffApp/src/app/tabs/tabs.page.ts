@@ -77,6 +77,14 @@ export class TabsPage {
           return;
         }
 
+        // recuperar pin
+        if (url.includes('/tabs/configuracion/recuperar-pin')) {
+          this.isDetailHeader = true;
+          this.activeTab = 'configuracion';
+          this.pageTitle = 'Recuperar PIN';
+          return;
+        }
+
         // listas (header con logo)
         this.isDetailHeader = false;
 
@@ -103,20 +111,13 @@ export class TabsPage {
   goBack() {
     const current = this.router.url;
 
-    // cambiar pin a configuración
-    if (current.includes('/tabs/configuracion/cambiar-pin')) {
-      this.router.navigate(['/tabs/configuracion']);
-      return;
-    }
-
-    // cambiar contraseña a configuración
-    if (current.includes('/tabs/configuracion/cambiar-contrasena')) {
-      this.router.navigate(['/tabs/configuracion']);
-      return;
-    }
-
-    // perfil a configuración
-    if (current.includes('/tabs/configuracion/perfil')) {
+    // direcciona a configuración
+    if (
+      current.includes('/tabs/configuracion/perfil') ||
+      current.includes('/tabs/configuracion/cambiar-contrasena') ||
+      current.includes('/tabs/configuracion/cambiar-pin') ||
+      current.includes('/tabs/configuracion/recuperar-pin')
+    ) {
       this.router.navigate(['/tabs/configuracion']);
       return;
     }

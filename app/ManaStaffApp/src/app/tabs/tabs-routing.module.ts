@@ -88,6 +88,13 @@ const routes: Routes = [
           )
       },
       {
+        path: 'configuracion/recuperar-pin',
+        loadChildren: () =>
+          import('../pages/recuperarpin/recuperarpin.module').then(
+            m => m.RecuperarpinPageModule
+          )
+      },
+      {
         path: '',
         redirectTo: 'documentos',
         pathMatch: 'full'
