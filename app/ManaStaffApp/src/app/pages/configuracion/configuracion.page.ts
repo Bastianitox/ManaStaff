@@ -59,21 +59,4 @@ export class ConfiguracionPage implements OnInit {
     console.log("Cerrando sesión...")
     this.router.navigateByUrl("/login")
   }
-
-  // Navegación
-  goToDocumentos() {
-    this.router.navigateByUrl("/iniciodoc")
-  }
-
-  goToSolicitudes() {
-    this.router.navigateByUrl("/iniciosoli")
-  }
-
-  goToNoticias() {
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    this.router.navigateByUrl("/configuracion")
-  }
 }
