@@ -275,25 +275,4 @@ export class IniciosoliPage implements OnInit {
       this.showToast = false
     }, 3000)
   }
-
-  // Navegación
-  goToDocumentos() {
-    console.log("[verdoc] Navegar a Mis documentos (bottom nav)")
-    this.router.navigate(['/iniciodoc'])
-  }
-
-  goToSolicitudes() {
-    console.log("Navegar a Solicitudes")
-    this.router.navigate(["/iniciosoli"])
-  }
-
-  goToNoticias() {
-    console.log("Navegar a Noticias")
-    this.router.navigateByUrl("/inicioavisos")
-  }
-
-  goToConfig() {
-    console.log("[verdoc] Navegar a Configuración")
-    this.router.navigate(["/configuracion"])
-  }
 }
