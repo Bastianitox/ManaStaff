@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from staffweb.firebase import auth, db, storage
-from django.views.decorators.http import require_POST,require_GET
+from django.views.decorators.http import require_POST,require_GET, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import unquote_plus
 from staffweb.utils.auditoria import registrar_auditoria_manual
@@ -50,7 +50,7 @@ def obtener_solicitudes(request):
     return JsonResponse({"status":"success", "solicitudes": solicitudes_list}, status = 200)
 
 @csrf_exempt
-@require_POST
+@require_http_methods(["DELETE"])
 @firebase_auth_required
 def cancelar_solicitud(request, id_solicitud):
     
@@ -60,7 +60,7 @@ def cancelar_solicitud(request, id_solicitud):
     solicitud_a_cancelar = db.reference("Solicitudes").child(id_solicitud).get() or {}
 
     #VALIDAMOS QUE LA SOLICITUD EXISTA
-    if solicitud_a_cancelar == {}:
+    if not solicitud_a_cancelar:
         return JsonResponse({"status": "false","message": "No se pudo encontrar la solicitud."}, status=404)
 
     #VALIDAMOS QUE LA SOLICITUD PERTENEZCA AL USUARIO

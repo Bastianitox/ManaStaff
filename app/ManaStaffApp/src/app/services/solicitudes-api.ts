@@ -53,4 +53,9 @@ export class SolicitudesApiService {
     const url = this.API_URL + `obtener_tipos_solicitud/`; 
     return this.http.get<TiposApiResponse>(url);
   }
+
+  cancelarSolicitud(id_solicitud: string): Observable<any> {
+    const url = this.API_URL + `cancelar_solicitud/${id_solicitud}`; 
+    return this.http.delete<any>(url);
+  }
 }
