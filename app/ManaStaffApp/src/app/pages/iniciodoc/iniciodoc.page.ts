@@ -280,12 +280,31 @@ export class IniciodocPage implements OnInit {
   }
 
   async downloadDocument(doc: Document) {
-    const alert = await this.alertController.create({
-      header: "Descargar",
-      message: `Descargando: ${doc.nombre}`,
-      buttons: ["OK"],
-    })
-    await alert.present()
+
+    this.documentosApi.descargarDocumento(doc.id).subscribe({
+        next: (response) => {
+            if (response.status === 'success' && response.download_url) {
+                window.open(response.download_url, '_system');
+
+                this.showAlert('Descarga Iniciada', `La descarga de "${doc.nombre}" ha comenzado.`);
+            } else {
+                this.showAlert('Error', response.message);
+            }
+        },
+        error: (err) => {
+            const errorMessage = err.error?.message || 'Error al conectar con el servidor de descargas.';
+            this.showAlert('Error de API', errorMessage);
+        }
+    });
+  }
+
+  async showAlert(header: string, message: string) {
+      const alert = await this.alertController.create({
+          header: header,
+          message: message,
+          buttons: ["OK"],
+      })
+      await alert.present()
   }
 
 }
