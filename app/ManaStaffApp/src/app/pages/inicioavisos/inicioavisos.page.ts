@@ -1,66 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { AnunciosApi } from 'src/app/services/anuncios-api';
 
 interface Publicacion {
   id: string
   titulo: string
   resumen: string
   contenido: string
-  tipo: "noticia" | "aviso"
-  fecha_publicacion: string
+  tipo: "Noticia" | "Aviso"
+  fecha_emitida: string
+  id_empleador: string
+  tipo_anuncio_nombre: string
+  tipo_anuncio_id: string
 }
-
-const MOCK_PUBLICACIONES: Publicacion[] = [
-  {
-    id: "1",
-    titulo: "Nueva política de trabajo remoto",
-    resumen:
-      "A partir del próximo mes, se implementará una nueva política de trabajo híbrido para todos los empleados.",
-    contenido: "Contenido completo de la noticia...",
-    tipo: "noticia",
-    fecha_publicacion: "2024-10-28",
-  },
-  {
-    id: "2",
-    titulo: "Mantenimiento programado del sistema",
-    resumen: "El sistema estará en mantenimiento el próximo sábado de 2:00 AM a 6:00 AM.",
-    contenido: "Contenido completo del aviso...",
-    tipo: "aviso",
-    fecha_publicacion: "2024-10-27",
-  },
-  {
-    id: "3",
-    titulo: "Celebración aniversario de la empresa",
-    resumen: "Este viernes celebraremos el 25° aniversario de nuestra empresa con un evento especial.",
-    contenido: "Contenido completo de la noticia...",
-    tipo: "noticia",
-    fecha_publicacion: "2024-10-26",
-  },
-  {
-    id: "4",
-    titulo: "Actualización de políticas de seguridad",
-    resumen: "Se han actualizado las políticas de seguridad informática. Por favor, revisa los nuevos lineamientos.",
-    contenido: "Contenido completo del aviso...",
-    tipo: "aviso",
-    fecha_publicacion: "2024-10-25",
-  },
-  {
-    id: "5",
-    titulo: "Nuevo programa de capacitación",
-    resumen: "Lanzamos un nuevo programa de capacitación continua para el desarrollo profesional de nuestro equipo.",
-    contenido: "Contenido completo de la noticia...",
-    tipo: "noticia",
-    fecha_publicacion: "2024-10-24",
-  },
-  {
-    id: "6",
-    titulo: "Cambio en horario de atención",
-    resumen: "A partir del lunes, el horario de atención al público será de 8:00 AM a 5:00 PM.",
-    contenido: "Contenido completo del aviso...",
-    tipo: "aviso",
-    fecha_publicacion: "2024-10-23",
-  },
-]
 
 @Component({
   selector: 'app-inicioavisos',
@@ -69,22 +21,78 @@ const MOCK_PUBLICACIONES: Publicacion[] = [
   standalone: false
 })
 export class InicioavisosPage implements OnInit {
-  publicaciones: Publicacion[] = [...MOCK_PUBLICACIONES]
-  filteredPublicaciones: Publicacion[] = [...MOCK_PUBLICACIONES]
+  publicaciones: Publicacion[] = []
+  filteredPublicaciones: Publicacion[] = []
   searchQuery = ""
   isLoading = false
 
+  private initialLoadCompleted = false;
+
   filters = {
-    tipo: "todas" as "todas" | "noticia" | "aviso",
+    tipo: "todas" as "todas" | "Noticia" | "Aviso",
     sort: "desc" as "asc" | "desc",
   }
 
   showFilterModal = false
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+    private anunciosApi: AnunciosApi
+  ) {}
 
   ngOnInit() {
+    this.cargarPublicaciones();
+      this.initialLoadCompleted = true; 
   }
+
+  ionViewWillEnter() {
+    if (this.initialLoadCompleted && this.publicaciones.length === 0) {
+    this.cargarPublicaciones();
+    }
+  }
+
+  cargarPublicaciones(refresher?: any) {
+    this.isLoading = true;
+    
+    this.anunciosApi.obtenerPublicaciones().subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        
+        if (response.status === 'success') {
+
+          this.publicaciones = response.anuncios as Publicacion[]; 
+          
+          this.applyFilters();
+
+        } else {
+          //this.showError(response.message || "Error al obtener la lista de solicitudes.");
+          this.publicaciones = [];
+        }
+        
+        if (refresher) {
+          refresher.target.complete();
+        }
+      },
+      error: (httpError) => {
+        // Manejar errores HTTP (e.g., 401 Unauthorized, 500 Server Error)
+        this.isLoading = false;
+        
+        let message = "Error de conexión con el servidor.";
+        if (httpError.status === 401) {
+          message = "Su sesión ha expirado o no está autorizado. Inicie sesión nuevamente.";
+        } else if (httpError.error && httpError.error.error) {
+            message = httpError.error.error;
+        }
+        
+        //this.showError(message);
+        this.publicaciones = [];
+
+        if (refresher) {
+          refresher.target.complete();
+        }
+      }
+    });
+  }
+  
 
   onSearch(event: any) {
     this.searchQuery = event.target.value || ""
@@ -117,8 +125,8 @@ export class InicioavisosPage implements OnInit {
 
     // Ordenar por fecha
     filtered.sort((a, b) => {
-      const dateA = new Date(a.fecha_publicacion).getTime()
-      const dateB = new Date(b.fecha_publicacion).getTime()
+      const dateA = new Date(a.fecha_emitida).getTime()
+      const dateB = new Date(b.fecha_emitida).getTime()
       return this.filters.sort === "desc" ? dateB - dateA : dateA - dateB
     })
 

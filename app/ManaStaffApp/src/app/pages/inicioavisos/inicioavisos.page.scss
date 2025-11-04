@@ -125,12 +125,12 @@ ion-content {
   font-weight: 600;
   text-transform: uppercase;
 
-  &.noticia {
+  &.Noticia {
     color: $success;
     background: rgba(16, 185, 129, 0.1);
   }
 
-  &.aviso {
+  &.Aviso {
     color: $warning;
     background: rgba(245, 158, 11, 0.1);
   }

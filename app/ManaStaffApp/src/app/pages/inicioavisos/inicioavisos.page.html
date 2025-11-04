@@ -26,22 +26,22 @@
   <div class="publications-list" *ngIf="!isLoading && filteredPublicaciones.length > 0">
     <div class="publication-card" *ngFor="let pub of filteredPublicaciones">
       <!-- Badge de tipo -->
-      <div class="type-badge" [ngClass]="pub.tipo">
-        <span *ngIf="pub.tipo === 'noticia'">Noticia</span>
-        <span *ngIf="pub.tipo === 'aviso'">Aviso</span>
+      <div class="type-badge" [ngClass]="pub.tipo_anuncio_nombre">
+        <span *ngIf="pub.tipo_anuncio_nombre === 'Noticia'">Noticia</span>
+        <span *ngIf="pub.tipo_anuncio_nombre === 'Aviso'">Aviso</span>
       </div>
 
       <!-- Contenido principal -->
       <div class="card-content">
-        <div class="icon-container" [ngClass]="pub.tipo">
-          <ion-icon [name]="pub.tipo === 'noticia' ? 'newspaper-outline' : 'megaphone-outline'"></ion-icon>
+        <div class="icon-container" [ngClass]="pub.tipo_anuncio_nombre">
+          <ion-icon [name]="pub.tipo_anuncio_nombre === 'Noticia' ? 'newspaper-outline' : 'megaphone-outline'"></ion-icon>
         </div>
         <div class="info-container">
           <h3 class="publication-title">{{ pub.titulo }}</h3>
           <p class="publication-summary">{{ pub.resumen }}</p>
           <div class="publication-meta">
             <ion-icon name="calendar-outline"></ion-icon>
-            <span>{{ pub.fecha_publicacion }}</span>
+            <span>{{ pub.fecha_emitida }}</span>
           </div>
         </div>
       </div>

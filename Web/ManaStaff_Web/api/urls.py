@@ -7,10 +7,15 @@ urlpatterns = [
 
     path('test_token/', views.test_token),
     #FUNCIONES API
+
+    #SOLICITUDES
     path('obtener_solicitudes/', views.obtener_solicitudes, name='obtener_solicitudes'),
     path('cancelar_solicitud/<str:id_solicitud>/', views.cancelar_solicitud, name='cancelar_solicitud'),
     path('detalle_solicitud/<str:id_solicitud>/', views.detalle_solicitud, name='detalle_solicitud'),
     path('crear_solicitud/', views.crear_solicitud, name='crear_solicitud'),
     path('obtener_tipos_solicitud/', views.obtener_tipos_solicitud, name='obtener_tipos_solicitud'),
+
+    #ANUNCIOS
+    path('obtener_anuncios/', views.obtener_anuncios, name='obtener_anuncios'),
 
 ]

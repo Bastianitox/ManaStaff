@@ -236,6 +236,41 @@ def obtener_tipos_solicitud(request):
 
 #----------------------------------- ANUNCIOS -----------------------------------
 
+@csrf_exempt
+@require_GET
+@firebase_auth_required
+def obtener_anuncios(request):
+
+    ref = db.reference("Anuncio").get() or {}
+
+    # 🔄 Convertir a lista
+    tipo_anuncio = db.reference("TipoAnuncio").get() or {}
+    anuncios_list = []
+    for key, value in ref.items():
+
+        tipo_nombre = "Sin tipo"
+        id_tipo = "Sin id tipo"
+        for key_tipo, value_tipo in tipo_anuncio.items():
+            if key_tipo == value.get("TipoAnuncio"):
+                tipo_nombre = value_tipo.get("nombre")
+                id_tipo = key_tipo
+                break
+
+        contenido = value.get("contenido", "") or ""
+        resumen = contenido[:50] + "..." if len(contenido) > 50 else contenido
+
+        anuncios_list.append({
+            "id": key,
+            "contenido": contenido,
+            "resumen": resumen,
+            "fecha_emitida": value.get("fecha_emitida"),
+            "id_empleador": value.get("id_empleador"),
+            "titulo": value.get("titulo"),
+            "tipo_anuncio_nombre": tipo_nombre,
+            "tipo_anuncio_id": id_tipo
+        })
+
+    return JsonResponse({"status":"success", "anuncios": anuncios_list}, status = 200)
 
 
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
