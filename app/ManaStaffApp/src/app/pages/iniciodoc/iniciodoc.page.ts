@@ -1,15 +1,21 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
 import { AlertController } from "@ionic/angular"
 import { Router } from '@angular/router'
+import { DocumentosApi } from "src/app/services/documentos-api"
 
 // Interfaces
 interface Document {
   id: string
-  name: string
-  type: "PDF" | "DOCX" | "XLS" | "DOC"
-  size: string
-  date: string
-  status: "Activo" | "Pendiente" | "Caducado"
+  Fecha_emitida: string
+  id_empleador: string
+  nombre: string
+  storage_bucket: string
+  storage_path: string
+  tamano_archivo: string
+  tipo_documento: string
+  url: string
+  Tipoestado: string
+  tipo_estado_nombre: string
 }
 
 interface Filters {
@@ -21,73 +27,6 @@ interface Filters {
 }
 
 // Datos falsos
-const MOCK_DOCUMENTS: Document[] = [
-  {
-    id: "1",
-    name: "Contrato de Servicios 2024",
-    type: "PDF",
-    size: "2.4 MB",
-    date: "2024-06-20",
-    status: "Activo",
-  },
-  {
-    id: "2",
-    name: "Factura Mensual Junio",
-    type: "PDF",
-    size: "1.2 MB",
-    date: "2024-06-15",
-    status: "Activo",
-  },
-  {
-    id: "3",
-    name: "Propuesta Comercial",
-    type: "DOCX",
-    size: "3.8 MB",
-    date: "2024-06-10",
-    status: "Pendiente",
-  },
-  {
-    id: "4",
-    name: "Reporte Trimestral Q2",
-    type: "XLS",
-    size: "0.9 MB",
-    date: "2024-06-05",
-    status: "Activo",
-  },
-  {
-    id: "5",
-    name: "Certificado de Cumplimiento",
-    type: "PDF",
-    size: "1.5 MB",
-    date: "2024-05-28",
-    status: "Caducado",
-  },
-  {
-    id: "6",
-    name: "Manual de Procedimientos",
-    type: "DOCX",
-    size: "4.2 MB",
-    date: "2024-05-20",
-    status: "Activo",
-  },
-  {
-    id: "7",
-    name: "Presupuesto 2024",
-    type: "XLS",
-    size: "2.1 MB",
-    date: "2024-05-15",
-    status: "Pendiente",
-  },
-  {
-    id: "8",
-    name: "Acta de Reunión Mayo",
-    type: "DOC",
-    size: "0.7 MB",
-    date: "2024-05-10",
-    status: "Activo",
-  },
-]
-
 @Component({
   selector: "app-iniciodoc",
   templateUrl: "./iniciodoc.page.html",
@@ -98,7 +37,10 @@ export class IniciodocPage implements OnInit {
   // Estado de la interfaz
   showPinModal = true
   showFilterModal = false
+
   isLoading = false
+  private initialLoadCompleted = false;
+
 
   pinInputs: string[] = ["", "", "", ""]
   pinError = ""
@@ -108,7 +50,7 @@ export class IniciodocPage implements OnInit {
   documents: Document[] = []
   filteredDocuments: Document[] = []
 
-  documentTypes = ["PDF", "DOCX", "XLS", "DOC"]
+  documentTypes = ["PDF", "DOCX", "XLS", "DOC", "Otro"]
   statusOptions = ["Activo", "Pendiente", "Caducado"]
   sizeOptions = [
     { key: "small", label: "Menos de 1 MB" },
@@ -117,7 +59,7 @@ export class IniciodocPage implements OnInit {
   ]
 
   filters: Filters = {
-    types: { PDF: false, DOCX: false, XLS: false, DOC: false },
+    types: { PDF: false, DOCX: false, XLS: false, DOC: false, Otro: false },
     sizes: { small: false, medium: false, large: false },
     statuses: { Activo: false, Pendiente: false, Caducado: false },
     sortBy: "date",
@@ -126,16 +68,57 @@ export class IniciodocPage implements OnInit {
 
   @ViewChildren("pinField") pinFields!: QueryList<ElementRef>
 
-  // Constructor -> para mostrar alertas
+
   constructor(
     private alertController: AlertController,
-    private router: Router) {
+    private router: Router,
+    private documentosApi: DocumentosApi) {
 
-    this.documents = [...MOCK_DOCUMENTS]
-    this.filteredDocuments = [...MOCK_DOCUMENTS]
+    this.documents = []
+    this.filteredDocuments = []
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.obtener_documentos();
+  }
+
+  obtener_documentos(refresher?: any){
+    this.isLoading = true
+
+    this.documentosApi.obtenerPublicaciones().subscribe({
+      next: (response) => {
+        this.isLoading = false
+
+        if (response.status == "success"){
+
+          this.documents = response.documentos as Document[];
+
+          this.applyFilters()
+        }else {
+          this.documents = []
+        }
+      },
+      error: (httpError) => {
+        // Manejar errores HTTP (e.g., 401 Unauthorized, 500 Server Error)
+        this.isLoading = false;
+        
+        let message = "Error de conexión con el servidor.";
+        if (httpError.status === 401) {
+          message = "Su sesión ha expirado o no está autorizado. Inicie sesión nuevamente.";
+        } else if (httpError.error && httpError.error.error) {
+            message = httpError.error.error;
+        }
+        
+        //this.showError(message);
+        this.documents = [];
+
+        if (refresher) {
+          refresher.target.complete();
+        }
+      }
+    })
+
+  }
 
   // Modal del pin
   onPinInput(index: number, event: any) {
@@ -201,20 +184,36 @@ export class IniciodocPage implements OnInit {
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase()
       filtered = filtered.filter(
-        (doc) => doc.name.toLowerCase().includes(query) || doc.type.toLowerCase().includes(query),
+        (doc) => doc.nombre.toLowerCase().includes(query) || doc.tipo_documento.toLowerCase().includes(query),
       )
     }
 
     // filtro por tipos de documentos
+    const knownTypes = ["PDF", "DOCX", "XLS", "DOC"].map(t => t.toUpperCase()); 
+
     const selectedTypes = Object.keys(this.filters.types).filter((key) => this.filters.types[key])
+
     if (selectedTypes.length > 0) {
-      filtered = filtered.filter((doc) => selectedTypes.includes(doc.type))
+         // Separamos 'Otro' de los tipos específicos seleccionados
+        const selectedSpecificTypes = selectedTypes.filter(type => type !== 'Otro').map(t => t.toUpperCase());
+        const isOtherSelected = selectedTypes.includes('Otro');
+
+        filtered = filtered.filter((doc) => {
+        const docType = doc.tipo_documento.toUpperCase();
+        const isKnownType = knownTypes.includes(docType);
+
+        if (isKnownType) {
+          return selectedSpecificTypes.includes(docType);
+        } else {
+          return isOtherSelected;
+        }
+      });
     }
 
     const selectedSizes = Object.keys(this.filters.sizes).filter((key) => this.filters.sizes[key])
     if (selectedSizes.length > 0) {
       filtered = filtered.filter((doc) => {
-        const sizeNum = Number.parseFloat(doc.size)
+        const sizeNum = Number.parseFloat(doc.tamano_archivo)
         return selectedSizes.some((size) => {
           if (size === "small") return sizeNum < 1
           if (size === "medium") return sizeNum >= 1 && sizeNum <= 3
@@ -227,7 +226,7 @@ export class IniciodocPage implements OnInit {
     // filtro por estado activo, pendiente y caducado
     const selectedStatuses = Object.keys(this.filters.statuses).filter((key) => this.filters.statuses[key])
     if (selectedStatuses.length > 0) {
-      filtered = filtered.filter((doc) => selectedStatuses.includes(doc.status))
+      filtered = filtered.filter((doc) => selectedStatuses.includes(doc.tipo_estado_nombre))
     }
 
     // Sorting
@@ -235,9 +234,12 @@ export class IniciodocPage implements OnInit {
       let compareValue = 0
 
       if (this.filters.sortBy === "date") {
-        compareValue = new Date(a.date).getTime() - new Date(b.date).getTime()
+        // Asegurar que la comparación de fechas sea segura
+        const dateA = new Date(a.Fecha_emitida).getTime();
+        const dateB = new Date(b.Fecha_emitida).getTime();
+        compareValue = dateA - dateB;
       } else if (this.filters.sortBy === "name") {
-        compareValue = a.name.localeCompare(b.name)
+        compareValue = a.nombre.localeCompare(b.nombre)
       }
 
       return this.filters.sortOrder === "asc" ? compareValue : -compareValue
@@ -248,7 +250,7 @@ export class IniciodocPage implements OnInit {
 
   clearFilters() {
     this.filters = {
-      types: { PDF: false, DOCX: false, XLS: false, DOC: false },
+      types: { PDF: false, DOCX: false, XLS: false, DOC: false, Otro: false },
       sizes: { small: false, medium: false, large: false },
       statuses: { Activo: false, Pendiente: false, Caducado: false },
       sortBy: "date",
@@ -266,11 +268,12 @@ export class IniciodocPage implements OnInit {
       DOC: "document-text-outline",
       XLS: "document-outline",
     }
-    return iconMap[type] || "document-outline"
+
+    return iconMap[type.toUpperCase()] || "document-outline" 
   }
 
   viewDocument(doc: Document) {
-    console.log("[iniciodoc] Abriendo documento:", doc.name)
+    console.log("[iniciodoc] Abriendo documento:", doc.nombre)
     this.router.navigate(['/tabs/documentos/ver'], {
       state: { document: doc } 
     })
@@ -279,7 +282,7 @@ export class IniciodocPage implements OnInit {
   async downloadDocument(doc: Document) {
     const alert = await this.alertController.create({
       header: "Descargar",
-      message: `Descargando: ${doc.name}`,
+      message: `Descargando: ${doc.nombre}`,
       buttons: ["OK"],
     })
     await alert.present()
