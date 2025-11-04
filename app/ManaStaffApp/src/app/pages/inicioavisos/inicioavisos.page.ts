@@ -94,6 +94,7 @@ export class InicioavisosPage implements OnInit {
   }
   
 
+
   onSearch(event: any) {
     this.searchQuery = event.target.value || ""
     this.applyFilters()
@@ -105,6 +106,7 @@ export class InicioavisosPage implements OnInit {
 
   closeFilterModal() {
     this.showFilterModal = false
+    this.applyFilters()
   }
 
   applyFilters() {
@@ -120,7 +122,7 @@ export class InicioavisosPage implements OnInit {
 
     // Filtrar por tipo
     if (this.filters.tipo !== "todas") {
-      filtered = filtered.filter((pub) => pub.tipo === this.filters.tipo)
+      filtered = filtered.filter((pub) => pub.tipo_anuncio_nombre === this.filters.tipo)
     }
 
     // Ordenar por fecha
@@ -142,7 +144,6 @@ export class InicioavisosPage implements OnInit {
   }
 
   viewDetails(id: string) {
-    this.router.navigateByUrl(`/tabs/noticias/detalle/`);
-    //console.log("Ver detalles de publicación:", id)
+    this.router.navigate(['/tabs/noticias/detalle', id]);
   }
 }

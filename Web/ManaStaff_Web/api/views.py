@@ -239,7 +239,7 @@ def obtener_tipos_solicitud(request):
 @csrf_exempt
 @require_GET
 @firebase_auth_required
-def obtener_anuncios(request):
+def obtener_publicacion(request):
 
     ref = db.reference("Anuncio").get() or {}
 
@@ -272,6 +272,36 @@ def obtener_anuncios(request):
 
     return JsonResponse({"status":"success", "anuncios": anuncios_list}, status = 200)
 
+@csrf_exempt
+@require_GET
+@firebase_auth_required
+def detalle_publicacion(request, id_anuncio):
+    #OBTENEMOS LA SOLICITUD A ELIMINAR
+    publicacion_a_ver = db.reference("Anuncio").child(id_anuncio).get() or {}
+
+    #VALIDAMOS QUE LA SOLICITUD EXISTA
+    if not publicacion_a_ver:
+        return JsonResponse({"error": "No se pudo encontrar la publicación."}, status=404)
+    
+    tipo_id = publicacion_a_ver.get("TipoAnuncio")
+    tipo_publicacion_nombre = "Desconocido"
+    
+    if tipo_id:
+        try:
+            # Intentamos obtener el nodo completo del TipoSolicitud
+            tipo_data = db.reference("TipoAnuncio").child(tipo_id).get()
+            
+            if tipo_data and isinstance(tipo_data, dict):
+                 tipo_publicacion_nombre = tipo_data.get("nombre", "Tipo no encontrado")
+            
+        except Exception as e:
+            print(f"Error al obtener el nombre del tipo {tipo_id}: {e}")
+            tipo_publicacion_nombre = "Error de base de datos"
+
+    publicacion_a_ver["tipo_publicacion_nombre"] = tipo_publicacion_nombre
+
+    #OBTENER LOS DETALLES DE LA SOLICITUD Y DEVOLVERLOS
+    return JsonResponse({"status": "success", "message": "Publicacion obtenida", "publicacion": publicacion_a_ver}, status=200)
 
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
 

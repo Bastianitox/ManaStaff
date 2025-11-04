@@ -16,6 +16,7 @@ urlpatterns = [
     path('obtener_tipos_solicitud/', views.obtener_tipos_solicitud, name='obtener_tipos_solicitud'),
 
     #ANUNCIOS
-    path('obtener_anuncios/', views.obtener_anuncios, name='obtener_anuncios'),
+    path('obtener_publicacion/', views.obtener_publicacion, name='obtener_publicacion'),
+    path('detalle_publicacion/<str:id_anuncio>/', views.detalle_publicacion, name='detalle_publicacion'),
 
 ]

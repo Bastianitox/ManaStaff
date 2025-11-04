@@ -9,6 +9,12 @@ interface ApiResponse {
   anuncios: any[];
 }
 
+interface DetalleApiResponse {
+  status: string;
+  message: string;
+  publicacion: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,7 +24,12 @@ export class AnunciosApi {
   constructor(private http: HttpClient) {}
   
   obtenerPublicaciones(): Observable<ApiResponse> {
-      const url = this.API_URL + 'obtener_anuncios/';
-      return this.http.get<ApiResponse>(url);
-    }
+    const url = this.API_URL + 'obtener_publicacion/';
+    return this.http.get<ApiResponse>(url);
+  }
+
+  obtenerDetallePublicacion(idPublicacion: string): Observable<DetalleApiResponse> {
+    const url = this.API_URL + `detalle_publicacion/${idPublicacion}/`; 
+    return this.http.get<DetalleApiResponse>(url);
+  }
 }

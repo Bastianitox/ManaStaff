@@ -97,26 +97,23 @@
               type="radio" 
               name="tipoFilter" 
               value="todas"
-              [(ngModel)]="filters.tipo"
-              (change)="applyFilters()">
+              [(ngModel)]="filters.tipo">
             <span class="radio-label">Ver todo</span>
           </label>
           <label class="filter-radio">
             <input 
               type="radio" 
               name="tipoFilter" 
-              value="noticia"
-              [(ngModel)]="filters.tipo"
-              (change)="applyFilters()">
+              value="Noticia"
+              [(ngModel)]="filters.tipo">
             <span class="radio-label">Solo noticias</span>
           </label>
           <label class="filter-radio">
             <input 
               type="radio" 
               name="tipoFilter" 
-              value="aviso"
-              [(ngModel)]="filters.tipo"
-              (change)="applyFilters()">
+              value="Aviso"
+              [(ngModel)]="filters.tipo">
             <span class="radio-label">Solo avisos</span>
           </label>
         </div>
@@ -134,8 +131,7 @@
               type="radio" 
               name="sortBy" 
               value="desc"
-              [(ngModel)]="filters.sort"
-              (change)="applyFilters()">
+              [(ngModel)]="filters.sort">
             <span class="radio-label">Más recientes</span>
           </label>
           <label class="filter-radio">
@@ -143,8 +139,7 @@
               type="radio" 
               name="sortBy" 
               value="asc"
-              [(ngModel)]="filters.sort"
-              (change)="applyFilters()">
+              [(ngModel)]="filters.sort">
             <span class="radio-label">Más antiguos</span>
           </label>
         </div>

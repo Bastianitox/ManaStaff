@@ -1,7 +1,22 @@
 <ion-content [fullscreen]="true">
   <div class="content-wrapper">
+    
+    <div class="loading-error-container" *ngIf="isLoading || errorMessage">
+      <div class="loading-content" *ngIf="isLoading">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando detalle...</p>
+      </div>
+      <div class="error-content" *ngIf="errorMessage">
+        <ion-icon name="warning-outline" color="danger"></ion-icon>
+        <p class="error-message">{{ errorMessage }}</p>
+        <ion-button (click)="cargarDetalle(solicitudId!)" fill="outline">
+            Reintentar
+        </ion-button>
+      </div>
+    </div>
+
     <!-- Tarjeta principal con detalle de la publicación -->
-    <div class="detail-card">
+    <div class="detail-card" *ngIf="!isLoading && !errorMessage">
       <!-- Badge de tipo -->
       <div class="type-badge-large" [ngClass]="publicacion.tipo">
         <span *ngIf="publicacion.tipo === 'noticia'">Noticia</span>
