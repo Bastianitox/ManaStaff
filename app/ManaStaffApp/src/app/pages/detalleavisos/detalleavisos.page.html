@@ -9,7 +9,7 @@
       <div class="error-content" *ngIf="errorMessage">
         <ion-icon name="warning-outline" color="danger"></ion-icon>
         <p class="error-message">{{ errorMessage }}</p>
-        <ion-button (click)="cargarDetalle(solicitudId!)" fill="outline">
+        <ion-button (click)="cargarDetalle(publicacionId!)" fill="outline">
             Reintentar
         </ion-button>
       </div>
@@ -18,9 +18,9 @@
     <!-- Tarjeta principal con detalle de la publicación -->
     <div class="detail-card" *ngIf="!isLoading && !errorMessage">
       <!-- Badge de tipo -->
-      <div class="type-badge-large" [ngClass]="publicacion.tipo">
-        <span *ngIf="publicacion.tipo === 'noticia'">Noticia</span>
-        <span *ngIf="publicacion.tipo === 'aviso'">Aviso</span>
+      <div class="type-badge-large" [ngClass]="publicacion.tipo_publicacion_nombre">
+        <span *ngIf="publicacion.tipo_publicacion_nombre === 'Noticia'">Noticia</span>
+        <span *ngIf="publicacion.tipo_publicacion_nombre === 'Aviso'">Aviso</span>
       </div>
 
       <!-- Título -->
@@ -29,7 +29,7 @@
       <!-- Fecha con texto descriptivo -->
       <div class="publication-date">
         <ion-icon name="calendar-outline"></ion-icon>
-        <span>Se realizará / aplica el día: <strong>{{ publicacion.fecha_publicacion }}</strong></span>
+        <span>Se realizará / aplica el día: <strong>{{ publicacion.fecha_emitida }}</strong></span>
       </div>
 
       <!-- Contenido completo -->
@@ -43,13 +43,13 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">Tipo</span>
-            <span class="info-value" [ngClass]="publicacion.tipo">
-              {{ publicacion.tipo === 'noticia' ? 'Noticia' : 'Aviso' }}
+            <span class="info-value" [ngClass]="publicacion.tipo_publicacion_nombre">
+              {{ publicacion.tipo_publicacion_nombre === 'Noticia' ? 'Noticia' : 'Aviso' }}
             </span>
           </div>
           <div class="info-item">
             <span class="info-label">Fecha</span>
-            <span class="info-value">{{ publicacion.fecha_publicacion }}</span>
+            <span class="info-value">{{ publicacion.fecha_emitida }}</span>
           </div>
         </div>
       </div>

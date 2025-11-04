@@ -6,7 +6,7 @@ interface Publicacion {
   id: string
   titulo: string
   contenido: string
-  tipo: "Noticia" | "Aviso" | null
+  tipo_publicacion_nombre: "Noticia" | "Aviso" | null
   fecha_emitida: string
   id_empleador: string
 }
@@ -25,7 +25,7 @@ export class DetalleavisosPage implements OnInit {
     id: "",
     titulo: "",
     contenido: "",
-    tipo: null,
+    tipo_publicacion_nombre: null,
     fecha_emitida: "",
     id_empleador: "",
   }

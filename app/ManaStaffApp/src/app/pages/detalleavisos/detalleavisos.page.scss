@@ -45,12 +45,12 @@ ion-content {
   letter-spacing: 0.5px;
   margin-bottom: 16px;
 
-  &.noticia {
+  &.Noticia {
     color: $success;
     background: rgba(16, 185, 129, 0.12);
   }
 
-  &.aviso {
+  &.Aviso {
     color: $warning;
     background: rgba(245, 158, 11, 0.12);
   }
@@ -145,11 +145,11 @@ ion-content {
   font-weight: 500;
   color: $text-primary;
 
-  &.noticia {
+  &.Noticia {
     color: $success;
   }
 
-  &.aviso {
+  &.Aviso {
     color: $warning;
   }
 }

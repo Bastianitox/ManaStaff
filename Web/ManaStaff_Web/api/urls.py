@@ -5,9 +5,6 @@ app_name = 'api'
 
 urlpatterns = [
 
-    path('test_token/', views.test_token),
-    #FUNCIONES API
-
     #SOLICITUDES
     path('obtener_solicitudes/', views.obtener_solicitudes, name='obtener_solicitudes'),
     path('cancelar_solicitud/<str:id_solicitud>/', views.cancelar_solicitud, name='cancelar_solicitud'),
@@ -18,5 +15,8 @@ urlpatterns = [
     #ANUNCIOS
     path('obtener_publicacion/', views.obtener_publicacion, name='obtener_publicacion'),
     path('detalle_publicacion/<str:id_anuncio>/', views.detalle_publicacion, name='detalle_publicacion'),
+
+    #DOCUMENTOS
+    path('obtener_documentos/', views.obtener_documentos, name='obtener_documentos'),
 
 ]

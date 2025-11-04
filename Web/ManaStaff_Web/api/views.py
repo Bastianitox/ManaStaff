@@ -3,7 +3,7 @@ from staffweb.firebase import auth, db, storage
 from django.views.decorators.http import require_POST,require_GET, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import unquote_plus
-from staffweb.utils.auditoria import registrar_auditoria_manual
+from staffweb.utils.auditoria import registrar_auditoria_movil
 from staffweb.utils.decorators import firebase_auth_required
 from datetime import datetime, timedelta
 
@@ -67,11 +67,11 @@ def cancelar_solicitud(request, id_solicitud):
     rut_usuario_solicitud = solicitud_a_cancelar.get("id_rut")
 
     if rut_usuario_actual != rut_usuario_solicitud:
-        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no le pertenece {rut_usuario_solicitud}.")
+        registrar_auditoria_movil(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no le pertenece {rut_usuario_solicitud}.")
         return JsonResponse({"status": "false","message": "Esa no es su solicitud."}, status=403)
     
     if solicitud_a_cancelar.get("Estado") != "pendiente":
-        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no esta en estado pendiente.")
+        registrar_auditoria_movil(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento eliminar una solicitud que no esta en estado pendiente.")
         return JsonResponse({"status": "false","message": "Esa solicitud ya fue resuelta."}, status=403)
 
     #VALIDAMOS QUE EXISTA UN ARCHIVO EN LA SOLICITUD (PARA ELIMINARLO DE STORAGE) 
@@ -94,7 +94,7 @@ def cancelar_solicitud(request, id_solicitud):
 
     #AHORA SE ELIMINA DE FIREBASE
     db.reference('/Solicitudes/'+id_solicitud).delete()
-    registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {rut_usuario_actual} ha eliminado su solicitud {solicitud_a_cancelar.get("Asunto")} con éxito.")
+    registrar_auditoria_movil(request, "Cuatro", "éxito", f"El usuario {rut_usuario_actual} ha eliminado su solicitud {solicitud_a_cancelar.get("Asunto")} con éxito.")
     return JsonResponse({"status": "success","message": "Solicitud cancelada (eliminada)."}, status=200)
 
 @csrf_exempt
@@ -114,7 +114,7 @@ def detalle_solicitud(request, id_solicitud):
     rut_usuario_solicitud = solicitud_a_ver.get("id_rut")
 
     if rut_usuario_actual != rut_usuario_solicitud:
-        registrar_auditoria_manual(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento ver el detalle de una solicitud que no le pertenece {rut_usuario_solicitud}.")
+        registrar_auditoria_movil(request, "Cuatro", "false", f"El usuario {rut_usuario_actual} intento ver el detalle de una solicitud que no le pertenece {rut_usuario_solicitud}.")
         return JsonResponse({"error": "Esa no es su solicitud."}, status=403)
     
     tipo_id = solicitud_a_ver.get("tipo_solicitud")
@@ -207,7 +207,7 @@ def crear_solicitud(request):
         ref.delete()
         return JsonResponse({"status": "false","error": f"Error al guardar en la base de datos: {e}"}, status=500)
 
-    registrar_auditoria_manual(request, "Dos", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
+    registrar_auditoria_movil(request, "Dos", "éxito", f"Se crea la solicitud {asunto} del usuario {rut_usuario_actual}.")
 
     return JsonResponse({"status": "success", "message": "Solicitud creada con éxito.", "id": id_solicitud}, status=201)
 
@@ -303,28 +303,55 @@ def detalle_publicacion(request, id_anuncio):
     #OBTENER LOS DETALLES DE LA SOLICITUD Y DEVOLVERLOS
     return JsonResponse({"status": "success", "message": "Publicacion obtenida", "publicacion": publicacion_a_ver}, status=200)
 
-#----------------------------------- USUARIOS / PERFIL -----------------------------------
-
-
-
 
 #----------------------------------- DOCUMENTOS -----------------------------------
 
-
-
-
-
-
-
 @csrf_exempt
-def test_token(request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header:
-        return JsonResponse({"error": "Token faltante"}, status=401)
+@require_GET
+@firebase_auth_required
+def obtener_documentos(request):
+    
+    rut_usuario_actual = request.rut_usuario_actual
 
-    token = auth_header.split("Bearer ")[1] if auth_header.startswith("Bearer ") else auth_header
-    try:
-        decoded = auth.verify_id_token(token)
-        return JsonResponse({"uid": decoded["uid"], "email": decoded.get("email")})
-    except Exception as e:
-        return JsonResponse({"error": f"Token inválido: {str(e)}"}, status=401)
+    ref = db.reference("Documentos").order_by_child("id_rut").equal_to(rut_usuario_actual).get() or {}
+
+    # 🔄 Convertir a lista
+    tipo_estado = db.reference("Tipoestado").get() or {}
+    documentos_list = []
+    for key, value in ref.items():
+
+        tipo_nombre = "Sin tipo"
+        id_tipo = "Sin id tipo"
+
+        tipo_solicitud_id = value.get("Tipoestado")
+
+        for key_tipo, value_tipo in tipo_estado.items():
+            if key_tipo == tipo_solicitud_id:
+                tipo_nombre = value_tipo
+                id_tipo = key_tipo
+                break
+
+        documentos_list.append({
+            "id": key,
+            "Fecha_emitida": value.get("Fecha_emitida"),
+            "id_empleador": value.get("id_empleador"),
+            "nombre": value.get("nombre"),
+            "storage_bucket": value.get("storage_bucket"),
+            "storage_path": value.get("storage_path"),
+            "tamano_archivo": value.get("tamano_archivo"),
+            "tipo_documento": value.get("tipo_documento"),
+            "url": value.get("url"),
+            "Tipoestado": id_tipo,
+            "tipo_estado_nombre": tipo_nombre
+        })
+
+    return JsonResponse({"status":"success", "documentos": documentos_list}, status = 200)
+
+
+
+
+
+
+#----------------------------------- USUARIOS / PERFIL -----------------------------------
+
+
