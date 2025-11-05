@@ -8,6 +8,7 @@ from staffweb.utils.decorators import firebase_auth_required
 from datetime import datetime, timedelta
 import os
 import mimetypes
+import requests
 
 #----------------------------------- SESIÓN -----------------------------------
 
@@ -360,59 +361,54 @@ def descargar_documento(request, id_doc):
     documentos_ref = db.reference("Documentos/"+id_doc).get() or {}
 
     rut_id_documento = documentos_ref.get("id_rut")
-    nombre_base = documentos_ref.get("nombre", "documento")
+    nombre= documentos_ref.get("nombre", "documento")
+    url = documentos_ref.get("url")
 
     storage_bucket = documentos_ref.get("storage_bucket")
     storage_path = documentos_ref.get("storage_path")
-    doc_tipo = documentos_ref.get("tipo_documento", "").lower()
 
     if not storage_path or not storage_bucket:
-            return JsonResponse({"status":"error", "message": "Ruta de archivo no encontrada en el documento."}, status = 404)
-
-    if doc_tipo and not nombre_base.endswith(f".{doc_tipo}"):
-        extension = f".{doc_tipo}"
-    else:
-        nombre_sin_ext, ext_from_path = os.path.splitext(storage_path)
-        extension = ext_from_path.lower()
-
-    base, _ = os.path.splitext(nombre_base)
-    nombre_descarga_final = f"{base}{extension}"
-    
-    if not extension:
-        _, extension_path = os.path.splitext(storage_path)
-        if extension_path:
-            nombre_descarga_final = f"{nombre_base}{extension_path}"
-        else:
-             nombre_descarga_final = nombre_base
-   
+        return JsonResponse({"status":"error", "message": "Ruta de archivo no encontrada en el documento."}, status = 404)
 
     #Validar descarga (Si es de RRHH o Empleado)
     usuario_actual = db.reference("Usuario/"+rut_usuario_actual).get() or {}
     rol_usuario_actual = usuario_actual.get("rol")
 
     if rol_usuario_actual != "Uno" and (rut_usuario_actual != rut_id_documento):
-        registrar_auditoria_movil(request, "Cinco", "fallo", f"Intento de descarga no autorizado del documento {nombre_descarga_final} por {rut_usuario_actual}.")
+        #registrar_auditoria_movil(request, "Cinco", "fallo", f"Intento de descarga no autorizado del documento {nombre} por {rut_usuario_actual}.")
         return JsonResponse({"status":"error", "message": "Usted no es de Recursos Humanos ni es su documento."}, status = 403) 
 
-    try:
-        bucket = storage.bucket(name=storage_bucket)
-        blob = bucket.blob(storage_path)
+    try:   
+        response = requests.get(url, stream=True)
+        if response.status_code != 200:
+            print("ERROR")
+            return HttpResponse("No se pudo descargar el documento", status=500)
+        print("PRUEBA")
 
+        nombre_archivo = url.split("/")[-1]
+        nombre_archivo = str(nombre_archivo.split("?")[0])
+        nombre_archivo = unquote_plus(nombre_archivo)
 
-        file_data = blob.download_as_bytes()
+        prefix = id_doc + "/"
+
+        ultimo_segmento = nombre_archivo.split(prefix, 1)[-1]
         
-        tipo_mime, _ = mimetypes.guess_type(nombre_base)
+        
+        tipo_mime, _ = mimetypes.guess_type(nombre_archivo)
         if not tipo_mime:
             tipo_mime = 'application/octet-stream' 
 
-        response = HttpResponse(file_data, content_type=tipo_mime)
-        response["Content-Disposition"] = f'attachment; filename="{nombre_descarga_final}"'
+        resp = HttpResponse(response.content, content_type=tipo_mime)
+        resp['Content-Disposition'] = f'attachment; filename="{ultimo_segmento}"'
+        print(resp)
 
-        registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre_descarga_final}.")
-        return response
+        #registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre}.")
+        return resp
     
     except Exception as e:
-        registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre_descarga_final}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        #registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre}: {str(e)}")
         return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)
 
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
