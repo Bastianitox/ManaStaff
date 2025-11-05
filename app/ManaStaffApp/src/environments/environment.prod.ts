@@ -9,5 +9,5 @@ export const environment = {
     messagingSenderId: "409038016605",
     appId: "1:409038016605:web:0ff9ded9533dcc28c1fdb4",
   },
-  apiBaseUrl: 'http://127.0.0.1:8000/api/',
+  apiBaseUrl: 'https://manastaff.onrender.com/api/',
 };

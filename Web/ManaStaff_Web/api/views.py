@@ -7,6 +7,7 @@ from staffweb.utils.auditoria import registrar_auditoria_movil
 from staffweb.utils.decorators import firebase_auth_required
 from datetime import datetime, timedelta
 import os
+import mimetypes
 
 #----------------------------------- SESIÓN -----------------------------------
 
@@ -399,9 +400,12 @@ def descargar_documento(request, id_doc):
 
 
         file_data = blob.download_as_bytes()
-        content_type = blob.content_type or "application/octet-stream"
+        
+        tipo_mime, _ = mimetypes.guess_type(nombre_base)
+        if not tipo_mime:
+            tipo_mime = 'application/octet-stream' 
 
-        response = HttpResponse(file_data, content_type=content_type)
+        response = HttpResponse(file_data, content_type=tipo_mime)
         response["Content-Disposition"] = f'attachment; filename="{nombre_descarga_final}"'
 
         registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre_descarga_final}.")
