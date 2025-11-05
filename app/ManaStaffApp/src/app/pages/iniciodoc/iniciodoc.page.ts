@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
-import { AlertController } from "@ionic/angular"
+import { AlertController, Platform } from "@ionic/angular"
 import { Router } from '@angular/router'
 import { DocumentosApi } from "src/app/services/documentos-api"
+import { Directory, Filesystem } from '@capacitor/filesystem';
 
 // Interfaces
 interface Document {
@@ -72,7 +73,8 @@ export class IniciodocPage implements OnInit {
   constructor(
     private alertController: AlertController,
     private router: Router,
-    private documentosApi: DocumentosApi) {
+    private documentosApi: DocumentosApi,
+    private platform: Platform) {
 
     this.documents = []
     this.filteredDocuments = []
@@ -279,24 +281,58 @@ export class IniciodocPage implements OnInit {
     })
   }
 
-  async downloadDocument(doc: Document) {
+  async descargarDocumento(id_doc: string, nombre_archivo: string) {
+      this.showAlert("Descargando...","Iniciada descarga del archivo "+nombre_archivo);
 
-    this.documentosApi.descargarDocumento(doc.id).subscribe({
-        next: (response) => {
-            if (response.status === 'success' && response.download_url) {
-                window.open(response.download_url, '_system');
-
-                this.showAlert('Descarga Iniciada', `La descarga de "${doc.nombre}" ha comenzado.`);
-            } else {
-                this.showAlert('Error', response.message);
-            }
-        },
-        error: (err) => {
-            const errorMessage = err.error?.message || 'Error al conectar con el servidor de descargas.';
-            this.showAlert('Error de API', errorMessage);
+    this.documentosApi.descargarDocumento(id_doc).subscribe({
+      next: async (blob) => {
+        if (this.platform.is('hybrid')) {
+          // 📱 Modo móvil (Capacitor)
+          await this.guardarArchivoEnDispositivo(blob, nombre_archivo);
+        } else {
+          // 💻 Modo navegador
+          this.descargarEnNavegador(blob, nombre_archivo);
         }
+      },
+      error: (err) => {
+        console.error('Error al descargar el documento:', err);
+        alert('Error al descargar el documento.');
+      }
     });
   }
+
+  private descargarEnNavegador(blob: Blob, nombre: string) {
+    const fileUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = fileUrl;
+    a.download = nombre || 'documento.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(fileUrl);
+  }
+
+  private async guardarArchivoEnDispositivo(blob: Blob, nombre: string) {
+    const base64Data = await this.convertBlobToBase64(blob) as string;
+
+    await Filesystem.writeFile({
+      path: nombre,
+      data: base64Data.split(',')[1], // quitar encabezado base64
+      directory: Directory.Documents,
+    });
+
+    alert(`✅ Archivo "${nombre}" guardado correctamente en Documentos.`);
+  }
+
+  private convertBlobToBase64(blob: Blob): Promise<string | ArrayBuffer | null> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+
 
   async showAlert(header: string, message: string) {
       const alert = await this.alertController.create({

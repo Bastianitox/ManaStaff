@@ -247,7 +247,7 @@
           <button 
             class="action-btn download-btn"
             [disabled]="doc.tipo_estado_nombre === 'Pendiente'"
-            (click)="downloadDocument(doc)">
+            (click)="descargarDocumento(doc.id, doc.nombre)">
             Descargar
           </button>
         </div>

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from staffweb.firebase import auth, db, storage
 from django.views.decorators.http import require_POST,require_GET, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -397,22 +397,16 @@ def descargar_documento(request, id_doc):
         bucket = storage.bucket(name=storage_bucket)
         blob = bucket.blob(storage_path)
 
-        download_url = blob.generate_signed_url(
-            version='v4',
-            expiration=timedelta(minutes=60), 
-            method='GET',
-            response_disposition=f'attachment; filename="{nombre_descarga_final}"' 
-        )
 
-        view_url = blob.generate_signed_url(
-            version='v4',
-            expiration=timedelta(minutes=60),
-            method='GET'
-        )
+        file_data = blob.download_as_bytes()
+        content_type = blob.content_type or "application/octet-stream"
+
+        response = HttpResponse(file_data, content_type=content_type)
+        response["Content-Disposition"] = f'attachment; filename="{nombre_descarga_final}"'
 
         registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre_descarga_final}.")
-        return JsonResponse({"status":"success", "message": "URL de descarga generada.", "download_url": download_url, "view_url": view_url}, status = 200)
-
+        return response
+    
     except Exception as e:
         registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre_descarga_final}: {str(e)}")
         return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)

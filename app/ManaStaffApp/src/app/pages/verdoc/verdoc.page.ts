@@ -84,6 +84,7 @@ export class VerdocPage implements OnInit {
         return;
     }
 
+    /*
     this.isLoading = true;
     this.documentosApi.descargarDocumento(id_doc).subscribe({
       next: (response) => {
@@ -123,7 +124,7 @@ export class VerdocPage implements OnInit {
         this.doc.title = "No disponible";
         this.showAlert("Error de Carga", message);
       }
-    })
+    })*/
   }
 
   canWebPreview(format: string): boolean {

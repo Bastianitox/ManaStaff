@@ -10,13 +10,6 @@ interface ApiResponse {
   documentos: any[];
 }
 
-interface DescargaApiResponse{
-  status: string;
-  message: string;
-  download_url: string;
-  view_url: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -30,9 +23,10 @@ export class DocumentosApi {
     return this.http.get<ApiResponse>(url);
   }
 
-  descargarDocumento(id_doc: string): Observable<DescargaApiResponse> {
+  descargarDocumento(id_doc: string): Observable<Blob> {
     const url = this.API_URL + `descargar_documento/${id_doc}`;
-    return this.http.get<DescargaApiResponse>(url);
+    return this.http.get(url, { responseType: 'blob' });
   }
+
 
 }
