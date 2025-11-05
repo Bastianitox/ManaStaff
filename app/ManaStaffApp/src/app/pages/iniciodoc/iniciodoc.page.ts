@@ -313,15 +313,36 @@ export class IniciodocPage implements OnInit {
   }
 
   private async guardarArchivoEnDispositivo(blob: Blob, nombre: string) {
+    // Detectar extensión desde el tipo MIME
+    const mime = blob.type;
+    let extension = '';
+
+    if (mime === 'application/pdf') extension = '.pdf';
+    else if (mime === 'application/msword') extension = '.doc';
+    else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') extension = '.docx';
+    else if (mime === 'image/jpeg') extension = '.jpg';
+    else if (mime === 'image/png') extension = '.png';
+    else extension = '';
+
+    // Si el nombre no termina con esa extensión, agrégala
+    if (extension && !nombre.toLowerCase().endsWith(extension)) {
+      nombre += extension;
+    }
+
     const base64Data = await this.convertBlobToBase64(blob) as string;
 
-    await Filesystem.writeFile({
-      path: nombre,
-      data: base64Data.split(',')[1], // quitar encabezado base64
-      directory: Directory.Documents,
-    });
+    try {
+      await Filesystem.writeFile({
+        path: `Download/${nombre}`,
+        data: base64Data.split(',')[1],
+        directory: Directory.ExternalStorage,
+      });
 
-    alert(`✅ Archivo "${nombre}" guardado correctamente en Documentos.`);
+      alert(`✅ Archivo "${nombre}" guardado correctamente en la carpeta Descargas.`);
+    } catch (error) {
+      console.error('Error al guardar el archivo:', error);
+      alert('❌ No se pudo guardar el archivo. Verifica los permisos de almacenamiento.');
+    }
   }
 
   private convertBlobToBase64(blob: Blob): Promise<string | ArrayBuffer | null> {
