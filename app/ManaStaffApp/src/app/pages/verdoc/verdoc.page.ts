@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { DocumentosApi } from "src/app/services/documentos-api";
 
+import { Browser } from '@capacitor/browser'; 
 
 interface DocumentoDetalle {
   id: string
@@ -13,7 +14,7 @@ interface DocumentoDetalle {
   format: string
   size: string
   date: string
-  fileUrl: string
+  fileUrl: string | null
   downloadUrl: string | null
 }
 
@@ -31,13 +32,15 @@ export class VerdocPage implements OnInit {
     format: "",
     size: "",
     date: "",
-    fileUrl: "",
+    fileUrl: null,
     downloadUrl: null,
   }
 
   safeFileUrl: SafeResourceUrl | null = null
   isLoading: boolean = false
   errorMessage: string | null = null
+
+  private webPreviewableFormats = ['pdf', 'png', 'jpg', 'jpeg'];
 
   constructor(
     private alertController: AlertController,
@@ -61,12 +64,9 @@ export class VerdocPage implements OnInit {
         format: passedDoc.tipo_documento || 'Archivo', 
         size: passedDoc.tamano_archivo || '0 MB', 
         date: passedDoc.Fecha_emitida || '',
-        fileUrl: passedDoc.url || '', 
+        fileUrl: null, 
         downloadUrl: null,
       }
-      
-      
-      this.safeFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.doc.fileUrl);
 
       this.cargarUrlDocumento(this.doc.id)
       
@@ -88,10 +88,21 @@ export class VerdocPage implements OnInit {
     this.documentosApi.descargarDocumento(id_doc).subscribe({
       next: (response) => {
         this.isLoading = false;
-        
-        if (response.status === 'success') {
-          this.doc.downloadUrl = response.download_url; 
+
+        if (response.status === 'success' && response.download_url) {
+          const viewUrl = response.view_url;
+          const downloadUrl = response.download_url;
+
+          this.doc.fileUrl = viewUrl; 
+          this.doc.downloadUrl = downloadUrl; 
           this.errorMessage = null;
+
+          if (this.canWebPreview(this.doc.format) && viewUrl) {
+             this.safeFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(viewUrl);
+          } else {
+             this.safeFileUrl = null;
+          }
+
         } else if (response.status === 'error') {
             this.errorMessage = response.message;
         } else {
@@ -100,16 +111,38 @@ export class VerdocPage implements OnInit {
         
       },
       error: (httpError) => {
-        this.isLoading = false;
-        
         let message = "Error de conexión con el servidor.";
-        if (httpError.status === 401) {
+        if (httpError.status === 403) {
+             message = "No está autorizado para ver este documento.";
+        } else if (httpError.status === 401) {
           message = "Su sesión ha expirado o no está autorizado. Inicie sesión nuevamente.";
-        } else if (httpError.error && httpError.error.error) {
-            message = httpError.error.error;
+        } else if (httpError.error && httpError.error.message) {
+             message = httpError.error.message;
         }
+        this.errorMessage = message;
+        this.doc.title = "No disponible";
+        this.showAlert("Error de Carga", message);
       }
     })
+  }
+
+  canWebPreview(format: string): boolean {
+    if (!format) return false;
+    return this.webPreviewableFormats.includes(format.toLowerCase());
+  }
+
+  async viewDocument() {
+    if (!this.doc.fileUrl) {
+      this.showAlert("Error", "URL del documento no disponible para previsualización.");
+      return;
+    }
+    
+    try {
+      await Browser.open({ url: this.doc.fileUrl });
+    } catch(e) {
+      console.error("Error al abrir el navegador de Capacitor:", e);
+      this.showAlert("Error de Visualización", "No se pudo abrir el visor de documentos nativo. Intenta descargar.");
+    }
   }
 
   private async showAlert(header: string, message: string) {
@@ -134,8 +167,13 @@ export class VerdocPage implements OnInit {
       this.showAlert("Error de descarga", "La URL de descarga no está disponible. Intenta refrescar la página.");
       return;
     }
-    window.open(this.doc.downloadUrl, '_system');
-
-    this.showAlert("Descarga Iniciada", `Se está descargando el documento "${this.doc.title}".`);
+    
+    try {
+        await Browser.open({ url: this.doc.downloadUrl, presentationStyle: 'popover' }); 
+        this.showAlert("Descarga Iniciada", `El documento "${this.doc.title}" se está procesando para su descarga.`);
+    } catch (e) {
+        console.error("Error al iniciar la descarga nativa:", e);
+        this.showAlert("Error de Descarga", "No se pudo iniciar la descarga. Por favor, asegúrate de que tu aplicación tenga permisos de almacenamiento.");
+    }
   }
 }

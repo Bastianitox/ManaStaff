@@ -404,75 +404,18 @@ def descargar_documento(request, id_doc):
             response_disposition=f'attachment; filename="{nombre_descarga_final}"' 
         )
 
-        registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre_descarga_final}.")
-        return JsonResponse({"status":"success", "message": "URL de descarga generada.", "download_url": download_url}, status = 200)
-
-    except Exception as e:
-        registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre_descarga_final}: {str(e)}")
-        return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)
-
-@csrf_exempt
-@require_GET
-@firebase_auth_required
-def ver_documento(request, id_doc):
-    rut_usuario_actual = request.rut_usuario_actual
-
-    #Obtener Documento a descargar
-    documentos_ref = db.reference("Documentos/"+id_doc).get() or {}
-
-    rut_id_documento = documentos_ref.get("id_rut")
-    nombre_base = documentos_ref.get("nombre", "documento")
-
-    storage_bucket = documentos_ref.get("storage_bucket")
-    storage_path = documentos_ref.get("storage_path")
-    doc_tipo = documentos_ref.get("tipo_documento", "").lower()
-
-    if not storage_path or not storage_bucket:
-            return JsonResponse({"status":"error", "message": "Ruta de archivo no encontrada en el documento."}, status = 404)
-
-    if doc_tipo and not nombre_base.endswith(f".{doc_tipo}"):
-        extension = f".{doc_tipo}"
-    else:
-        nombre_sin_ext, ext_from_path = os.path.splitext(storage_path)
-        extension = ext_from_path.lower()
-
-    base, _ = os.path.splitext(nombre_base)
-    nombre_descarga_final = f"{base}{extension}"
-    
-    if not extension:
-        _, extension_path = os.path.splitext(storage_path)
-        if extension_path:
-            nombre_descarga_final = f"{nombre_base}{extension_path}"
-        else:
-             nombre_descarga_final = nombre_base
-   
-
-    #Validar descarga (Si es de RRHH o Empleado)
-    usuario_actual = db.reference("Usuario/"+rut_usuario_actual).get() or {}
-    rol_usuario_actual = usuario_actual.get("rol")
-
-    if rol_usuario_actual != "Uno" and (rut_usuario_actual != rut_id_documento):
-        registrar_auditoria_movil(request, "Cinco", "fallo", f"Intento de descarga no autorizado del documento {nombre_descarga_final} por {rut_usuario_actual}.")
-        return JsonResponse({"status":"error", "message": "Usted no es de Recursos Humanos ni es su documento."}, status = 403) 
-
-    try:
-        bucket = storage.bucket(name=storage_bucket)
-        blob = bucket.blob(storage_path)
-
-        download_url = blob.generate_signed_url(
+        view_url = blob.generate_signed_url(
             version='v4',
-            expiration=timedelta(minutes=60), 
-            method='GET',
-            response_disposition=f'attachment; filename="{nombre_descarga_final}"' 
+            expiration=timedelta(minutes=60),
+            method='GET'
         )
 
         registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre_descarga_final}.")
-        return JsonResponse({"status":"success", "message": "URL de descarga generada.", "download_url": download_url}, status = 200)
+        return JsonResponse({"status":"success", "message": "URL de descarga generada.", "download_url": download_url, "view_url": view_url}, status = 200)
 
     except Exception as e:
         registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre_descarga_final}: {str(e)}")
         return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)
-
 
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
 

@@ -14,6 +14,7 @@ interface DescargaApiResponse{
   status: string;
   message: string;
   download_url: string;
+  view_url: string;
 }
 
 @Injectable({
