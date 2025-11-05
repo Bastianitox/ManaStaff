@@ -133,7 +133,6 @@ export class InicioavisosPage implements OnInit {
     })
 
     this.filteredPublicaciones = filtered
-    this.closeFilterModal()
   }
 
   clearFilters() {
