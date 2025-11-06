@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from staffweb.firebase import auth, db, storage
 from django.views.decorators.http import require_POST,require_GET, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -381,9 +381,9 @@ def descargar_documento(request, id_doc):
     try:   
         response = requests.get(url, stream=True)
         if response.status_code != 200:
-            print("ERROR")
             return HttpResponse("No se pudo descargar el documento", status=500)
-        print("PRUEBA")
+
+        content_length = response.headers.get('Content-Length')
 
         nombre_archivo = url.split("/")[-1]
         nombre_archivo = str(nombre_archivo.split("?")[0])
@@ -398,9 +398,14 @@ def descargar_documento(request, id_doc):
         if not tipo_mime:
             tipo_mime = 'application/octet-stream' 
 
-        resp = HttpResponse(response.content, content_type=tipo_mime)
+        resp = StreamingHttpResponse(response.iter_content(chunk_size=8192), content_type=tipo_mime)
+        
         resp['Content-Disposition'] = f'attachment; filename="{ultimo_segmento}"'
-        print(resp)
+        
+        if content_length:
+            resp['Content-Length'] = content_length
+
+        print("Streaming respuesta con Content-Length:", content_length)
 
         #registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre}.")
         return resp

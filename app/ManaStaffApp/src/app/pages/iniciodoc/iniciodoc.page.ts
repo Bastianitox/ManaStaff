@@ -1,8 +1,10 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
-import { AlertController, Platform } from "@ionic/angular"
+import { AlertController, Platform, ToastController } from "@ionic/angular"
 import { Router } from '@angular/router'
 import { DocumentosApi } from "src/app/services/documentos-api"
 import { Directory, Filesystem } from '@capacitor/filesystem';
+import { HttpClient, HttpEventType, HttpResponse } from "@angular/common/http";
+import { LocalNotifications } from "@capacitor/local-notifications";
 
 // Interfaces
 interface Document {
@@ -27,7 +29,6 @@ interface Filters {
   sortOrder: "asc" | "desc"
 }
 
-// Datos falsos
 @Component({
   selector: "app-iniciodoc",
   templateUrl: "./iniciodoc.page.html",
@@ -42,6 +43,8 @@ export class IniciodocPage implements OnInit {
   isLoading = false
   private initialLoadCompleted = false;
 
+
+  activeDownloads: { [id: string]: number } = {};
 
   pinInputs: string[] = ["", "", "", ""]
   pinError = ""
@@ -74,7 +77,9 @@ export class IniciodocPage implements OnInit {
     private alertController: AlertController,
     private router: Router,
     private documentosApi: DocumentosApi,
-    private platform: Platform) {
+    private platform: Platform,
+    private toastController: ToastController,
+    private http: HttpClient) {
 
     this.documents = []
     this.filteredDocuments = []
@@ -281,23 +286,60 @@ export class IniciodocPage implements OnInit {
     })
   }
 
+  // ---------------------------------------- DESCARGA ----------------------------------------
+
   async descargarDocumento(id_doc: string, nombre_archivo: string) {
-      this.showAlert("Descargando...","Iniciada descarga del archivo "+nombre_archivo);
+    this.activeDownloads[id_doc] = 0;
+    this.showToast(`Iniciando descarga de: ${nombre_archivo}... (0%)`, 'primary');
 
     this.documentosApi.descargarDocumento(id_doc).subscribe({
-      next: async (blob) => {
+    next: async (event) => {
+      if (event.type === HttpEventType.DownloadProgress) {
+        // Evento de progreso de descarga (progreso en tiempo real)
+        const percent = Math.round((100 * event.loaded) / (event.total || event.loaded));
+        this.activeDownloads[id_doc] = percent;
+        
+        // Actualizar la notificación nativa en el móvil
         if (this.platform.is('hybrid')) {
-          // 📱 Modo móvil (Capacitor)
-          await this.guardarArchivoEnDispositivo(blob, nombre_archivo);
-        } else {
-          // 💻 Modo navegador
-          this.descargarEnNavegador(blob, nombre_archivo);
+          this.showNativeNotification(
+            `Descargando: ${nombre_archivo}`,
+            `Progreso: ${percent}%`,
+            Number(id_doc), 
+            true
+          );
         }
-      },
-      error: (err) => {
-        console.error('Error al descargar el documento:', err);
-        alert('Error al descargar el documento.');
+
+        this.showToast(`Descargando: ${nombre_archivo}... (${percent}%)`, 'primary');
+
+
+      } else if (event instanceof HttpResponse) {
+        const blob = event.body as Blob;
+        
+        if (this.platform.is('hybrid')) {
+        await this.guardarArchivoEnDispositivo(blob, nombre_archivo, Number(id_doc));
+        } else {
+        this.descargarEnNavegador(blob, nombre_archivo);
+        this.showToast(`Archivo "${nombre_archivo}" descargado.`, 'success');
+        }
+        
+        delete this.activeDownloads[id_doc];
       }
+    },
+    error: (err) => {
+      console.error('Error al descargar el documento:', err);
+      delete this.activeDownloads[id_doc];
+
+      if (this.platform.is('hybrid')) {
+        this.showNativeNotification(
+          'Descarga Fallida ❌', 
+          `Error al descargar ${nombre_archivo}.`, 
+          Number(id_doc),
+                  false
+        );
+      } else {
+      this.showToast('Error al descargar el documento. Inténtelo de nuevo.', 'danger');
+      }
+    }
     });
   }
 
@@ -312,7 +354,8 @@ export class IniciodocPage implements OnInit {
     window.URL.revokeObjectURL(fileUrl);
   }
 
-  private async guardarArchivoEnDispositivo(blob: Blob, nombre: string) {
+ // Función actualizada para recibir el ID del documento
+  private async guardarArchivoEnDispositivo(blob: Blob, nombre: string, notificationId: number) {
     // Detectar extensión desde el tipo MIME
     const mime = blob.type;
     let extension = '';
@@ -338,12 +381,27 @@ export class IniciodocPage implements OnInit {
         directory: Directory.ExternalStorage,
       });
 
-      alert(`✅ Archivo "${nombre}" guardado correctamente en la carpeta Descargas.`);
+        // Notificación final de éxito
+      this.showNativeNotification(
+          'Descarga Finalizada', 
+          `El archivo "${nombre}" ha sido guardado en la carpeta Descargas.`, 
+          notificationId, 
+          false // Indicar que la descarga terminó
+        );
+        this.showToast(`✅ Archivo "${nombre}" guardado correctamente en la carpeta Descargas.`, 'success');
+
     } catch (error) {
       console.error('Error al guardar el archivo:', error);
-      alert('❌ No se pudo guardar el archivo. Verifica los permisos de almacenamiento.');
+      // Notificación final de error
+      this.showNativeNotification(
+            'Error de Guardado ❌', 
+            `No se pudo guardar "${nombre}". Verifique los permisos.`, 
+            notificationId, 
+            false
+          );
+      this.showToast('❌ No se pudo guardar el archivo. Verifica los permisos de almacenamiento.', 'danger'); 
     }
-  }
+ }
 
   private convertBlobToBase64(blob: Blob): Promise<string | ArrayBuffer | null> {
     return new Promise((resolve, reject) => {
@@ -356,12 +414,58 @@ export class IniciodocPage implements OnInit {
 
 
   async showAlert(header: string, message: string) {
-      const alert = await this.alertController.create({
-          header: header,
-          message: message,
-          buttons: ["OK"],
-      })
-      await alert.present()
+    const alert = await this.alertController.create({
+      header: header,
+      message: message,
+      buttons: ["OK"],
+    })
+    await alert.present()
+  }
+
+  async showToast(message: string, color: 'primary' | 'success' | 'danger' = 'primary') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      position: 'bottom',
+      color: color === 'success' ? 'success' : (color === 'danger' ? 'danger' : 'primary'),
+      buttons: [{
+        text: 'Cerrar',
+        role: 'cancel'
+      }]
+    });
+    await toast.present();
+  }
+  
+ // Nueva función para mostrar/actualizar notificaciones nativas del sistema (móvil)
+  private async showNativeNotification(title: string, body: string, id: number, isProgress: boolean = false) {
+    if (!this.platform.is('hybrid')) {
+      return; 
+    }
+    
+    // 1. Verificamos y solicitamos permisos de notificación si son necesarios
+    const permission = await LocalNotifications.checkPermissions();
+    if (permission.display !== 'granted') {
+      const request = await LocalNotifications.requestPermissions();
+      if (request.display !== 'granted') {
+        console.warn('Permiso de notificación nativa denegado.');
+        return;
+      }
+    }
+
+    // 2. Programamos/Actualizamos la notificación nativa
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          title: title,
+          body: body,
+          id: id,
+          ongoing: isProgress, 
+          schedule: { at: new Date(Date.now() + 100) },
+          sound: isProgress ? undefined : 'default',
+          smallIcon: isProgress ? 'res://ic_stat_downloading' : 'res://ic_stat_download_complete',
+        },
+      ],
+    });
   }
 
 }

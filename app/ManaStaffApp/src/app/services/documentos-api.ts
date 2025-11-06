@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -23,10 +23,14 @@ export class DocumentosApi {
     return this.http.get<ApiResponse>(url);
   }
 
-  descargarDocumento(id_doc: string): Observable<Blob> {
+  descargarDocumento(id_doc: string): Observable<HttpEvent<Blob>> {
     const url = this.API_URL + `descargar_documento/${id_doc}`;
-    return this.http.get(url, { responseType: 'blob' });
-  }
+    return this.http.get(url, { 
+      responseType: 'blob',
+      reportProgress: true,
+      observe: 'events'
+    });
+ }
 
 
 }

@@ -90,26 +90,10 @@ export class VerdocPage implements OnInit {
     }
   }
 
-  private async showAlert(header: string, message: string) {
-    const alert = await this.alertController.create({
-        header: header,
-        message: message,
-        buttons: ["OK"],
-    })
-    await alert.present()
-  }
 
-  goBack() {
-    this.router.navigate(['/tabs/documentos'])
-  }
-
-  goBackToList() {
-    this.router.navigate(['/tabs/documentos'])
-  }
-
-
+  descargarDocumento(id_doc: string, nombre_archivo: string){}
   // -------------------------------------------------- DESCARGA DE DOCUMENTOS --------------------------------------------------
-
+/*
   async descargarDocumento(id_doc: string, nombre_archivo: string) {
       this.showAlert("Descargando...","Iniciada descarga del archivo "+nombre_archivo);
 
@@ -129,7 +113,7 @@ export class VerdocPage implements OnInit {
       }
     });
   }
-
+*/
   private descargarEnNavegador(blob: Blob, nombre: string) {
     const fileUrl = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -183,4 +167,28 @@ export class VerdocPage implements OnInit {
     });
   }
 
+
+  // -------------------------------------------------- FIN DESCARGA DE DOCUMENTOS --------------------------------------------------
+
+
+  
+  // -------------------------------------------------- FUNCIONES AYUDA --------------------------------------------------
+
+
+  private async showAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+        header: header,
+        message: message,
+        buttons: ["OK"],
+    })
+    await alert.present()
+  }
+
+  goBack() {
+    this.router.navigate(['/tabs/documentos'])
+  }
+
+  goBackToList() {
+    this.router.navigate(['/tabs/documentos'])
+  }
 }
