@@ -8,6 +8,7 @@ import { DocumentosApi } from "src/app/services/documentos-api";
 import { Directory, Filesystem } from '@capacitor/filesystem';
 
 import { Browser } from '@capacitor/browser'; 
+import { Download } from "src/app/services/download";
 
 interface DocumentoDetalle {
   id: string
@@ -44,8 +45,7 @@ export class VerdocPage implements OnInit {
   constructor(
     private alertController: AlertController,
     private router: Router,
-    private documentosApi: DocumentosApi,
-    private platform: Platform
+    private downloadService: Download
   ) {}
 
   ngOnInit() {
@@ -73,8 +73,12 @@ export class VerdocPage implements OnInit {
     }
   }
 
-
+  // -------------------------------------------------- DESCARGA --------------------------------------------------
+  async descargarDocumento(id_doc: string, nombre_archivo: string) {
+    await this.downloadService.downloadAndSaveDocument(id_doc, nombre_archivo);
+  }
   
+  // -------------------------------------------------- FIN DESCARGA --------------------------------------------------
 
   async viewDocument() {
     if (!this.doc.fileUrl) {
@@ -91,87 +95,8 @@ export class VerdocPage implements OnInit {
   }
 
 
-  descargarDocumento(id_doc: string, nombre_archivo: string){}
-  // -------------------------------------------------- DESCARGA DE DOCUMENTOS --------------------------------------------------
-/*
-  async descargarDocumento(id_doc: string, nombre_archivo: string) {
-      this.showAlert("Descargando...","Iniciada descarga del archivo "+nombre_archivo);
-
-    this.documentosApi.descargarDocumento(id_doc).subscribe({
-      next: async (blob) => {
-        if (this.platform.is('hybrid')) {
-          // 📱 Modo móvil (Capacitor)
-          await this.guardarArchivoEnDispositivo(blob, nombre_archivo);
-        } else {
-          // 💻 Modo navegador
-          this.descargarEnNavegador(blob, nombre_archivo);
-        }
-      },
-      error: (err) => {
-        console.error('Error al descargar el documento:', err);
-        alert('Error al descargar el documento.');
-      }
-    });
-  }
-*/
-  private descargarEnNavegador(blob: Blob, nombre: string) {
-    const fileUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = fileUrl;
-    a.download = nombre || 'documento.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(fileUrl);
-  }
-
-  private async guardarArchivoEnDispositivo(blob: Blob, nombre: string) {
-    // Detectar extensión desde el tipo MIME
-    const mime = blob.type;
-    let extension = '';
-
-    if (mime === 'application/pdf') extension = '.pdf';
-    else if (mime === 'application/msword') extension = '.doc';
-    else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') extension = '.docx';
-    else if (mime === 'image/jpeg') extension = '.jpg';
-    else if (mime === 'image/png') extension = '.png';
-    else extension = '';
-
-    // Si el nombre no termina con esa extensión, agrégala
-    if (extension && !nombre.toLowerCase().endsWith(extension)) {
-      nombre += extension;
-    }
-
-    const base64Data = await this.convertBlobToBase64(blob) as string;
-
-    try {
-      await Filesystem.writeFile({
-        path: `Download/${nombre}`,
-        data: base64Data.split(',')[1],
-        directory: Directory.ExternalStorage,
-      });
-
-      alert(`✅ Archivo "${nombre}" guardado correctamente en la carpeta Descargas.`);
-    } catch (error) {
-      console.error('Error al guardar el archivo:', error);
-      alert('❌ No se pudo guardar el archivo. Verifica los permisos de almacenamiento.');
-    }
-  }
-
-  private convertBlobToBase64(blob: Blob): Promise<string | ArrayBuffer | null> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
-    });
-  }
 
 
-  // -------------------------------------------------- FIN DESCARGA DE DOCUMENTOS --------------------------------------------------
-
-
-  
   // -------------------------------------------------- FUNCIONES AYUDA --------------------------------------------------
 
 
