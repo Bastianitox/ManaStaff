@@ -3,7 +3,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { AlertController, Platform, ToastController } from '@ionic/angular';
 import { DocumentosApi } from './documentos-api';
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
-import { Directory, Filesystem } from '@capacitor/filesystem';
+import { Directory, Filesystem, FilesystemEncoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { FileOpener } from '@capacitor-community/file-opener';
 
@@ -132,6 +132,61 @@ export class Download {
     }
   }
 
+  async cargarPdfDesdeUrl(url: string, id_doc: string) {
+    if (!url) return undefined;
+    
+    this.showToast('Iniciando carga local del documento...', 'primary');
+
+    try {
+      const pdfBlob = await this.documentosApi.descargarDocumentoComoBlob(id_doc);
+
+      if (!pdfBlob){
+        return undefined
+      }
+      
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      const base64Content = base64Data.split(',')[1];
+
+      await Filesystem.writeFile({
+        path: 'temp_viewer_pdf.pdf',
+        data: base64Content, 
+        directory: Directory.Cache,
+        encoding: (FilesystemEncoding as any).Base64 || 'base64'
+      });
+
+      const readResult = await Filesystem.readFile({
+        path: 'temp_viewer_pdf.pdf',
+        directory: Directory.Cache,
+        encoding: (FilesystemEncoding as any).Base64 || 'base64'
+      });
+      
+      const raw = window.atob(readResult.data as string); 
+      const rawLength = raw.length;
+      const array = new Uint8Array(new ArrayBuffer(rawLength));
+
+      for(let i = 0; i < rawLength; i++) {
+        array[i] = raw.charCodeAt(i);
+      }
+      
+      this.showToast('PDF cargado con éxito en el visor interno.', 'success');
+      
+      // await Filesystem.deleteFile({ path: 'temp_viewer_pdf.pdf', directory: Directory.Cache });
+
+      return array
+    } catch (error) {
+      console.error('Error al descargar y cargar PDF localmente:', error);
+      this.showAlert('Error de Carga Local', 
+        'No se pudo descargar o mostrar el PDF internamente. Intenta la descarga normal.'
+      );
+      return undefined
+    }
+  }
 
   private descargarEnNavegador(blob: Blob, nombre: string) {
     const fileUrl = window.URL.createObjectURL(blob);

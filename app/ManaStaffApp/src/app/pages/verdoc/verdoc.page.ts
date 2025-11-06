@@ -3,12 +3,8 @@ import { AlertController, Platform } from "@ionic/angular"
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser"
 import { Router } from '@angular/router'
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
-import { DocumentosApi } from "src/app/services/documentos-api";
-import { Directory, Filesystem } from '@capacitor/filesystem';
-
-import { Browser } from '@capacitor/browser'; 
 import { Download } from "src/app/services/download";
+import { Directory, Filesystem, FilesystemEncoding } from "@capacitor/filesystem";
 
 interface DocumentoDetalle {
   id: string
@@ -16,7 +12,7 @@ interface DocumentoDetalle {
   format: string
   size: string
   date: string
-  fileUrl: string | null
+  fileUrl: string | SafeResourceUrl | null
   downloadUrl: string | null
 }
 
@@ -38,19 +34,20 @@ export class VerdocPage implements OnInit {
     downloadUrl: null,
   }
 
-  safeFileUrl: SafeResourceUrl | null = null
+  pdfSrc?: string | Uint8Array;
+  safeFileUrl?: SafeResourceUrl;
   isLoading: boolean = false
   errorMessage: string | null = null
 
   constructor(
     private alertController: AlertController,
     private router: Router,
-    private downloadService: Download
-  ) {}
+    private downloadService: Download,
+    private domSanitizer: DomSanitizer,
+    private http: HttpClient,
+  ) {
 
-  ngOnInit() {
     this.isLoading = true
-    
     const nav = this.router.getCurrentNavigation()
     const passedDoc: any = nav?.extras?.state?.['document']
 
@@ -62,8 +59,14 @@ export class VerdocPage implements OnInit {
         format: passedDoc.tipo_documento || 'Archivo', 
         size: passedDoc.tamano_archivo || '0 MB', 
         date: passedDoc.Fecha_emitida || '',
-        fileUrl: null, 
+        fileUrl: passedDoc.url, 
         downloadUrl: passedDoc.url || '',
+      }
+
+      if (this.doc.format === 'PDF' && this.doc.fileUrl) {
+        this.iniciarCargaPdfLocal(this.doc.fileUrl as string, this.doc.id); 
+      } else {
+        this.isLoading = false;
       }
       
     } else {
@@ -73,6 +76,27 @@ export class VerdocPage implements OnInit {
     }
   }
 
+  async iniciarCargaPdfLocal(url: string, id_doc: string) {
+    this.isLoading = true;
+    try {
+      const arrayBuffer = await this.downloadService.cargarPdfDesdeUrl(url, id_doc);
+
+      if (arrayBuffer) {
+        this.pdfSrc = arrayBuffer; 
+      } else {
+        this.errorMessage = 'No se pudo cargar el PDF localmente.';
+      }
+    } catch (error) {
+      this.errorMessage = 'Ocurrió un error al intentar cargar el documento.';
+      console.error(error);
+    } finally {
+      this.isLoading = false;
+    }
+ }
+  
+
+  ngOnInit() {}
+
   // -------------------------------------------------- DESCARGA --------------------------------------------------
   async descargarDocumento(id_doc: string, nombre_archivo: string) {
     await this.downloadService.downloadAndSaveDocument(id_doc, nombre_archivo);
@@ -80,19 +104,7 @@ export class VerdocPage implements OnInit {
   
   // -------------------------------------------------- FIN DESCARGA --------------------------------------------------
 
-  async viewDocument() {
-    if (!this.doc.fileUrl) {
-      this.showAlert("Error", "URL del documento no disponible para previsualización.");
-      return;
-    }
-    
-    try {
-      await Browser.open({ url: this.doc.fileUrl });
-    } catch(e) {
-      console.error("Error al abrir el navegador de Capacitor:", e);
-      this.showAlert("Error de Visualización", "No se pudo abrir el visor de documentos nativo. Intenta descargar.");
-    }
-  }
+  pdfCargado(event: any){}
 
 
 

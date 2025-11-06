@@ -30,7 +30,20 @@ export class DocumentosApi {
       reportProgress: true,
       observe: 'events'
     });
- }
+  }
+
+  descargarDocumentoComoBlob(id_doc: string): Promise<Blob> {
+    const url = this.API_URL + `descargar_documento/${id_doc}`;
+    return new Promise((resolve, reject) => {
+    this.http.get(url, { 
+      responseType: 'blob',
+      observe: 'body'
+    }).subscribe({
+      next: (blob) => resolve(blob),
+      error: (err) => reject(err)
+    });
+    });
+  } 
 
 
 }

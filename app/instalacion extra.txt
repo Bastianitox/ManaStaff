@@ -1,0 +1,7 @@
+npm install @capacitor/filesystem
+npm install @capacitor/local-notificaciones
+npm install @capacitor-community/file-opener 
+
+
+npm install @capacitor/browser
+npx cap sync

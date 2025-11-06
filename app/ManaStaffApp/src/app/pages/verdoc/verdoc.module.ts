@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { VerdocPageRoutingModule } from './verdoc-routing.module';
 
 import { VerdocPage } from './verdoc.page';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    VerdocPageRoutingModule
+    VerdocPageRoutingModule,
+    PdfViewerModule
   ],
   declarations: [VerdocPage]
 })

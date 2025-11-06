@@ -132,7 +132,6 @@ def detalle_solicitud(request, id_solicitud):
                  tipo_solicitud_nombre = tipo_data.get("nombre", "Tipo no encontrado")
             
         except Exception as e:
-            print(f"Error al obtener el nombre del tipo {tipo_id}: {e}")
             tipo_solicitud_nombre = "Error de base de datos"
 
     solicitud_a_ver["tipo_solicitud_nombre"] = tipo_solicitud_nombre
@@ -298,7 +297,6 @@ def detalle_publicacion(request, id_anuncio):
                  tipo_publicacion_nombre = tipo_data.get("nombre", "Tipo no encontrado")
             
         except Exception as e:
-            print(f"Error al obtener el nombre del tipo {tipo_id}: {e}")
             tipo_publicacion_nombre = "Error de base de datos"
 
     publicacion_a_ver["tipo_publicacion_nombre"] = tipo_publicacion_nombre
@@ -405,14 +403,10 @@ def descargar_documento(request, id_doc):
         if content_length:
             resp['Content-Length'] = content_length
 
-        print("Streaming respuesta con Content-Length:", content_length)
-
         registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre}.")
         return resp
     
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre}: {str(e)}")
         return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)
 
