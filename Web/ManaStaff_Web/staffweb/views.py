@@ -1659,9 +1659,12 @@ def api_logs_auditoria(request):
             if rol == id_rol:
                 rol = rol_f.get("nombre")
 
+        dt = _parse_iso(fecha_str)
+
         logs_filtrados.append({
             "id": id_auditoria,
             "fecha_hora": _fmt_fecha(fecha_str),
+            "fecha_para_ordenar": dt,
             "id_rut": log.get("id_rut"),
             "usuario_nombre": nombre,
             "rol": rol,
@@ -1673,7 +1676,13 @@ def api_logs_auditoria(request):
         })
 
     # Ordenar del más nuevo al más antiguo
-    logs_filtrados.sort(key=lambda x: x["fecha_hora"], reverse=True)
+    logs_validos = [log for log in logs_filtrados if log["fecha_para_ordenar"]]
+    logs_invalidos = [log for log in logs_filtrados if not log["fecha_para_ordenar"]]
+    
+    logs_validos.sort(key=lambda x: x["fecha_para_ordenar"], reverse=True)
+
+    # Combina de nuevo (los logs sin fecha válida irán al final)
+    logs_filtrados = logs_validos + logs_invalidos
 
     # Paginación manual
     start = (page - 1) * per_page

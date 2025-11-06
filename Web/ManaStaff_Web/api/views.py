@@ -375,7 +375,7 @@ def descargar_documento(request, id_doc):
     rol_usuario_actual = usuario_actual.get("rol")
 
     if rol_usuario_actual != "Uno" and (rut_usuario_actual != rut_id_documento):
-        #registrar_auditoria_movil(request, "Cinco", "fallo", f"Intento de descarga no autorizado del documento {nombre} por {rut_usuario_actual}.")
+        registrar_auditoria_movil(request, "Cinco", "fallo", f"Intento de descarga no autorizado del documento {nombre} por {rut_usuario_actual}.")
         return JsonResponse({"status":"error", "message": "Usted no es de Recursos Humanos ni es su documento."}, status = 403) 
 
     try:   
@@ -407,13 +407,13 @@ def descargar_documento(request, id_doc):
 
         print("Streaming respuesta con Content-Length:", content_length)
 
-        #registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre}.")
+        registrar_auditoria_movil(request, "Cinco", "éxito", f"El usuario {rut_usuario_actual} descargó el documento {nombre}.")
         return resp
     
     except Exception as e:
         import traceback
         traceback.print_exc()
-        #registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre}: {str(e)}")
+        registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre}: {str(e)}")
         return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)
 
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
