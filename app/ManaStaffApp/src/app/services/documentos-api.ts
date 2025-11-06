@@ -10,6 +10,11 @@ interface ApiResponse {
   documentos: any[];
 }
 
+interface PinApiResponse{
+  status: string;
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,7 +48,12 @@ export class DocumentosApi {
       error: (err) => reject(err)
     });
     });
-  } 
+  }
+
+  verificarPIN(formData: FormData): Observable<PinApiResponse>{
+    const url = this.API_URL + 'verificar_pin/';
+    return this.http.post<PinApiResponse>(url, formData);
+  }
 
 
 }

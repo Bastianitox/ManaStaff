@@ -19,5 +19,6 @@ urlpatterns = [
     #DOCUMENTOS
     path('obtener_documentos/', views.obtener_documentos, name='obtener_documentos'),
     path('descargar_documento/<str:id_doc>/', views.descargar_documento, name='descargar_documento'),
+    path('verificar_pin/', views.verificar_pin, name='verificar_pin'),
 
 ]

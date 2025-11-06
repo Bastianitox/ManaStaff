@@ -6,6 +6,7 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Directory, Filesystem, FilesystemEncoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { FileOpener } from '@capacitor-community/file-opener';
+import { Utils } from './utils';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +19,7 @@ export class Download {
     private alertController: AlertController,
     private documentosApi: DocumentosApi,
     private platform: Platform,
-    private toastController: ToastController,
-    private http: HttpClient) {
+    private utils: Utils) {
 
     this.listenForNotificationAction();
   }
@@ -27,28 +27,7 @@ export class Download {
   // --------------------------------------------- HELPERS ---------------------------------------------
   
 
-  async showAlert(header: string, message: string) {
-    const alert = await this.alertController.create({
-      header: header,
-      message: message,
-      buttons: ["OK"],
-    })
-    await alert.present()
-  }
-
-  async showToast(message: string, color: 'primary' | 'success' | 'danger' = 'primary') {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 3000,
-      position: 'bottom',
-      color: color === 'success' ? 'success' : (color === 'danger' ? 'danger' : 'primary'),
-      buttons: [{
-        text: 'Cerrar',
-        role: 'cancel'
-      }]
-    });
-    await toast.present();
-  }
+  
   
   private generateNotificationId(str: string): number {
     let hash = 0;
@@ -74,13 +53,13 @@ export class Download {
   async downloadAndSaveDocument(id_doc: string, nombre_archivo: string): Promise<void> {
     
     if (this.activeDownloads[id_doc]) {
-        this.showToast('La descarga ya está en progreso.', 'primary');
+        this.utils.showToast('La descarga ya está en progreso.', 'primary');
         return;
     }
     
     const notificationId = this.generateNotificationId(id_doc);
     this.activeDownloads[id_doc] = 0;
-    this.showToast(`Iniciando descarga de: ${nombre_archivo}... (0%)`, 'primary');
+    this.utils.showToast(`Iniciando descarga de: ${nombre_archivo}... (0%)`, 'primary');
 
     try {
         const event$ = this.documentosApi.descargarDocumento(id_doc);
@@ -91,7 +70,7 @@ export class Download {
                     if (event.type === HttpEventType.DownloadProgress) {
                         const percent = Math.round((100 * event.loaded) / (event.total || event.loaded));
                         this.activeDownloads[id_doc] = percent;
-                        this.showToast(`Descargando: ${nombre_archivo}... (${percent}%)`, 'primary');
+                        this.utils.showToast(`Descargando: ${nombre_archivo}... (${percent}%)`, 'primary');
 
                         if (this.platform.is('hybrid')) {
                             this.showNativeNotification(
@@ -107,16 +86,13 @@ export class Download {
                             await this.guardarArchivoEnDispositivo(blob, nombre_archivo, notificationId);
                         } else {
                             this.descargarEnNavegador(blob, nombre_archivo);
-                            this.showToast(`Archivo "${nombre_archivo}" descargado.`, 'success');
+                            this.utils.showToast(`Archivo "${nombre_archivo}" descargado.`, 'success');
                         }
                         resolve();
                     }
                 },
                 error: (err) => reject(err),
-                complete: () => {
-                  // Si llegamos a 'complete' antes de 'resolve' (descarga sin progreso), resolvemos.
-                  // Sin embargo, en el flujo de descarga de archivos, 'resolve' debería ocurrir en HttpResponse.
-                }
+                complete: () => {}
             });
         });
 
@@ -125,7 +101,7 @@ export class Download {
         if (this.platform.is('hybrid')) {
             this.showNativeNotification('Descarga Fallida ❌', `Error al descargar ${nombre_archivo}.`, notificationId, false);
         } else {
-            this.showToast('Error al descargar el documento. Inténtelo de nuevo.', 'danger');
+            this.utils.showToast('Error al descargar el documento. Inténtelo de nuevo.', 'danger');
         }
     } finally {
         delete this.activeDownloads[id_doc];
@@ -135,7 +111,7 @@ export class Download {
   async cargarPdfDesdeUrl(url: string, id_doc: string) {
     if (!url) return undefined;
     
-    this.showToast('Iniciando carga local del documento...', 'primary');
+    this.utils.showToast('Iniciando carga local del documento...', 'primary');
 
     try {
       const pdfBlob = await this.documentosApi.descargarDocumentoComoBlob(id_doc);
@@ -174,14 +150,14 @@ export class Download {
         array[i] = raw.charCodeAt(i);
       }
       
-      this.showToast('PDF cargado con éxito en el visor interno.', 'success');
+      this.utils.showToast('PDF cargado con éxito en el visor interno.', 'success');
       
       // await Filesystem.deleteFile({ path: 'temp_viewer_pdf.pdf', directory: Directory.Cache });
 
       return array
     } catch (error) {
       console.error('Error al descargar y cargar PDF localmente:', error);
-      this.showAlert('Error de Carga Local', 
+      this.utils.showAlert('Error de Carga Local', 
         'No se pudo descargar o mostrar el PDF internamente. Intenta la descarga normal.'
       );
       return undefined
@@ -234,7 +210,7 @@ export class Download {
         filePath,
         mime
       );
-      this.showToast(`✅ Archivo "${nombre}" guardado correctamente en la carpeta Descargas.`, 'success');
+      this.utils.showToast(`✅ Archivo "${nombre}" guardado correctamente en la carpeta Descargas.`, 'success');
 
     } catch (error) {
       console.error('Error al guardar el archivo:', error);
@@ -244,7 +220,7 @@ export class Download {
         notificationId, 
         false
       );
-      this.showToast('❌ No se pudo guardar el archivo. Verifica los permisos de almacenamiento.', 'danger'); 
+      this.utils.showToast('❌ No se pudo guardar el archivo. Verifica los permisos de almacenamiento.', 'danger'); 
     }
   }
 

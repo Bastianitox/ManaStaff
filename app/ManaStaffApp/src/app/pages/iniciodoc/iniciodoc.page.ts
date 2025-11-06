@@ -8,6 +8,8 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 import { Capacitor } from "@capacitor/core";
 import { FileOpener } from "@capacitor-community/file-opener";
 import { Download } from "src/app/services/download";
+import { finalize } from "rxjs";
+import { Utils } from "src/app/services/utils";
 
 // Interfaces
 interface Document {
@@ -43,6 +45,7 @@ export class IniciodocPage implements OnInit {
   showPinModal = true
   showFilterModal = false
 
+  isSubmitting = false
   isLoading = false
   private initialLoadCompleted = false;
 
@@ -52,7 +55,6 @@ export class IniciodocPage implements OnInit {
 
   pinInputs: string[] = ["", "", "", ""]
   pinError = ""
-  correctPin = "1234"
 
   searchQuery = ""
   documents: Document[] = []
@@ -80,7 +82,8 @@ export class IniciodocPage implements OnInit {
   constructor(
     private router: Router,
     private documentosApi: DocumentosApi,
-    private downloadService: Download) {
+    private downloadService: Download,
+    private utils: Utils) {
 
     this.documents = []
     this.filteredDocuments = []
@@ -152,18 +155,37 @@ export class IniciodocPage implements OnInit {
   verifyPin() {
     const enteredPin = this.pinInputs.join("")
 
-    if (enteredPin === this.correctPin) {
-      this.showPinModal = false
-      this.pinError = ""
-      this.applyFilters()
-    } else {
-      this.pinError = "Código PIN incorrecto. Intenta de nuevo."
-      this.pinInputs = ["", "", "", ""]
-      const firstInput = this.pinFields.toArray()[0]
-      if (firstInput) {
-        setTimeout(() => firstInput.nativeElement.focus(), 0)
-      }
-    }
+    const formData = new FormData();
+    formData.append('pin', enteredPin);
+    
+    this.isSubmitting = true
+
+    // 3. Llamar a la API
+    this.documentosApi.verificarPIN(formData)
+      .pipe(finalize(() => {
+        this.isSubmitting = false;
+      }))
+      .subscribe({
+        next: (response) => {
+
+          if (response.status == 'success') {
+            this.showPinModal = false
+            this.pinError = ""
+            this.applyFilters()
+          } else {
+            this.pinError = "Código PIN incorrecto. Intenta de nuevo."
+            this.pinInputs = ["", "", "", ""]
+            const firstInput = this.pinFields.toArray()[0]
+            if (firstInput) {
+              setTimeout(() => firstInput.nativeElement.focus(), 0)
+            }
+          }
+        },
+        error: (httpError) => {
+          const errorMessage = httpError.error?.error || httpError.error?.message || "Error desconocido al verificar el PIN.";
+          this.utils.showAlert("Error",errorMessage);
+        }
+      });
   }
 
   isPinIncomplete(): boolean {

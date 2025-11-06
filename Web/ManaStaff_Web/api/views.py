@@ -410,6 +410,30 @@ def descargar_documento(request, id_doc):
         registrar_auditoria_movil(request, "Cinco", "error", f"Error al generar URL para el documento {nombre}: {str(e)}")
         return JsonResponse({"status":"error", "message": f"Error interno al preparar la descarga: {str(e)}"}, status = 500)
 
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def verificar_pin(request):
+
+    pin_post = request.POST.get("pin", None)
+    rut_usuario_actual = request.rut_usuario_actual
+
+    #Obtener Documento a descargar
+    usuario_ref = db.reference("Usuario/"+rut_usuario_actual).get() or {}
+
+    pin_actual= usuario_ref.get("PIN", "")
+
+    if not pin_post or not pin_actual:
+        return JsonResponse({"status":"error", "message": "No se encontro ningún PIN."}, status = 404)
+
+    if not pin_post or len(pin_post) != 4 or not pin_post.isdigit():
+        return JsonResponse({"status": "error", "message": "PIN inválido."}, status=400)
+
+    if pin_post and pin_actual and str(pin_post) == str(pin_actual):
+        return JsonResponse({"status": 'success', 'message': "PIN validado."}, status=200)
+    else:
+        return JsonResponse({"status": 'success', "message": "PIN incorrecto."}, status=403)
+
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
 
 
