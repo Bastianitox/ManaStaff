@@ -21,4 +21,7 @@ urlpatterns = [
     path('descargar_documento/<str:id_doc>/', views.descargar_documento, name='descargar_documento'),
     path('verificar_pin/', views.verificar_pin, name='verificar_pin'),
 
+    #USUARIO
+    path('actualizar_perfil/', views.actualizar_perfil, name='actualizar_perfil'),
+
 ]

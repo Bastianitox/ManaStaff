@@ -2,13 +2,14 @@ from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from staffweb.firebase import auth, db, storage
 from django.views.decorators.http import require_POST,require_GET, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from urllib.parse import unquote_plus
+from urllib.parse import unquote_plus, urlparse
 from staffweb.utils.auditoria import registrar_auditoria_movil
 from staffweb.utils.decorators import firebase_auth_required
 from datetime import datetime, timedelta
 import os
 import mimetypes
 import requests
+import re
 
 #----------------------------------- SESIÓN -----------------------------------
 
@@ -419,7 +420,8 @@ def verificar_pin(request):
     rut_usuario_actual = request.rut_usuario_actual
 
     #Obtener Documento a descargar
-    usuario_ref = db.reference("Usuario/"+rut_usuario_actual).get() or {}
+    usuario_db = db.reference("Usuario/"+rut_usuario_actual) or {}
+    usuario_ref = usuario_db.get()
 
     pin_actual= usuario_ref.get("PIN", "")
 
@@ -435,5 +437,82 @@ def verificar_pin(request):
         return JsonResponse({"status": 'success', "message": "PIN incorrecto."}, status=403)
 
 #----------------------------------- USUARIOS / PERFIL -----------------------------------
+
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def actualizar_perfil(request):
+    nuevo_celular = request.POST.get("celular", None) 
+    nueva_direccion = request.POST.get("direccion", None)
+    nueva_imagen = request.FILES.get("imagen", None)
+
+    rut_usuario_actual = request.rut_usuario_actual
+    
+    if not nuevo_celular or not nueva_direccion:
+        registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} intento modificar perfil con campos vaciós (Dirección o Telefono).")
+        return JsonResponse({"status":"error", "message": "Los campos dirección y|o teléfono no pueden estar vacíos."}, status = 404)
+
+    patron_chileno = re.compile(r"^\+56\s9\s\d{4}\s\d{4}$")
+
+    if not patron_chileno.match(nuevo_celular.strip()):
+        registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} ingresó un número de teléfono inválido: {nuevo_celular}.")
+        return JsonResponse({"status": "error", "message": "El teléfono debe tener formato chileno válido: +56 9 1234 5678"}, status=400)
+    
+    
+
+    usuario_ref = db.reference("Usuario").child(rut_usuario_actual)
+    usuario_actual = usuario_ref.get() or {}
+    imagen_actual_url = (usuario_actual.get('imagen') or '').strip()
+
+    if nueva_imagen:
+        # Validación
+        ext = nueva_imagen.name.split(".")[-1].lower()
+        if ext not in {"jpg", "jpeg", "png", "gif"}:
+            registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} intento modificar su imagen actual con un formato no valido (Solo JPG, JPEG, PNG o GIF).")
+            return JsonResponse({"status":"error", "message": "Imagen no permitida, debe tener formato JPG, JPEG, PNG o GIF."}, status = 400)
+
+        bucket = storage.bucket()
+
+        # Borrar imagen anterior si existe 
+        if imagen_actual_url:
+            try:
+                parsed = urlparse(imagen_actual_url)
+                last_segment = (parsed.path.split('/')[-1] if parsed.path else '').split('?')[0]
+                nombre_archivo_viejo = unquote_plus(last_segment) if last_segment else None
+                if nombre_archivo_viejo:
+                    old_blob = bucket.blob(f"{rut_usuario_actual}/Imagen/{nombre_archivo_viejo}")
+                    if old_blob.exists():
+                        old_blob.delete()
+            except Exception:
+                registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} tuvo problemas al eliminar su imagen actual.")
+                return JsonResponse({"status":"error", "message": "Ocurrio un error al intenar eliminar la anterior imagen."}, status = 500)
+
+        #Subir la nueva imagen
+        try:
+            new_blob = bucket.blob(f"{rut_usuario_actual}/Imagen/{nueva_imagen.name}")
+            new_blob.upload_from_file(nueva_imagen, content_type=nueva_imagen.content_type)
+            new_blob.cache_control = "public, max-age=3600, s-maxage=86400"
+            new_blob.patch()
+
+            imagen_actual_url = new_blob.generate_signed_url(
+                expiration=timedelta(weeks=150),
+                method="GET"
+            )
+        except Exception as e:
+            registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} tuvo problemas al subir su nueva imagen.")
+            return JsonResponse({"status":"error", "message": "Ocurrio un error al subir la nueva imagen."}, status = 500)
+
+    # Actualizar datos en Firebase 
+    try:
+        usuario_ref.update({
+            "Telefono": nuevo_celular,
+            "Direccion": nueva_direccion,
+            "imagen": imagen_actual_url
+        })
+        registrar_auditoria_movil(request, "Tres", "éxito", f"El usuario {rut_usuario_actual} modifico información de su perfil (Telefono, Dirección y/o Imagen).")
+        return JsonResponse({"status":"success", "message": "Perfil de usuario cambiado con éxito."}, status = 200)
+    except Exception:
+        registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} tuvo problemas al intentar actualizar su usuario (Telefono, Dirección y/o Imagen).")
+        return JsonResponse({"status":"error", "message": f"Error al actualizar perfil del usuario {rut_usuario_actual} (Telefono, Dirección y/o Imagen)."}, status = 200)
 
 

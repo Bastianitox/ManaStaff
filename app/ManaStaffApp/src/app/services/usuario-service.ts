@@ -4,16 +4,22 @@ import { get, getDatabase, ref } from 'firebase/database';
 import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Database } from '@angular/fire/database';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsuarioService {
+  private API_URL = environment.apiBaseUrl;
   private _storage: Storage | null = null;
 
   private userData: any = null;
 
-  constructor(private db: Database, private storage: Storage) {
+  constructor(
+    private db: Database, 
+    private storage: Storage,
+    private http: HttpClient) {
     this.init();
   }
 
@@ -71,8 +77,22 @@ export class UsuarioService {
     return await this._storage?.get('usuario');
   }
 
-  // 🔹 Limpia los datos locales
   async limpiarUsuario() {
     await this._storage?.remove('usuario');
+  }
+
+  async actualizarUsuarioLocal(nuevosDatos: any) {
+    const usuarioActual = await this._storage?.get('usuario');
+    const usuarioActualizado = { ...usuarioActual, ...nuevosDatos };
+    await this._storage?.set('usuario', usuarioActualizado);
+    return usuarioActualizado;
+  }
+
+
+  // ----------------------------------------------- FUNCIONES DE USUARIO -----------------------------------------------
+
+  actualizarPerfil(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'actualizar_perfil/';
+    return this.http.post<any>(url, formData);
   }
 }

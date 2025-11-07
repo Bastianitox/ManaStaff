@@ -118,9 +118,11 @@
             type="tel"
             [(ngModel)]="userData.Telefono"
             name="celular"
-            (ngModelChange)="onFieldChange()"
+            (input)="onTelefonoInput($event)"
+            (keypress)="soloNumeros($event)"
             class="custom-input editable"
             placeholder="+56 9 1234 5678"
+            maxlength="15"
           />
         </div>
 

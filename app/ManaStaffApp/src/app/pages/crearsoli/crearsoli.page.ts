@@ -115,13 +115,11 @@ export class CrearsoliPage implements OnInit {
   }
 
   submitRequest() {
-    // 1. Validar campos requeridos
     if (!this.selectedTipo || !this.titulo.trim() || !this.descripcion.trim()) {
       this.showError("Por favor completa todos los campos obligatorios.")
       return
     }
 
-    // 2. Crear FormData
     const formData = new FormData();
     formData.append('tipos_solicitud', this.selectedTipo);
     formData.append('asunto', this.titulo);
@@ -133,7 +131,6 @@ export class CrearsoliPage implements OnInit {
     
     this.isSubmitting = true
 
-    // 3. Llamar a la API
     this.solicitudApi.crearSolicitud(formData)
       .pipe(finalize(() => {
         this.isSubmitting = false; // Detener spinner en éxito o error
