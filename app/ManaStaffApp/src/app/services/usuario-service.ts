@@ -95,4 +95,15 @@ export class UsuarioService {
     const url = this.API_URL + 'actualizar_perfil/';
     return this.http.post<any>(url, formData);
   }
+
+  cambiarContrasena(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'cambiar_contrasena/';
+    return this.http.post<any>(url, formData);
+  }
+
+  cambiarPIN(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'cambiar_pin/';
+    return this.http.post<any>(url, formData);
+  }
+
 }

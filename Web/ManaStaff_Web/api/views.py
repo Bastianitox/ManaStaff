@@ -459,8 +459,11 @@ def actualizar_perfil(request):
         return JsonResponse({"status": "error", "message": "El teléfono debe tener formato chileno válido: +56 9 1234 5678"}, status=400)
     
     
-
-    usuario_ref = db.reference("Usuario").child(rut_usuario_actual)
+    try:
+        usuario_ref = db.reference("Usuario").child(rut_usuario_actual)
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al buscar usuario: {e}"}, status=500)
+    
     usuario_actual = usuario_ref.get() or {}
     imagen_actual_url = (usuario_actual.get('imagen') or '').strip()
 
@@ -515,4 +518,108 @@ def actualizar_perfil(request):
         registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} tuvo problemas al intentar actualizar su usuario (Telefono, Dirección y/o Imagen).")
         return JsonResponse({"status":"error", "message": f"Error al actualizar perfil del usuario {rut_usuario_actual} (Telefono, Dirección y/o Imagen)."}, status = 200)
 
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def cambiar_contrasena(request):
+    password_actual = request.POST.get("password_actual", "").strip()
+    password_nueva = request.POST.get("nueva_password", "").strip()
+    password_repetir = request.POST.get("confirmar_password", "").strip()
+    
+    rut_usuario_actual = request.rut_usuario_actual
+
+    if not all([password_actual, password_nueva, password_repetir]):
+        registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} intento cambiar su contraseña con campos vacios.")
+        return JsonResponse({"status": "false", "message": "Todos los campos son obligatorios."}, status=404)
+
+    if password_nueva != password_repetir:
+        return JsonResponse({"status": "false", "message": "Las nuevas contraseñas no coinciden."}, status=400)
+
+    if len(password_nueva) < 6:
+        return JsonResponse({"status": "false", "message": "La nueva contraseña debe tener al menos 6 caracteres."}, status=400)
+
+    # Obtener email del usuario según su RUT
+    try:
+        usuario_ref = db.reference(f"Usuario/{rut_usuario_actual}").get()
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al buscar usuario: {e}"}, status=500)
+    if not usuario_ref:
+        return JsonResponse({"status": "false", "message": "Usuario no encontrado."}, status=404)
+
+    email = usuario_ref.get("correo")
+
+
+    try:
+
+        api_key = "AIzaSyDrogTFQNg_BNb1qmkIhJ6cpppzPw-DLOo"
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
+        payload = {
+            "email": email,
+            "password": password_actual,
+            "returnSecureToken": True
+        }
+        r = requests.post(url, json=payload)
+        resp = r.json()
+
+        if "error" in resp:
+            registrar_auditoria_movil(request, "Tres", "false", f"El usuario {rut_usuario_actual} intento cambiar su contraseña con la contraseña actual incorrecta.")
+            return JsonResponse({"status": "false", "message": "La contraseña actual es incorrecta."}, status=400)
+
+        # Actualizar contraseña
+        user = auth.get_user_by_email(email)
+        auth.update_user(user.uid, password=password_nueva)
+
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al cambiar contraseña: {e}"}, status=500)
+    
+    registrar_auditoria_movil(request, "Tres", "éxito", f"El usuario {rut_usuario_actual} cambio su contraseña exitosamente.")
+    return JsonResponse({"status": "success", "message": "Contraseña actualizada correctamente."}, status=200)
+
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def cambiar_pin(request):
+    pin_actual = request.POST.get("pin_actual", "").strip()
+    pin_nueva = request.POST.get("pin_nueva", "").strip()
+    pin_confirmar = request.POST.get("pin_confirmar", "").strip()
+
+    rut_usuario_actual = request.rut_usuario_actual
+
+    if not all([pin_actual, pin_nueva, pin_confirmar]):
+        registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} intento cambiar su PIN con campos vacios.")
+        return JsonResponse({"status": "false", "message": "Todos los campos son obligatorios."}, status=400)
+
+    if pin_nueva != pin_confirmar:
+        return JsonResponse({"status": "false", "message": "Los nuevos pin no coinciden."}, status=400)
+    
+    if not (pin_actual.isdigit() and pin_nueva.isdigit() and pin_confirmar.isdigit()):
+        registrar_auditoria_movil(request, "Tres", "error", f"El usuario {rut_usuario_actual} intento cambiar su PIN con un valor no numérico.")
+        return JsonResponse({"status": "false", "message": "El PIN debe ser estrictamente numérico."}, status=400)
+
+    if len(pin_nueva) !=4:
+        return JsonResponse({"status": "false", "message": "El nuevo pin debe tener 4 números."}, status=400)
+
+    try:
+        usuario_ref = db.reference(f"Usuario/{rut_usuario_actual}").get()
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al buscar usuario: {e}"}, status=500)
+    
+    if not usuario_ref:
+        return JsonResponse({"status": "false", "message": "Usuario no encontrado."}, status=404)
+
+    try:
+        pin_usuario_actual=usuario_ref.get("PIN")
+        if pin_actual != pin_usuario_actual:
+            registrar_auditoria_movil(request, "Tres", "false", f"El usuario {rut_usuario_actual} intento cambiar su PIN con el PIN actual incorrecto.")
+            return JsonResponse({"status": "false", "message": "El pin actual es incorrecto."}, status=400)
+        
+        ref= db.reference(f"/Usuario/{rut_usuario_actual}")
+        ref.update({
+            "PIN":pin_nueva
+        })
+
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al cambiar pin: {e} por un error: {e}."}, status=500)
+    registrar_auditoria_movil(request, "Tres", "éxito", f"El usuario {rut_usuario_actual} cambio su PIN exitosamente.")
+    return JsonResponse({"status": "success", "message": "Pin actualizado correctamente."}, status=200)
 

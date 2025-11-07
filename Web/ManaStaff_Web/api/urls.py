@@ -23,5 +23,7 @@ urlpatterns = [
 
     #USUARIO
     path('actualizar_perfil/', views.actualizar_perfil, name='actualizar_perfil'),
+    path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
+    path('cambiar_pin/', views.cambiar_pin, name='cambiar_pin'),
 
 ]
