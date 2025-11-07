@@ -1,15 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { UsuarioService } from 'src/app/services/usuario-service';
 
-interface UserData {
+// Interfaces
+interface Usuario {
+  id: string
+  ApellidoMaterno: string
+  ApellidoPaterno: string
+  Cargo: string
+  Direccion: string
+  Fecha_creacion: string
+  Nombre: string
+  PIN: string
+  Segundo_nombre: string
+  Telefono: string
+  Ultimo_login: string
+  correo: string
+  imagen: string
+  intentos_fallidos: Number
+  rol: string
+  uid: string
+  rolNombre: string
+  cargoNombre: string
+  rut: string
   nombres: string
   apellidos: string
-  rut: string
-  correo: string
-  cargo: string
-  rol: string
-  celular: string
-  direccion: string
 }
 
 @Component({
@@ -19,42 +34,60 @@ interface UserData {
   standalone: false
 })
 export class InicioperfilPage implements OnInit {
-  // Foto de perfil
-  profilePhoto = "https://via.placeholder.com/120/2563EB/FFFFFF?text=Usuario"
-
   // Datos del usuario
-  userData: UserData = {
-    nombres: "Juan Carlos",
-    apellidos: "González Pérez",
-    rut: "12.345.678-9",
-    correo: "juan.gonzalez@empresa.cl",
-    cargo: "Analista de Sistemas",
-    rol: "Empleado",
-    celular: "+56 9 8765 4321",
-    direccion: "Av. Libertador Bernardo O'Higgins 1234, Santiago",
-  }
+  userData: Usuario = {
+    id: "",
+    ApellidoMaterno: "",
+    ApellidoPaterno: "",
+    Cargo: "",
+    Direccion: "",
+    Fecha_creacion: "",
+    Nombre: "",
+    PIN: "",
+    Segundo_nombre: "",
+    Telefono: "",
+    Ultimo_login: "",
+    correo: "",
+    imagen: "",
+    intentos_fallidos: 0,
+    rol: "",
+    uid: "",
+    cargoNombre: "",
+    rolNombre: "",
+    rut: "",
+    nombres: "",
+    apellidos: ""
+  };
 
   // Datos originales para comparar cambios
-  originalData: UserData = { ...this.userData }
+  originalData: any = { ...this.userData }
 
   // Estados
+  changedPhoto = false
   hasChanges = false
   isSaving = false
   showToast = false
   toastMessage = ""
   toastType: "success" | "error" | null = null
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private usuarioService: UsuarioService
+  ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     // Guardar datos originales
+    this.userData = await this.usuarioService.getUsuarioLocal();
+
+    this.userData.nombres = this.userData.Nombre + " "+ this.userData.Segundo_nombre
+    this.userData.apellidos = this.userData.ApellidoPaterno + " "+ this.userData.ApellidoMaterno
+
     this.originalData = { ...this.userData }
   }
 
   // Detectar cambios en campos editables
   onFieldChange() {
-    this.hasChanges =
-      this.userData.celular !== this.originalData.celular || this.userData.direccion !== this.originalData.direccion
+    this.hasChanges = this.userData.Telefono !== this.originalData.Telefono || this.userData.Direccion !== this.originalData.Direccion || this.userData.imagen !== this.originalData.imagen
   }
 
   // Cambiar foto de perfil
@@ -76,11 +109,18 @@ export class InicioperfilPage implements OnInit {
       // Leer y mostrar la imagen
       const reader = new FileReader()
       reader.onload = (e: any) => {
-        this.profilePhoto = e.target.result
-        this.showSuccessToast("Foto actualizada correctamente")
+        this.userData.imagen = e.target.result
+        this.onFieldChange()
+        this.changedPhoto = true
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  cancelPhoto(){
+    this.userData.imagen = this.originalData.imagen
+    this.changedPhoto = false
+    this.onFieldChange()
   }
 
   // Guardar cambios
@@ -90,12 +130,12 @@ export class InicioperfilPage implements OnInit {
     }
 
     // Validar campos
-    if (!this.userData.celular.trim()) {
+    if (!this.userData.Telefono.trim()) {
       this.showErrorToast("El celular no puede estar vacío")
       return
     }
 
-    if (!this.userData.direccion.trim()) {
+    if (!this.userData.Direccion.trim()) {
       this.showErrorToast("La dirección no puede estar vacía")
       return
     }

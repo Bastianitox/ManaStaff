@@ -200,6 +200,7 @@ ion-content {
   font-size: 15px;
   text-transform: none;
   height: 48px;
+  margin-bottom: 15px;
 
   &[disabled] {
     --background: #{$border-color};
@@ -211,8 +212,17 @@ ion-content {
   ion-spinner {
     margin-right: 8px;
   }
+
+  
 }
 
+.cancel-button{
+  --background: linear-gradient(135deg, #ff2323fb 0%, #b31919fb 100%);
+  --background-hover: #710f0ffb;
+  --background-activated: #4d1515fb;
+  --border-radius: 12px;
+  --box-shadow: 0 2px 8px rgba(255, 14, 14, 0.25);
+}
 // Toast
 .app-toast {
   position: fixed;

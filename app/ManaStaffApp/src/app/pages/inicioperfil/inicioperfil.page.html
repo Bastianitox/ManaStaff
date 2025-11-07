@@ -5,7 +5,7 @@
       <div class="profile-photo-section">
         <div class="profile-photo-container" (click)="photoInput.click()">
           <img 
-            [src]="profilePhoto" 
+            [src]="userData.imagen" 
             alt="Foto de perfil" 
             class="profile-photo"
           />
@@ -21,6 +21,17 @@
           accept="image/*"
           style="display: none"
         />
+      </div>
+
+      <!-- CANCELAR CAMBIO -->
+      <div class="form-actions" *ngIf="changedPhoto">
+        <ion-button
+          expand="block"
+          class="save-button cancel-button"
+          (click)="cancelPhoto()">
+          <ion-spinner name="crescent" *ngIf="isSaving"></ion-spinner>
+          <span *ngIf="!isSaving">Cancelar cambio</span>
+        </ion-button>
       </div>
 
       <!-- Formulario de datos -->
@@ -78,7 +89,7 @@
           <label class="field-label">Cargo</label>
           <input
             type="text"
-            [(ngModel)]="userData.cargo"
+            [(ngModel)]="userData.cargoNombre"
             name="cargo"
             class="custom-input readonly"
             readonly
@@ -90,7 +101,7 @@
           <label class="field-label">Rol</label>
           <input
             type="text"
-            [(ngModel)]="userData.rol"
+            [(ngModel)]="userData.rolNombre"
             name="rol"
             class="custom-input readonly"
             readonly
@@ -105,7 +116,7 @@
           </label>
           <input
             type="tel"
-            [(ngModel)]="userData.celular"
+            [(ngModel)]="userData.Telefono"
             name="celular"
             (ngModelChange)="onFieldChange()"
             class="custom-input editable"
@@ -120,7 +131,7 @@
             <ion-icon name="create-outline" class="editable-icon"></ion-icon>
           </label>
           <textarea
-            [(ngModel)]="userData.direccion"
+            [(ngModel)]="userData.Direccion"
             name="direccion"
             (ngModelChange)="onFieldChange()"
             rows="3"

@@ -23,7 +23,7 @@ interface Document {
   tipo_documento: string
   url: string
   Tipoestado: string
-  tipo_estado_nombre: string
+  tipo_estado_nombre: string,
 }
 
 interface Filters {

@@ -81,7 +81,6 @@ export class IniciosoliPage implements OnInit {
         this.isLoading = false;
         
         if (response.status === 'success') {
-          console.log(response.solicitudes);
           this.solicitudes = response.solicitudes as Solicitud[]; 
           
           this.inicializarTipos();
@@ -151,7 +150,6 @@ export class IniciosoliPage implements OnInit {
   }
 
   createNewRequest() {
-    console.log("Crear nueva solicitud")
     this.router.navigate(["/tabs/solicitudes/crear"])
   }
 
