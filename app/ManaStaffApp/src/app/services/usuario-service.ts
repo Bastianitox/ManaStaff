@@ -14,7 +14,7 @@ export class UsuarioService {
   private API_URL = environment.apiBaseUrl;
   private _storage: Storage | null = null;
 
-  private userData: any = null;
+  public userData: any = null;
 
   constructor(
     private db: Database, 
@@ -66,6 +66,8 @@ export class UsuarioService {
 
       await this._storage?.set('usuario', datosCompletos);
 
+      this.userData = datosCompletos
+
       return datosCompletos;
     } catch (error) {
       console.error("Error al obtener datos del usuario:", error);
@@ -85,6 +87,8 @@ export class UsuarioService {
     const usuarioActual = await this._storage?.get('usuario');
     const usuarioActualizado = { ...usuarioActual, ...nuevosDatos };
     await this._storage?.set('usuario', usuarioActualizado);
+
+    this.userData = usuarioActualizado
     return usuarioActualizado;
   }
 
@@ -103,6 +107,21 @@ export class UsuarioService {
 
   cambiarPIN(formData: FormData): Observable<any> {
     const url = this.API_URL + 'cambiar_pin/';
+    return this.http.post<any>(url, formData);
+  }
+
+  enviarCodigo(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'solicitar_recuperacion_pin/';
+    return this.http.post<any>(url, formData);
+  }
+  
+  verificarCodigo(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'verificar_codigo_recuperacion/';
+    return this.http.post<any>(url, formData);
+  }
+
+  cambiarPINverificado(formData: FormData): Observable<any> {
+    const url = this.API_URL + 'cambiar_PIN_verificado/';
     return this.http.post<any>(url, formData);
   }
 

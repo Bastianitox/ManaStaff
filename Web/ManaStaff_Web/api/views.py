@@ -5,15 +5,18 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import unquote_plus, urlparse
 from staffweb.utils.auditoria import registrar_auditoria_movil
 from staffweb.utils.decorators import firebase_auth_required
+from staffweb.utils.email_utils import enviar_correo
 from datetime import datetime, timedelta
 import os
 import mimetypes
 import requests
 import re
-
+import random
+import string
 #----------------------------------- SESIÓN -----------------------------------
 
-
+def generar_codigo(length=6):
+    return ''.join(random.choices(string.digits, k=length))
 
 
 #----------------------------------- SOLICITUDES -----------------------------------
@@ -623,3 +626,159 @@ def cambiar_pin(request):
     registrar_auditoria_movil(request, "Tres", "éxito", f"El usuario {rut_usuario_actual} cambio su PIN exitosamente.")
     return JsonResponse({"status": "success", "message": "Pin actualizado correctamente."}, status=200)
 
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def solicitar_recuperacion_pin(request):
+    email = request.POST.get('email')
+    if not email:
+        return JsonResponse({"status": "false", "message": "Debes ingresar un correo."}, status=400)
+
+    # Validar que el usuario actual y el correo a cambiar coincidan
+    
+    rut_usuario_actual = request.rut_usuario_actual
+
+    try:
+        correo_actual = db.reference("Usuario").child(rut_usuario_actual).get().get('correo')
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al buscar correo actual: {e}"}, status=500)
+
+    if not correo_actual or not rut_usuario_actual:
+        return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"}, status=404)
+
+    if email != correo_actual:
+        registrar_auditoria_movil(request, "Seis", "false", f"El usuario {rut_usuario_actual} solicito recuperación de PIN con correo incorrecto.")
+        return JsonResponse({"status": "false", "message": "El correo actual no coincide con el del envío."}, status=400)
+
+    # Generar código temporal
+    codigo = generar_codigo()
+    expiracion = (datetime.now() + timedelta(minutes=10)).isoformat()
+
+    # Guardar OTP en Firebase
+    db.reference(f"RecuperacionPIN/{rut_usuario_actual}").set({
+        "codigo": codigo,
+        "expira": expiracion
+    })
+
+    asunto = "Recuperación de PIN"
+    texto = f"Tu código de recuperación es: {codigo}. Válido por 10 minutos."
+    html = f"""
+    <div style="font-family: Arial, sans-serif; color: #333;">
+    <h2 style="color: #1cc88a;">Recuperación de PIN</h2>
+    <p>Tu código de recuperación es:</p>
+    <p style="background-color:#f2f2f2; padding:10px; border-radius:5px; font-size:18px;">
+        <strong>{codigo}</strong>
+    </p>
+    <p>Válido por 10 minutos.</p>
+    </div>
+    """
+
+    enviar_correo(email, asunto, texto, html)
+
+    registrar_auditoria_movil(request, "Seis", "éxito", f"El usuario {rut_usuario_actual} solicito un codigo de recuperación de PIN.")
+    return JsonResponse({"status": "success", "message": "Código enviado a tu correo."},status=200)
+
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def verificar_codigo_recuperacion(request):
+    email = request.POST.get("email")
+    codigo_ingresado = request.POST.get("codigo")
+
+    if not email or not codigo_ingresado:
+        return JsonResponse({"status": "false", "message": "Faltan datos (codigo o email)."}, status=400)
+    
+    rut_usuario_actual = request.rut_usuario_actual
+
+    try:
+        correo_actual = db.reference("Usuario").child(rut_usuario_actual).get().get('correo')
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al buscar correo actual: {e}"}, status=500)
+
+    if not correo_actual or not rut_usuario_actual:
+        return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"}, status=404)
+
+    if email != correo_actual:
+        registrar_auditoria_movil(request, "Seis", "false", f"El usuario {rut_usuario_actual} intento verificar codigo de recuperación de PIN con un correo incorrecto.")
+        return JsonResponse({"status": "false", "message": "El correo actual no coincide con el cuál se le envio el codigo."}, status=400)
+
+    # Obtener código guardado
+    otp_ref = db.reference(f"RecuperacionPIN/{rut_usuario_actual}").get()
+    if not otp_ref:
+        return JsonResponse({"status": "false", "message": "No hay código generado. Solicita uno."}, status=400)
+
+    codigo_valido = otp_ref.get("codigo")
+    expiracion = datetime.fromisoformat(otp_ref.get("expira"))
+
+    if datetime.now() > expiracion:
+        return JsonResponse({"status": "false", "message": "El código ha expirado."}, status=400)
+
+    if codigo_ingresado != codigo_valido:
+        return JsonResponse({"status": "false", "message": "Código incorrecto."}, status=400)
+    
+    registrar_auditoria_movil(request, "Seis", "éxito", f"El usuario {rut_usuario_actual} valido su código de recuperación de PIN.")
+
+    return JsonResponse({"status": "success", "message": "Codigo validado, cambie su PIN"}, status=200)
+
+@csrf_exempt
+@require_POST
+@firebase_auth_required
+def cambiar_PIN_verificado(request):
+    email = request.POST.get("email")
+    nuevo_pin = request.POST.get("nuevo_pin")
+    codigo = request.POST.get("codigo")
+    
+
+    if not email or not nuevo_pin or not codigo:
+        return JsonResponse({"status": "false", "message": "Faltan datos."}, status=400)
+    
+    rut_usuario_actual = request.rut_usuario_actual
+
+    if not nuevo_pin.isdigit() or len(nuevo_pin) != 4:
+        return JsonResponse({"status": "false", "message": "El PIN debe tener 4 dígitos numéricos."}, status=400)
+
+    try:
+        correo_actual = db.reference("Usuario").child(rut_usuario_actual).get().get('correo')
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al buscar correo actual: {e}"}, status=500)
+
+    if not correo_actual or not rut_usuario_actual:
+        return JsonResponse({"status": "false", "message": "Usuario actual no encontrado"}, status=404)
+
+    if email != correo_actual:
+        registrar_auditoria_movil(request, "Seis", "false", f"El usuario {rut_usuario_actual} intento cambiar código de PIN con un correo incorrecto.")
+        return JsonResponse({"status": "false", "message": "El correo actual no coincide con el cuál se le envio el codigo."}, status=400)
+
+    # Verificar que exista un OTP válido para este usuario
+    otp_ref = db.reference(f"RecuperacionPIN/{rut_usuario_actual}").get()
+    if not otp_ref:
+        return JsonResponse({"status": "false", "message": "No hay código válido. Solicita uno primero."}, status=400)
+
+    codigo_valido = otp_ref.get("codigo")
+    expiracion = datetime.fromisoformat(otp_ref.get("expira"))
+
+    if datetime.now() > expiracion:
+        registrar_auditoria_movil(request, "Seis", "false", f"El usuario {rut_usuario_actual} intento cambiar su PIN con un código expirado.")
+        return JsonResponse({"status": "false", "message": "El código ha expirado."}, status=400)
+
+    if codigo != codigo_valido:
+        registrar_auditoria_movil(request, "Seis", "false", f"El usuario {rut_usuario_actual} intento cambiar su PIN con un código incorrecto.")
+        return JsonResponse({"status": "false", "message": "Código incorrecto."}, status=400)
+
+    # Todo correcto, actualizar PIN
+    try:
+        db.reference(f"Usuario/{rut_usuario_actual}").update({
+            "PIN": nuevo_pin
+        })
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al actualizar PIN: {e}"}, status=500)
+
+    # Borrar OTP después de usar
+    try:
+        db.reference(f"RecuperacionPIN/{rut_usuario_actual}").delete()
+    except Exception as e:
+        return JsonResponse({"status": "false", "message": f"Error al eliminar código de recuperación: {e}"}, status=500)
+    
+
+    registrar_auditoria_movil(request, "Seis", "éxito", f"El usuario {rut_usuario_actual} cambio su PIN a través de 'Código de Recuperación de PIN' exitosamente.")
+    return JsonResponse({"status": "success", "message": "PIN actualizado correctamente."}, status=200)

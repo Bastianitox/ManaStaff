@@ -25,5 +25,8 @@ urlpatterns = [
     path('actualizar_perfil/', views.actualizar_perfil, name='actualizar_perfil'),
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('cambiar_pin/', views.cambiar_pin, name='cambiar_pin'),
+    path('solicitar_recuperacion_pin/', views.solicitar_recuperacion_pin, name='solicitar_recuperacion_pin'),
+    path('verificar_codigo_recuperacion/', views.verificar_codigo_recuperacion, name='verificar_codigo_recuperacion'),
+    path('cambiar_PIN_verificado/', views.cambiar_PIN_verificado, name='cambiar_PIN_verificado'),
 
 ]
