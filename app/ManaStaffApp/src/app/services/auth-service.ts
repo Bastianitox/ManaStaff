@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Auth, User, signInWithEmailAndPassword, getIdTokenResult, onAuthStateChanged, signOut } from '@angular/fire/auth';
 import { from, Observable, BehaviorSubject } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { UsuarioService } from './usuario-service';
 
 @Injectable({
@@ -13,7 +13,8 @@ export class AuthService {
   private idToken: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
   public idToken$: Observable<string | null> = this.idToken.asObservable();
 
-  constructor(private auth: Auth,
+  constructor(
+    private auth: Auth,
     private usuarioService: UsuarioService
   ) {
     onAuthStateChanged(this.auth, async (user) => {
@@ -28,6 +29,12 @@ export class AuthService {
         await this.usuarioService.limpiarUsuario();
       }
     });
+  }
+
+  getIsAuthenticated(): Observable<boolean> {
+    return this.currentUser.asObservable().pipe(
+      map(user => !!user)
+    );
   }
 
   // Inicia sesión y obtiene el token.
