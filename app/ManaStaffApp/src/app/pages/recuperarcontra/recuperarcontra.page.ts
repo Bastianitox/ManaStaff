@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { Auth, sendPasswordResetEmail, getAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-recuperarcontra',
@@ -19,7 +20,10 @@ export class RecuperarcontraPage implements OnInit {
   toastType: "success" | "error" = "success"
   toastMessage = ""
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: Auth
+  ) {}
 
   ngOnInit() {}
 
@@ -34,37 +38,54 @@ export class RecuperarcontraPage implements OnInit {
     return this.isValidEmail(this.email)
   }
 
-  // Enviar código de recuperación
   async enviarCorreo() {
     if (!this.isFormValid || this.isSending) {
       return
     }
 
-    this.isSending = true
+    if (!this.auth) {
+        this.showError("Error: El servicio de autenticación no está disponible.");
+        return;
+    }
 
-    // Simular llamada a API
-    setTimeout(() => {
-      this.isSending = false
+    this.isSending = true;
 
-      // Simular éxito
-      const success = true
+    try {
+      await sendPasswordResetEmail(this.auth, this.email.trim());
 
-      if (success) {
-        this.toastType = "success"
-        this.toastMessage = "Código enviado correctamente. Revisa tu correo."
-        this.showToast = true
+      this.toastType = "success";
+      this.toastMessage = "Link de restablecimiento enviado. Revisa tu correo y carpeta de spam.";
+      this.showToast = true;
 
-        setTimeout(() => {
-          this.showToast = false
-          this.email = ""
-        }, 3000)
-      } else {
-        this.showError("No se pudo enviar el código. Intenta nuevamente.")
+      setTimeout(() => {
+        this.showToast = false;
+        this.email = "";
+      }, 4000);
+
+    } catch (error: any) {
+      console.error("Error al enviar el link:", error);
+      
+    let errorMessage = "Ocurrió un error inesperado. Intenta de nuevo.";
+
+      switch (error.code) {
+        case 'auth/missing-email':
+          errorMessage = "Debes ingresar un correo electrónico.";
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = "Demasiadas solicitudes. Intenta más tarde.";
+          break;
+        default:
+          errorMessage = "No se pudo enviar el link debido a un problema técnico. Revisa tu conexión.";
+        break;
       }
-    }, 1500)
+
+      this.showError(errorMessage);
+
+    } finally {
+      this.isSending = false;
+    }
   }
 
-  // Mostrar error
   showError(message: string) {
     this.toastType = "error"
     this.toastMessage = message
@@ -75,7 +96,6 @@ export class RecuperarcontraPage implements OnInit {
     }, 3000)
   }
 
-  // Volver a login
   goToLogin() {
     this.router.navigateByUrl("/login")
   }

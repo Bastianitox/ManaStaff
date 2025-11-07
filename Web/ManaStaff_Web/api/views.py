@@ -782,3 +782,4 @@ def cambiar_PIN_verificado(request):
 
     registrar_auditoria_movil(request, "Seis", "éxito", f"El usuario {rut_usuario_actual} cambio su PIN a través de 'Código de Recuperación de PIN' exitosamente.")
     return JsonResponse({"status": "success", "message": "PIN actualizado correctamente."}, status=200)
+
