@@ -2,17 +2,12 @@
 $primary-blue: #062f63;
 $dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$background: #F8FAFC;
-$border-color: #E5E7EB;
 $white: #FFFFFF;
 $danger: #DC2626;
 $success: #10B981;
 $warning: #F59E0B;
 
 ion-content {
-  --background: #{$background};
   --padding-top: 55px; 
   --padding-bottom: 84px; 
 }
@@ -32,7 +27,7 @@ ion-content {
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 12px 4px;
@@ -40,8 +35,8 @@ ion-content {
 
 // Tarjetas de opciones
 .option-card {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
@@ -70,6 +65,7 @@ ion-content {
   }
 }
 
+// Iconos
 .option-icon {
   width: 48px;
   height: 48px;
@@ -101,29 +97,29 @@ ion-content {
 .option-title {
   font-size: 16px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 4px 0;
 }
 
 .option-description {
   font-size: 13px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0;
   line-height: 1.4;
 }
 
 .chevron-icon {
   font-size: 20px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   flex-shrink: 0;
 }
 
 // Toggle
 .custom-toggle {
-  --background: #{$border-color};
-  --background-checked: #{$primary-blue};
-  --handle-background: #{$white};
-  --handle-background-checked: #{$white};
+  --background: var(--app-bg-tertiary);
+  --background-checked: var(--app-color-primary);
+  --handle-background: $white;
+  --handle-background-checked: $white;
   --handle-width: 24px;
   --handle-height: 24px;
   --handle-spacing: 2px;
@@ -135,15 +131,15 @@ ion-content {
 .logout-section {
   margin-top: 40px;
   padding-top: 24px;
-  border-top: 1px solid $border-color;
+  border-top: 1px solid var(--app-border-color);
 }
 
 .logout-button {
   width: 100%;
   height: 56px;
-  background: $white;
-  color: $danger;
-  border: 2px solid $danger;
+  background: var(--app-bg-secondary);
+  color: var(--app-color-danger);
+  border: 2px solid var(--app-color-danger);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -160,7 +156,7 @@ ion-content {
   }
 
   &:hover {
-    background: $danger;
+    background: var(--app-color-danger);
     color: $white;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
