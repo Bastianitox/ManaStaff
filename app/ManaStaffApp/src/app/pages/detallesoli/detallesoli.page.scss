@@ -2,10 +2,6 @@
 $primary-blue: #062f63;
 $dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$background: #F8FAFC;
-$border-color: #E5E7EB;
 $white: #FFFFFF;
 $success: #10B981;
 $warning: #F59E0B;
@@ -13,7 +9,6 @@ $danger: #DC2626;
 
 // Fondo general
 ion-content {
-  --background: #{$background};
   --padding-top: 72px; 
   --padding-bottom: 84px; 
 }
@@ -27,8 +22,8 @@ ion-content {
 // Tarjeta principal de detalle
 .detail-card {
   position: relative;
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 20px;
@@ -43,6 +38,7 @@ ion-content {
   margin-bottom: 20px;
 }
 
+// Icono de la solicitud
 .icon-container {
   flex-shrink: 0;
   width: 52px;
@@ -63,7 +59,7 @@ ion-content {
 .detail-title {
   font-size: 20px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0;
   line-height: 1.4;
   padding-top: 4px;
@@ -81,7 +77,7 @@ ion-content {
   flex-direction: column;
   gap: 6px;
   padding-bottom: 16px;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid var(--app-border-color);
 
   &:last-child {
     border-bottom: none;
@@ -92,14 +88,14 @@ ion-content {
 .info-label {
   font-size: 13px;
   font-weight: 600;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .info-value {
   font-size: 15px;
-  color: $text-primary;
+  color: var(--app-text-primary);
   line-height: 1.5;
 }
 
@@ -109,9 +105,9 @@ ion-content {
   grid-template-columns: 1fr;
   gap: 12px;
   padding: 16px;
-  background: $background;
+  background: var(--app-bg-tertiary);
   border-radius: 12px;
-  border: 1px solid $border-color;
+  border: 1px solid var(--app-border-color);
 }
 
 .date-item {
@@ -123,7 +119,7 @@ ion-content {
 .date-label {
   font-size: 12px;
   font-weight: 600;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -131,7 +127,7 @@ ion-content {
 .date-value {
   font-size: 14px;
   font-weight: 500;
-  color: $text-primary;
+  color: var(--app-text-primary);
 }
 
 // Caja de archivo adjunto
@@ -152,6 +148,7 @@ ion-content {
   }
 }
 
+// Icono de adjunto
 .attachment-icon {
   width: 40px;
   height: 40px;
@@ -177,18 +174,18 @@ ion-content {
 .attachment-name {
   font-size: 14px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
 }
 
 .attachment-action {
   font-size: 12px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 // Sección de timeline
 .timeline-section {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -197,7 +194,7 @@ ion-content {
 .timeline-title {
   font-size: 18px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 20px 0;
 }
 
@@ -231,24 +228,24 @@ ion-content {
     top: 32px;
     bottom: 0;
     width: 2px;
-    background: $border-color;
+    background: var(--app-border-color);
   }
 
   // Colores de línea según estado
   &.completed::before {
-    background: $success;
+    background: var(--app-color-success);
   }
 
   &.current::before {
-    background: $warning;
+    background: var(--app-color-warning);
   }
 
   &.pending::before {
-    background: $border-color;
+    background: var(--app-border-color);
   }
 
   &.rejected::before {
-    background: $danger;
+    background: var(--app-color-danger);
   }
 }
 
@@ -258,27 +255,27 @@ ion-content {
   height: 24px;
   border-radius: 50%;
   border: 3px solid;
-  background: $white;
+  background: var(--app-bg-secondary);
   z-index: 1;
 
   .completed & {
-    border-color: $success;
-    background: $success;
+    border-color: var(--app-color-success);
+    background: var(--app-color-success);
   }
 
   .current & {
-    border-color: $warning;
-    background: $warning;
+    border-color: var(--app-color-warning);
+    background: var(--app-color-warning);
   }
 
   .pending & {
-    border-color: $border-color;
-    background: $white;
+    border-color: var(--app-border-color);
+    background: var(--app-bg-secondary);
   }
 
   .rejected & {
-    border-color: $danger;
-    background: $danger;
+    border-color: var(--app-color-danger);
+    background: var(--app-color-danger);
   }
 }
 
@@ -301,20 +298,20 @@ ion-content {
 .timeline-step-title {
   font-size: 16px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0;
 }
 
 .timeline-date {
   font-size: 13px;
   font-weight: 500;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0 0 4px 0;
 }
 
 .timeline-description {
   font-size: 14px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   line-height: 1.5;
   margin: 0;
 }
@@ -343,18 +340,18 @@ ion-content {
   width: fit-content;
 
   &.aprobada {
-    color: $success;
-    background: rgba(16, 185, 129, 0.12);
+    color: var(--app-color-success);
+    background: rgba($success, 0.12);
   }
 
   &.pendiente {
-    color: $warning;
-    background: rgba(245, 158, 11, 0.12);
+    color: var(--app-color-warning);
+    background: rgba($warning, 0.12);
   }
 
   &.rechazada {
-    color: $danger;
-    background: rgba(220, 38, 38, 0.12);
+    color: var(--app-color-danger);
+    background: rgba($danger, 0.12);
   }
 }
 
@@ -363,5 +360,42 @@ ion-content {
   flex-direction: column;
   gap: 8px;
   padding-bottom: 16px;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid var(--app-border-color);
+}
+
+// Estados de carga y error
+.loading-error-container {
+  padding: 40px 0;
+}
+.loading-content, .error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  
+  p {
+    color: var(--app-text-secondary);
+  }
+  
+  ion-spinner {
+    --color: var(--app-color-primary);
+  }
+}
+
+.error-content {
+  ion-icon {
+    font-size: 48px;
+    color: var(--app-color-danger);
+  }
+  .error-message {
+    color: var(--app-text-primary);
+    font-weight: 500;
+    text-align: center;
+  }
+  // Botón reintentar
+  ion-button[fill="outline"] {
+    --color: var(--app-color-primary);
+    --border-color: var(--app-border-color);
+  }
 }
