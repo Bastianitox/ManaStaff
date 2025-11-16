@@ -2,17 +2,9 @@
 $primary-blue: #062f63;
 $dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$background: #F8FAFC;
-$border-color: #E5E7EB;
 $white: #FFFFFF;
-$success: #10B981;
-$warning: #F59E0B;
-$danger: #DC2626;
 
 ion-content {
-  --background: #{$background};
   --padding-top: 55px; 
   --padding-bottom: 84px; 
 }
@@ -22,17 +14,16 @@ ion-content {
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: $background;
 }
 
 .search-bar {
   flex: 1;
-  --background: #{$white};
+  --background: var(--app-bg-secondary);
   --border-radius: 12px;
   --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --placeholder-color: #{$text-secondary};
-  --icon-color: #{$text-secondary};
-  border: 1px solid $border-color;
+  --placeholder-color: var(--app-text-tertiary);
+  --icon-color: var(--app-text-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 0;
   height: 48px;
@@ -41,8 +32,8 @@ ion-content {
 .filter-button {
   width: 48px;
   height: 48px;
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -53,16 +44,16 @@ ion-content {
 
   ion-icon {
     font-size: 20px;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     transition: color 0.2s ease;
   }
 
   &:hover {
-    border-color: $primary-blue;
+    border-color: var(--app-color-primary);
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
 
     ion-icon {
-      color: $primary-blue;
+      color: var(--app-color-primary);
     }
   }
 }
@@ -72,7 +63,7 @@ ion-content {
   padding: 8px 16px;
   font-size: 15px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
 }
 
 // cargando
@@ -85,11 +76,11 @@ ion-content {
   gap: 16px;
 
   ion-spinner {
-    --color: #{$primary-blue};
+    --color: var(--app-color-primary);
   }
 
   p {
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     font-size: 14px;
     margin: 0;
   }
@@ -102,8 +93,8 @@ ion-content {
 
 .publication-card {
   position: relative;
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -126,12 +117,12 @@ ion-content {
   text-transform: uppercase;
 
   &.Noticia {
-    color: $success;
+    color: var(--app-color-success);
     background: rgba(16, 185, 129, 0.1);
   }
 
   &.Aviso {
-    color: $warning;
+    color: var(--app-color-warning);
     background: rgba(245, 158, 11, 0.1);
   }
 }
@@ -163,11 +154,11 @@ ion-content {
     font-size: 24px;
     
     .Noticia & {
-      color: $success;
+      color: var(--app-color-success);
     }
     
     .Aviso & {
-      color: $warning;
+      color: var(--app-color-warning);
     }
   }
 }
@@ -180,14 +171,14 @@ ion-content {
 .publication-title {
   font-size: 16px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 6px 0;
   line-height: 1.4;
 }
 
 .publication-summary {
   font-size: 14px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0 0 8px 0;
   line-height: 1.5;
   display: -webkit-box !important;
@@ -203,7 +194,7 @@ ion-content {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
 
   ion-icon {
     font-size: 14px;
@@ -245,20 +236,20 @@ ion-content {
 
   .empty-icon {
     font-size: 64px;
-    color: rgba($primary-blue, 0.3);
+    color: var(--app-color-primary);
     margin-bottom: 16px;
   }
 
   h3 {
     font-size: 18px;
     font-weight: 600;
-    color: $text-primary;
+    color: var(--app-text-primary);
     margin: 0 0 8px 0;
   }
 
   p {
     font-size: 14px;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     margin: 0;
   }
 }
@@ -270,7 +261,7 @@ ion-content {
 }
 
 .filter-toolbar {
-  --background: #{$white};
+  --background: var(--app-bg-secondary);
   --border-width: 0;
   padding: 16px 16px 0 16px;
 }
@@ -278,24 +269,24 @@ ion-content {
 .filter-modal-title {
   font-size: 22px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
 }
 
 .filter-description {
-  background: $white;
+  background: var(--app-bg-secondary);
   padding: 8px 16px 16px 16px;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid var(--app-border-color);
 
   p {
     margin: 0;
     font-size: 13px;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     line-height: 1.5;
   }
 }
 
 .close-btn {
-  --color: #{$text-secondary};
+  --color: var(--app-text-secondary);
   
   ion-icon {
     font-size: 28px;
@@ -303,7 +294,7 @@ ion-content {
 }
 
 .filter-content {
-  --background: #{$background};
+  --background: var(--app-bg-primary);
   --padding-start: 16px;
   --padding-end: 16px;
   --padding-top: 16px;
@@ -311,8 +302,8 @@ ion-content {
 }
 
 .filter-card {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -328,13 +319,13 @@ ion-content {
 
 .filter-icon {
   font-size: 22px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 .filter-label {
   font-size: 16px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0;
 }
 
@@ -361,12 +352,12 @@ ion-content {
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: $primary-blue;
+    accent-color: var(--app-color-primary);
   }
 
   .radio-label {
     font-size: 15px;
-    color: $text-primary;
+    color: var(--app-text-primary);
     flex: 1;
   }
 }
@@ -376,8 +367,8 @@ ion-content {
   bottom: 0;
   left: 0;
   right: 0;
-  background: $white;
-  border-top: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border-top: 1px solid var(--app-border-color);
   padding: 16px;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
@@ -406,9 +397,9 @@ ion-content {
 .filter-footer .btn-secondary {
   flex: 1;
   height: 48px;
-  background: $white;
-  color: $text-secondary;
-  border: 2px solid $border-color;
+  background: var(--app-bg-secondary);
+  color: var(--app-text-secondary);
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -416,7 +407,7 @@ ion-content {
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: $text-secondary;
-    color: $text-primary;
+    border-color: var(--app-text-secondary);
+    color: var(--app-text-primary);
   }
 }
