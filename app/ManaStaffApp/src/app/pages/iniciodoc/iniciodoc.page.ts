@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
-import { AlertController, Platform, ToastController } from "@ionic/angular"
+import { AlertController, Platform, ToastController, ViewWillEnter } from "@ionic/angular"
 import { Router } from '@angular/router'
 import { DocumentosApi } from "src/app/services/documentos-api"
 import { Directory, Filesystem } from '@capacitor/filesystem';
@@ -40,7 +40,7 @@ interface Filters {
   styleUrls: ["./iniciodoc.page.scss"],
   standalone: false,
 })
-export class IniciodocPage implements OnInit {
+export class IniciodocPage implements OnInit, ViewWillEnter {
   // Estado de la interfaz
   showPinModal = true
   showFilterModal = false
@@ -91,6 +91,30 @@ export class IniciodocPage implements OnInit {
 
   ngOnInit() {
     this.obtener_documentos();
+  }
+
+  ionViewWillEnter(){
+    //se va a ejecutar cada vez que entro a la pestaña
+    //leemos el estado
+    const isUnlocked = localStorage.getItem('pinUnlocked');
+
+    if (isUnlocked === 'true') {
+      //si ya esta desbloqueado
+      this.showPinModal = false;
+    } else {
+      //si esta bloqueado
+      this.showPinModal = true;
+      //resetear campos
+      this.pinInputs = ["", "", "", ""];
+      this.pinError = "";
+
+      setTimeout(() => {
+        const firstInput = this.pinFields?.toArray()[0];
+        if (firstInput) {
+          firstInput.nativeElement.focus();
+        }
+      }, 400);
+    }
   }
 
   obtener_documentos(refresher?: any){
@@ -172,6 +196,9 @@ export class IniciodocPage implements OnInit {
             this.showPinModal = false
             this.pinError = ""
             this.applyFilters()
+
+            localStorage.setItem('pinUnlocked', 'true');
+
           } else {
             this.pinError = "Código PIN incorrecto. Intenta de nuevo."
             this.pinInputs = ["", "", "", ""]
@@ -314,6 +341,4 @@ export class IniciodocPage implements OnInit {
   async descargarDocumento(id_doc: string, nombre_archivo: string) {
     await this.downloadService.downloadAndSaveDocument(id_doc, nombre_archivo);
   }
-
-
 }
