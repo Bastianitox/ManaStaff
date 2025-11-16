@@ -2,18 +2,11 @@
 $primary-blue: #062f63;
 $dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$app-background: #F8FAFC;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$status-active: #10B981;
-$status-pending: #F59E0B;
-$status-expired: #DC2626;
-$border-color: #E5E7EB;
 $white: #FFFFFF;
 
 // contenido principal
 ion-content {
-  --background: #{$app-background};
+
   --padding-top: 72px; 
   --padding-bottom: 84px; 
 }
@@ -21,24 +14,17 @@ ion-content {
 // Modal del PIN
 .pin-overlay {
   position: fixed;
-  /* alto del header del tabs: ajústalo si tu header es más grande */
   top: 56px;
-  /* alto del menú inferior (tú usas 72px en varias páginas) */
   bottom: 72px;
   left: 0;
   right: 0;
   background: rgba(15, 23, 42, 0.35);
   backdrop-filter: blur(8px);
-  z-index: 10; // debajo del tabs que suele estar por arriba
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
-}
-
-.pin-modal {
-  --background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
 }
 
 .pin-modal-container {
@@ -48,7 +34,7 @@ ion-content {
 }
 
 .pin-modal-content {
-  background: $white;
+  background: var(--app-bg-secondary);
   border-radius: 20px;
   padding: 32px 28px;
   max-width: 380px;
@@ -69,20 +55,20 @@ ion-content {
 
   ion-icon {
     font-size: 36px;
-    color: $white;
+    color: $white; 
   }
 }
 
 .pin-title {
   font-size: 22px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin-bottom: 6px;
 }
 
 .pin-subtitle {
   font-size: 14px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin-bottom: 22px;
 }
 
@@ -96,24 +82,24 @@ ion-content {
 .pin-input {
   width: 54px;
   height: 54px;
-  background: $white;
-  border: 2px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 2px solid var(--app-border-color); 
   border-radius: 12px;
   text-align: center;
   font-size: 22px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   transition: all 0.2s ease;
 
   &:focus {
     outline: none;
-    border-color: $primary-blue;
+    border-color: var(--app-color-primary);
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
   }
 }
 
 .pin-error {
-  color: $status-expired;
+  color: var(--app-color-danger);
   font-size: 13px;
   margin-bottom: 12px;
   font-weight: 500;
@@ -151,7 +137,7 @@ ion-content {
 }
 
 .filter-toolbar {
-  --background: #{$white};
+  --background: var(--app-bg-secondary);
   --border-width: 0;
   padding: 16px 16px 0 16px;
 }
@@ -159,24 +145,24 @@ ion-content {
 .filter-modal-title {
   font-size: 22px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
 }
 
 .filter-description {
-  background: $white;
+  background: var(--app-bg-secondary);
   padding: 8px 16px 16px 16px;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid var(--app-border-color);
 
   p {
     margin: 0;
     font-size: 13px;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     line-height: 1.5;
   }
 }
 
 .close-btn {
-  --color: #{$text-secondary};
+  --color: var(--app-text-secondary);
   
   ion-icon {
     font-size: 28px;
@@ -184,7 +170,7 @@ ion-content {
 }
 
 .filter-content {
-  --background: #{$app-background};
+  --background: var(--app-bg-primary);
   --padding-start: 16px;
   --padding-end: 16px;
   --padding-top: 16px;
@@ -192,8 +178,8 @@ ion-content {
 }
 
 .filter-card {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -209,13 +195,13 @@ ion-content {
 
 .filter-icon {
   font-size: 22px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 .filter-label {
   font-size: 16px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0;
 }
 
@@ -244,13 +230,13 @@ ion-content {
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: $primary-blue;
+    accent-color: var(--app-color-primary);
   }
 
   .checkbox-label,
   .radio-label {
     font-size: 15px;
-    color: $text-primary;
+    color: var(--app-text-primary);
     flex: 1;
   }
 }
@@ -260,8 +246,8 @@ ion-content {
   bottom: 0;
   left: 0;
   right: 0;
-  background: $white;
-  border-top: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border-top: 1px solid var(--app-border-color);
   padding: 16px;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
@@ -290,9 +276,9 @@ ion-content {
 .filter-footer .btn-secondary {
   flex: 1;
   height: 48px;
-  background: $white;
-  color: $text-secondary;
-  border: 2px solid $border-color;
+  background: var(--app-bg-secondary);
+  color: var(--app-text-secondary);
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -300,8 +286,8 @@ ion-content {
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: $text-secondary;
-    color: $text-primary;
+    border-color: var(--app-text-secondary);
+    color: var(--app-text-primary);
   }
 }
 
@@ -315,12 +301,12 @@ ion-content {
 
 .search-bar {
   flex: 1;
-  --background: #{$white};
+  --background: var(--app-bg-secondary);
   --border-radius: 12px;
   --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --placeholder-color: #{$text-secondary};
-  --icon-color: #{$text-secondary};
-  border: 1px solid $border-color;
+  --placeholder-color: var(--app-text-tertiary);
+  --icon-color: var(--app-text-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 0;
   height: 48px;
@@ -329,8 +315,8 @@ ion-content {
 .filter-button {
   width: 48px;
   height: 48px;
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -341,16 +327,16 @@ ion-content {
 
   ion-icon {
     font-size: 20px;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     transition: color 0.2s ease;
   }
 
   &:hover {
-    border-color: $primary-blue;
+    border-color: var(--app-color-primary);
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
 
     ion-icon {
-      color: $primary-blue;
+      color: var(--app-color-primary);
     }
   }
 }
@@ -367,8 +353,8 @@ ion-content {
 }
 
 .document-card {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 12px;
   padding: 16px;
   position: relative;
@@ -394,17 +380,17 @@ ion-content {
 
   &.badge-Activo {
     background: rgba(16, 185, 129, 0.1);
-    color: $status-active;
+    color: var(--app-color-success);
   }
 
   &.badge-Pendiente {
     background: rgba(245, 158, 11, 0.1);
-    color: $status-pending;
+    color: var(--app-color-warning);
   }
 
   &.badge-Caducado {
     background: rgba(220, 38, 38, 0.1);
-    color: $status-expired;
+    color: var(--app-color-danger);
   }
 }
 
@@ -420,7 +406,7 @@ ion-content {
 
   ion-icon {
     font-size: 28px;
-    color: $primary-blue;
+    color: var(--app-color-primary);
   }
 }
 
@@ -431,7 +417,7 @@ ion-content {
 .card-title {
   font-size: 16px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 8px 0;
   line-height: 1.4;
   overflow: hidden;
@@ -444,7 +430,7 @@ ion-content {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
 }
 
 .meta-item {
@@ -452,7 +438,7 @@ ion-content {
 }
 
 .meta-separator {
-  color: $border-color;
+  color: var(--app-border-color);
 }
 
 .card-actions {
@@ -487,9 +473,9 @@ ion-content {
 }
 
 .download-btn {
-  background: $white;
-  color: $primary-blue;
-  border: 2px solid $primary-blue;
+  background: var(--app-bg-secondary);
+  color: var(--app-color-primary);
+  border: 2px solid var(--app-color-primary);
 
   &:hover:not(:disabled) {
     background: rgba(37, 99, 235, 0.05);
@@ -519,38 +505,38 @@ ion-content {
 
   ion-icon {
     font-size: 40px;
-    color: $primary-blue;
+    color: var(--app-color-primary);
   }
 }
 
 .empty-title {
   font-size: 18px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 8px 0;
 }
 
 .empty-subtitle {
   font-size: 14px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0;
   line-height: 1.5;
 }
 
 .loading-state {
   ion-spinner {
-    --color: #{$primary-blue};
+    --color: var(--app-color-primary);
     margin-bottom: 16px;
   }
 
   p {
     font-size: 14px;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     margin: 0;
   }
 }
 
-// Responsive para pantallas más grandes
+// Responsive
 @media (min-width: 768px) {
   .bottom-nav {
     max-width: 600px;
