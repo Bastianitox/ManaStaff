@@ -1,18 +1,11 @@
 // colores corporativos
 $primary-blue: #062f63;
-$dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$background-app: #F8FAFC;
-$border-color: #E5E7EB;
-$white: #FFFFFF;
-$success-green: #10B981;
+$dark-blue: #041d3d;
 $error-red: #DC2626;
 
 // Fondo general
 ion-content {
-  --background: #{$background-app};
   --padding-top: 72px; 
   --padding-bottom: 84px; 
 }
@@ -26,8 +19,8 @@ ion-content {
 
 // Tarjeta del formulario
 .form-card {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -37,19 +30,19 @@ ion-content {
 .form-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid var(--app-border-color);
 }
 
 .form-title {
   font-size: 20px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 6px 0;
 }
 
 .form-subtitle {
   font-size: 14px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0;
   line-height: 1.4;
 }
@@ -72,13 +65,13 @@ ion-content {
 
 .section-icon {
   font-size: 20px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 .section-title {
   font-size: 15px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0;
 }
 
@@ -95,7 +88,7 @@ ion-content {
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin-bottom: 8px;
 
   .required {
@@ -106,23 +99,23 @@ ion-content {
 // Select personalizado
 .custom-select {
   width: 100%;
-  border: 2px solid $border-color;
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 15px;
-  color: $text-primary;
-  background: $white;
+  color: var(--app-text-primary);
+  background: var(--app-bg-secondary);
   transition: all 0.2s ease;
-  --placeholder-color: #{$text-secondary};
+  --placeholder-color: var(--app-text-tertiary);
   --placeholder-opacity: 0.7;
 
   &::part(placeholder) {
-    color: $text-secondary;
+    color: var(--app-text-tertiary);
     opacity: 0.7;
   }
 
   &::part(icon) {
-    color: $primary-blue;
+    color: var(--app-color-primary);
     opacity: 1;
   }
 
@@ -135,21 +128,21 @@ ion-content {
 // Input personalizado
 .custom-input {
   width: 100%;
-  border: 2px solid $border-color;
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 15px;
-  color: $text-primary;
-  background: $white;
+  color: var(--app-text-primary);
+  background: var(--app-bg-secondary);
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: $text-secondary;
+    color: var(--app-text-tertiary);
     opacity: 0.6;
   }
 
   &:focus {
-    border-color: $primary-blue;
+    border-color: var(--app-color-primary);
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
@@ -158,24 +151,24 @@ ion-content {
 // Textarea personalizado
 .custom-textarea {
   width: 100%;
-  border: 2px solid $border-color;
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 15px;
-  color: $text-primary;
-  background: $white;
+  color: var(--app-text-primary);
+  background: var(--app-bg-secondary);
   font-family: inherit;
   resize: vertical;
   min-height: 120px;
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: $text-secondary;
+    color: var(--app-text-tertiary);;
     opacity: 0.6;
   }
 
   &:focus {
-    border-color: $primary-blue;
+    border-color: var(--app-color-primary);
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
@@ -183,46 +176,46 @@ ion-content {
 
 // Zona de carga de archivos
 .file-upload-zone {
-  border: 2px dashed $border-color;
+  border: 2px dashed var(--app-border-color);
   border-radius: 12px;
   padding: 32px 20px;
   text-align: center;
-  background: rgba(248, 250, 252, 0.5);
+  background: var(--app-bg-tertiary);
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: $primary-blue;
-    background: rgba(37, 99, 235, 0.02);
+    border-color: var(--app-color-primary); 
+    background: var(--app-bg-secondary);
   }
 }
 
 .upload-icon {
   font-size: 48px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
   margin-bottom: 12px;
 }
 
 .upload-text {
   font-size: 15px;
   font-weight: 500;
-  color: $text-primary;
+  color: var(--app-text-primary); 
   margin: 0 0 4px 0;
 }
 
 .upload-hint {
   font-size: 13px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0 0 16px 0;
 }
 
 .select-file-button {
-  --background: #{$white};
-  --background-hover: #{$background-app};
+  --background: var(--app-bg-secondary);
+  --background-hover: var(--app-bg-tertiary);
   --border-radius: 10px;
   --border-width: 2px;
   --border-style: solid;
-  --border-color: #{$primary-blue};
-  --color: #{$primary-blue};
+  --border-color: var(--app-color-primary);
+  --color: var(--app-color-primary);
   --padding-top: 10px;
   --padding-bottom: 10px;
   --padding-start: 20px;
@@ -238,8 +231,8 @@ ion-content {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: rgba(37, 99, 235, 0.05);
-  border: 2px solid rgba(37, 99, 235, 0.2);
+  background: var(--app-bg-tertiary);
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
 }
 
@@ -252,7 +245,7 @@ ion-content {
 
 .file-icon {
   font-size: 32px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 .file-details {
@@ -262,19 +255,19 @@ ion-content {
 .file-name {
   font-size: 14px;
   font-weight: 500;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 2px 0;
   word-break: break-word;
 }
 
 .file-size {
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0;
 }
 
 .remove-file-button {
-  --color: #{$error-red};
+  --color: var(--app-color-danger);
   font-size: 24px;
   margin: 0;
 }
@@ -285,15 +278,15 @@ ion-content {
   gap: 12px;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid $border-color;
+  border-top: 1px solid var(--app-border-color);
 }
 
 .clear-button {
   flex: 1;
   --border-radius: 12px;
   --border-width: 2px;
-  --border-color: #{$border-color};
-  --color: #{$text-secondary};
+  --border-color: var(--app-border-color); 
+  --color: var(--app-text-secondary);
   --padding-top: 14px;
   --padding-bottom: 14px;
   font-weight: 600;
@@ -301,8 +294,8 @@ ion-content {
   text-transform: none;
 
   &:hover {
-    --border-color: #{$text-secondary};
-    --color: #{$text-primary};
+    --border-color: var(--app-text-secondary);
+    --color: var(--app-text-primary);
   }
 }
 
@@ -313,7 +306,7 @@ ion-content {
   --background-activated: #{$dark-blue};
   --border-radius: 12px;
   --box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-  --color: #{$white};
+  --color: #ffffff;
   --padding-top: 14px;
   --padding-bottom: 14px;
   font-weight: 600;
@@ -338,18 +331,18 @@ ion-content {
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  color: $white;
+  color: var(--app-text-on-header);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   min-width: 280px;
   max-width: 90%;
 
   &.success {
-    background: $success-green;
+    background: var(--app-color-success);
   }
 
   &.error {
-    background: $error-red;
+    background: var(--app-color-danger); 
   }
 
   .toast-icon {
@@ -365,29 +358,5 @@ ion-content {
 
   .form-card {
     padding: 32px;
-  }
-}
-
-::ng-deep {
-  .custom-action-sheet {
-    .action-sheet-group {
-      background: $white !important;
-    }
-
-    .action-sheet-button {
-      color: $text-primary !important;
-      font-size: 16px !important;
-      font-weight: 500 !important;
-
-      &:hover {
-        background: rgba($primary-blue, 0.05) !important;
-      }
-    }
-
-    .action-sheet-cancel {
-      background: $white !important;
-      color: $error-red !important;
-      font-weight: 600 !important;
-    }
   }
 }
