@@ -2,16 +2,11 @@
 $primary-blue: #062f63;
 $dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$background: #F8FAFC;
-$border-color: #E5E7EB;
 $white: #FFFFFF;
 $success: #10B981;
 $error: #DC2626;
 
 ion-content {
-  --background: #{$background};
   --padding-top: 72px; 
   --padding-bottom: 84px; 
 }
@@ -25,8 +20,8 @@ ion-content {
 
 // Tarjeta de perfil
 .profile-card {
-  background: $white;
-  border: 1px solid $border-color;
+  background: var(--app-bg-secondary);
+  border: 1px solid var(--app-border-color);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -38,7 +33,7 @@ ion-content {
   justify-content: center;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid var(--app-border-color);
 }
 
 .profile-photo-container {
@@ -67,6 +62,7 @@ ion-content {
   object-fit: cover;
 }
 
+// Overlay de foto
 .photo-overlay {
   position: absolute;
   top: 0;
@@ -114,39 +110,39 @@ ion-content {
   gap: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: $text-primary;
+  color: var(--app-text-primary);
 }
 
 .editable-icon {
   font-size: 16px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 // Inputs
 .custom-input {
   width: 100%;
-  border: 2px solid $border-color;
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 15px;
-  color: $text-primary;
-  background: $white;
+  color: var(--app-text-primary);
+  background: var(--app-bg-secondary);
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: $text-secondary;
-    opacity: 0.6;
+    color: var(--app-text-tertiary);
+    opacity: 1;
   }
 
   &.readonly {
-    background: rgba($background, 0.5);
-    color: $text-secondary;
+    background: var(--app-bg-tertiary);
+    color: var(--app-text-secondary);
     cursor: not-allowed;
   }
 
   &.editable {
     &:focus {
-      border-color: $primary-blue;
+      border-color: var(--app-color-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
@@ -155,25 +151,25 @@ ion-content {
 
 .custom-textarea {
   width: 100%;
-  border: 2px solid $border-color;
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 15px;
-  color: $text-primary;
-  background: $white;
+  color: var(--app-text-primary);
+  background: var(--app-bg-secondary);
   font-family: inherit;
   resize: vertical;
   min-height: 80px;
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: $text-secondary;
-    opacity: 0.6;
+    color: var(--app-text-tertiary);
+    opacity: 1;
   }
 
   &.editable {
     &:focus {
-      border-color: $primary-blue;
+      border-color: var(--app-color-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
@@ -184,7 +180,7 @@ ion-content {
 .form-actions {
   margin-top: 8px;
   padding-top: 20px;
-  border-top: 1px solid $border-color;
+  border-top: 1px solid var(--app-border-color);
 }
 
 .save-button {
@@ -203,19 +199,18 @@ ion-content {
   margin-bottom: 15px;
 
   &[disabled] {
-    --background: #{$border-color};
-    --color: #{$text-secondary};
+    --background: var(--app-bg-tertiary);
+    --color: var(--app-text-secondary);
     --box-shadow: none;
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   ion-spinner {
     margin-right: 8px;
   }
-
-  
 }
 
+// Botón de cancelar foto
 .cancel-button{
   --background: linear-gradient(135deg, #ff2323fb 0%, #b31919fb 100%);
   --background-hover: #710f0ffb;
@@ -223,6 +218,7 @@ ion-content {
   --border-radius: 12px;
   --box-shadow: 0 2px 8px rgba(255, 14, 14, 0.25);
 }
+
 // Toast
 .app-toast {
   position: fixed;
@@ -236,18 +232,18 @@ ion-content {
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  color: $white;
+  color: var(--app-text-on-header);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   min-width: 280px;
   max-width: 90%;
 
   &.success {
-    background: $success;
+    background: var(--app-color-success);
   }
 
   &.error {
-    background: $error;
+    background: var(--app-color-danger);
   }
 
   .toast-icon {
