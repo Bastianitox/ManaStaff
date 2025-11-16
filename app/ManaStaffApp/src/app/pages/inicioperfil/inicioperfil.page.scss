@@ -158,7 +158,7 @@ ion-content {
   color: var(--app-text-primary);
   background: var(--app-bg-secondary);
   font-family: inherit;
-  resize: vertical;
+  resize: none;
   min-height: 80px;
   transition: all 0.2s ease;
 

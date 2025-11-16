@@ -131,14 +131,15 @@
             Dirección
             <ion-icon name="create-outline" class="editable-icon"></ion-icon>
           </label>
-          <textarea
+          <ion-textarea
             [(ngModel)]="userData.Direccion"
             name="direccion"
             (ngModelChange)="onFieldChange()"
             rows="3"
+            [autoGrow]="true"
             class="custom-textarea editable"
             placeholder="Ingresa tu dirección completa"
-          ></textarea>
+          ></ion-textarea>
         </div>
 
         <!-- Botón guardar -->

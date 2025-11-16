@@ -2,16 +2,18 @@
 $primary-blue: #062f63;
 $dark-blue: #041d3d;
 $light-blue: #0a4a8f;
-$text-primary: #0F172A;
-$text-secondary: #6B7280;
-$background: #F8FAFC;
-$border-color: #E5E7EB;
 $white: #FFFFFF;
-$success: #10B981;
-$error: #DC2626;
+
+:host {
+  --page-background: #{$primary-blue};
+}
+
+body.dark :host {
+  --page-background: var(--app-bg-primary); 
+}
 
 ion-content {
-  --background: #{$primary-blue};
+  --background: var(--page-background);
 }
 
 // Contenedor principal
@@ -23,7 +25,7 @@ ion-content {
   padding: 20px;
 }
 
-// Vista de bienvenida
+/* bienvienida */
 .welcome-screen {
   width: 100%;
   max-width: 400px;
@@ -49,9 +51,10 @@ ion-content {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
 
-  ion-icon {
-    font-size: 64px;
-    color: $white;
+  .company-logo-img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
   }
 }
 
@@ -96,7 +99,7 @@ ion-content {
   margin-top: 16px;
 }
 
-// Formulario
+/* formulario login */
 .login-form-screen {
   width: 100%;
   max-width: 440px;
@@ -133,9 +136,10 @@ ion-content {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 
-  ion-icon {
-    font-size: 40px;
-    color: $white;
+  .company-logo-img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
   }
 }
 
@@ -149,7 +153,7 @@ ion-content {
 
 // Tarjeta del formulario
 .form-card {
-  background: $white;
+  background: var(--app-bg-secondary);
   border-radius: 20px;
   padding: 32px 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -164,13 +168,13 @@ ion-content {
 .form-title {
   font-size: 24px;
   font-weight: 700;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0 0 8px 0;
 }
 
 .form-subtitle {
   font-size: 14px;
-  color: $text-secondary;
+  color: var(--app-text-secondary);
   margin: 0;
   line-height: 1.4;
 }
@@ -191,30 +195,30 @@ ion-content {
 .field-label {
   font-size: 14px;
   font-weight: 600;
-  color: $text-primary;
+  color: var(--app-text-primary);
 
   .required {
-    color: $error;
+    color: var(--app-color-danger);
   }
 }
 
 .custom-input {
   width: 100%;
-  border: 2px solid $border-color;
+  border: 2px solid var(--app-border-color);
   border-radius: 12px;
   padding: 14px 16px;
   font-size: 15px;
-  color: $text-primary;
-  background: $white;
+  color: var(--app-text-primary);
+  background: var(--app-bg-secondary);
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: $text-secondary;
-    opacity: 0.6;
+    color: var(--app-text-tertiary);
+    opacity: 1;
   }
 
   &:focus {
-    border-color: $primary-blue;
+    border-color: var(--app-color-primary);
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
@@ -240,11 +244,11 @@ ion-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: $text-secondary;
+    color: var(--app-text-secondary);
     transition: color 0.2s ease;
 
     &:hover {
-      color: $primary-blue;
+      color: var(--app-color-primary);
     }
 
     &:focus {
@@ -263,14 +267,14 @@ ion-content {
 
   a {
     font-size: 14px;
-    color: $primary-blue;
+    color: var(--app-link-color);
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
     transition: color 0.2s ease;
 
     &:hover {
-      color: $dark-blue;
+      color: var(--app-link-color-hover);
       text-decoration: underline;
     }
   }
@@ -280,6 +284,7 @@ ion-content {
   margin-top: 8px;
 }
 
+// Botón de submit
 .submit-button {
   --background: linear-gradient(135deg, #{$light-blue} 0%, #{$primary-blue} 100%);
   --background-hover: #{$primary-blue};
@@ -295,10 +300,10 @@ ion-content {
   height: 52px;
 
   &[disabled] {
-    --background: #{$border-color};
-    --color: #{$text-secondary};
+    --background: var(--app-bg-tertiary);
+    --color: var(--app-text-tertiary); 
     --box-shadow: none;
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   ion-spinner {
@@ -321,7 +326,7 @@ ion-content {
 }
 
 .loading-content {
-  background: $white;
+  background: var(--app-bg-secondary); 
   border-radius: 16px;
   padding: 32px 40px;
   display: flex;
@@ -334,13 +339,13 @@ ion-content {
 .loading-spinner {
   width: 48px;
   height: 48px;
-  color: $primary-blue;
+  color: var(--app-color-primary);
 }
 
 .loading-text {
   font-size: 15px;
   font-weight: 500;
-  color: $text-primary;
+  color: var(--app-text-primary);
   margin: 0;
 }
 
@@ -357,7 +362,7 @@ ion-content {
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  color: $white;
+  color: var(--app-text-on-header);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   min-width: 280px;
@@ -365,11 +370,11 @@ ion-content {
   animation: fadeIn 0.3s ease-out;
 
   &.success {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    background: var(--app-color-success);
   }
 
   &.error {
-    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    background: var(--app-color-danger);
   }
 
   .toast-icon {
@@ -379,34 +384,16 @@ ion-content {
 
 // Animaciones
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 // Responsive
@@ -414,21 +401,11 @@ ion-content {
   .form-card {
     padding: 40px 32px;
   }
-
   .logo-placeholder {
     width: 140px;
     height: 140px;
-
-    ion-icon {
-      font-size: 72px;
-    }
+    ion-icon { font-size: 72px; }
   }
-
-  .brand-name {
-    font-size: 48px;
-  }
-
-  .welcome-message {
-    font-size: 18px;
-  }
+  .brand-name { font-size: 48px; }
+  .welcome-message { font-size: 18px; }
 }

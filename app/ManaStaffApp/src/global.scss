@@ -42,6 +42,10 @@
   --app-color-warning: #F59E0B;
   --app-color-danger: #DC2626;
 
+  /*---links---*/
+  --app-link-color: var(--app-color-primary);
+  --app-link-color-hover: var(--app-color-dark);
+
 
 
 /*=======VVARIABLES IONIC (MODO CLARO)======*/
@@ -85,6 +89,10 @@ body.dark {
 
   /*---bordes---*/
   --app-border-color: #334155;
+
+  /*---links---*/
+  --app-link-color: #60A5FA;
+  --app-link-color-hover: #93C5FD;
 }
 
 
