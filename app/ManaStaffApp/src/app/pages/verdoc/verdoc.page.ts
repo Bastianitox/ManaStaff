@@ -1,16 +1,18 @@
 import { Component, type OnInit } from "@angular/core"
-import { AlertController } from "@ionic/angular"
+import { AlertController, Platform } from "@ionic/angular"
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser"
 import { Router } from '@angular/router'
+import { HttpClient } from '@angular/common/http';
+import { Download } from "src/app/services/download";
+import { Directory, Filesystem, FilesystemEncoding } from "@capacitor/filesystem";
 
-// Interfaz para el detalle del documento
 interface DocumentoDetalle {
   id: string
   title: string
   format: string
   size: string
   date: string
-  fileUrl: string | null
+  fileUrl: string | SafeResourceUrl | null
   downloadUrl: string | null
 }
 
@@ -21,72 +23,109 @@ interface DocumentoDetalle {
   standalone: false
 })
 export class VerdocPage implements OnInit {
-  // Documento actual 
+  // Documento actual
   doc: DocumentoDetalle = {
-    id: "1",
-    title: "Contrato de Servicios 2024",
-    format: "PDF",
-    size: "2.4 MB",
-    date: "2024-06-20",
-    fileUrl: "assets/sample.pdf",
-    downloadUrl: "assets/sample.pdf",
+    id: "",
+    title: "Cargando...",
+    format: "",
+    size: "",
+    date: "",
+    fileUrl: null,
+    downloadUrl: null,
   }
 
-  safeFileUrl: SafeResourceUrl | null = null
+  pdfSrc?: string | Uint8Array;
+  safeFileUrl?: SafeResourceUrl;
+  isLoading: boolean = false
+  errorMessage: string | null = null
 
   constructor(
     private alertController: AlertController,
-    private sanitizer: DomSanitizer,
-    private router: Router
-  ) {}
+    private router: Router,
+    private downloadService: Download,
+    private domSanitizer: DomSanitizer,
+    private http: HttpClient,
+  ) {
 
-  ngOnInit() {
-    // Intentar recibir el documento enviado desde la otra página
+    this.isLoading = true
     const nav = this.router.getCurrentNavigation()
-    const passedDoc = nav?.extras?.state?.['document']
+    const passedDoc: any = nav?.extras?.state?.['document']
 
-    if (passedDoc) {
-      console.log("[verdoc] Documento recibido:", passedDoc)
+    if (passedDoc && passedDoc.id) {
+      
       this.doc = {
-        id: passedDoc.id || '0',
-        title: passedDoc.name || 'Documento sin título',
-        format: passedDoc.type || 'PDF',
-        size: passedDoc.size || '0 MB',
-        date: passedDoc.date || '',
-        fileUrl: 'assets/sample.pdf', 
-        downloadUrl: 'assets/sample.pdf',
+        id: passedDoc.id,
+        title: passedDoc.nombre || 'Documento sin título',
+        format: passedDoc.tipo_documento || 'Archivo', 
+        size: passedDoc.tamano_archivo || '0 MB', 
+        date: passedDoc.Fecha_emitida || '',
+        fileUrl: passedDoc.url, 
+        downloadUrl: passedDoc.url || '',
       }
-    }
 
-    // Generar URL segura para iframe
-    if (this.doc.fileUrl) {
-      this.safeFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.doc.fileUrl)
+      if (this.doc.format === 'PDF' && this.doc.fileUrl) {
+        this.iniciarCargaPdfLocal(this.doc.fileUrl as string, this.doc.id); 
+      } else {
+        this.isLoading = false;
+      }
+      
     } else {
-      this.safeFileUrl = null
+      this.isLoading = false
+      this.errorMessage = "No se ha recibido el ID del documento para su visualización. Vuelve a Mis documentos."
+      this.doc.title = "Error de navegación"
     }
   }
 
-  // Volver a la lista "Mis documentos"
-  goBack() {
-    console.log("[verdoc] Volver a Mis documentos (goBack)")
-    this.router.navigate(['/tabs/documentos'])
+  async iniciarCargaPdfLocal(url: string, id_doc: string) {
+    this.isLoading = true;
+    try {
+      const arrayBuffer = await this.downloadService.cargarPdfDesdeUrl(url, id_doc);
+
+      if (arrayBuffer) {
+        this.pdfSrc = arrayBuffer; 
+      } else {
+        this.errorMessage = 'No se pudo cargar el PDF localmente.';
+      }
+    } catch (error) {
+      this.errorMessage = 'Ocurrió un error al intentar cargar el documento.';
+      console.error(error);
+    } finally {
+      this.isLoading = false;
+    }
+ }
+  
+
+  ngOnInit() {}
+
+  // -------------------------------------------------- DESCARGA --------------------------------------------------
+  async descargarDocumento(id_doc: string, nombre_archivo: string) {
+    await this.downloadService.downloadAndSaveDocument(id_doc, nombre_archivo);
   }
+  
+  // -------------------------------------------------- FIN DESCARGA --------------------------------------------------
 
-  // Función para volver a la lista de documentos
-  goBackToList() {
-    console.log("[verdoc] Volver a Mis documentos (goBackToList)")
-    this.router.navigate(['/tabs/documentos'])
-  }
+  pdfCargado(event: any){}
 
-  async downloadDocument() {
-    console.log("[verdoc] Descargar:", this.doc.title)
 
+
+
+  // -------------------------------------------------- FUNCIONES AYUDA --------------------------------------------------
+
+
+  private async showAlert(header: string, message: string) {
     const alert = await this.alertController.create({
-      header: "Descarga iniciada",
-      message: `Se está descargando el documento "${this.doc.title}"`,
-      buttons: ["OK"],
+        header: header,
+        message: message,
+        buttons: ["OK"],
     })
-
     await alert.present()
+  }
+
+  goBack() {
+    this.router.navigate(['/tabs/documentos'])
+  }
+
+  goBackToList() {
+    this.router.navigate(['/tabs/documentos'])
   }
 }

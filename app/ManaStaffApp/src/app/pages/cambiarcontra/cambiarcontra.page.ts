@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { finalize } from 'rxjs';
+import { UsuarioService } from 'src/app/services/usuario-service';
+import { Utils } from 'src/app/services/utils';
 
 @Component({
   selector: 'app-cambiarcontra',
@@ -37,7 +40,10 @@ export class CambiarcontraPage implements OnInit {
   toastType: "success" | "error" = "success"
   toastMessage = ""
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private usuarioService: UsuarioService,
+    private utils: Utils) {}
 
   ngOnInit() {}
 
@@ -86,34 +92,35 @@ export class CambiarcontraPage implements OnInit {
       return
     }
 
+    const formData = new FormData
+
+    formData.append('password_actual', this.currentPassword)
+    formData.append('nueva_password', this.newPassword)
+    formData.append('confirmar_password', this.confirmPassword)
+
     this.isSubmitting = true
 
-    setTimeout(() => {
-      this.isSubmitting = false
-
-      // Simular éxito
-      const success = true
-
-      if (success) {
-        this.toastType = "success"
-        this.toastMessage = "¡Contraseña actualizada correctamente!"
-        this.showToast = true
-
-        // Limpiar formulario después de éxito
-        setTimeout(() => {
-          this.resetForm()
-          this.showToast = false
-        }, 2000)
-      } else {
-        this.toastType = "error"
-        this.toastMessage = "Error al cambiar la contraseña. Intenta nuevamente."
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-        }, 3000)
-      }
-    }, 1500)
+    this.usuarioService.cambiarContrasena(formData)
+      .pipe(finalize(() => {
+        this.isSubmitting = false;
+      }))
+      .subscribe({
+        next: (response) => {
+          this.toastType = "success"
+          this.toastMessage = "¡Contraseña actualizada correctamente!"
+          this.showToast = true
+          setTimeout(() => {
+            this.resetForm()
+            this.showToast = false
+          }, 2000)
+        },
+        error: (httpError) => {
+          const errorMessage = httpError.error?.error || httpError.error?.message || "Error desconocido al enviar la solicitud.";
+          this.toastType = "error"
+          this.toastMessage = errorMessage
+          this.showToast = true
+        }
+      });
   }
 
   // Resetear formulario

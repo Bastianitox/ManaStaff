@@ -1,5 +1,7 @@
 import { Component, type OnInit } from "@angular/core"
 import { Router } from '@angular/router'
+import { filter, take } from "rxjs"
+import { AuthService } from "src/app/services/auth-service"
 import { SolicitudesApiService } from "src/app/services/solicitudes-api"
 
 interface Solicitud {
@@ -47,13 +49,28 @@ export class IniciosoliPage implements OnInit {
   toastMessage = ""
   toastType: "success" | "error" | null = null
 
+  private initialLoadCompleted = false;
+
   constructor(
     private router: Router,
-    private solicitudesApi: SolicitudesApiService
+    private solicitudesApi: SolicitudesApiService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
-    this.cargarSolicitudes();
+    this.authService.idToken$.pipe(
+      filter(token => !!token),
+      take(1)                  
+    ).subscribe(() => {
+      this.cargarSolicitudes();
+      this.initialLoadCompleted = true; 
+    });
+  }
+
+  ionViewWillEnter() {
+    if (this.initialLoadCompleted && this.solicitudes.length === 0) {
+      this.cargarSolicitudes();
+    }
   }
 
   cargarSolicitudes(refresher?: any) {
@@ -64,7 +81,6 @@ export class IniciosoliPage implements OnInit {
         this.isLoading = false;
         
         if (response.status === 'success') {
-          console.log(response.solicitudes);
           this.solicitudes = response.solicitudes as Solicitud[]; 
           
           this.inicializarTipos();
@@ -134,7 +150,6 @@ export class IniciosoliPage implements OnInit {
   }
 
   createNewRequest() {
-    console.log("Crear nueva solicitud")
     this.router.navigate(["/tabs/solicitudes/crear"])
   }
 
@@ -241,10 +256,41 @@ export class IniciosoliPage implements OnInit {
   }
 
   confirmCancel() {
-    console.log("Confirmar cancelación", this.selectedRequestId)
-    this.showSuccess("Solicitud cancelada correctamente")
-    this.closeCancelModal()
-  }
+    if (!this.selectedRequestId) {
+        this.showError("Error: No se ha seleccionado una solicitud para cancelar.");
+        this.closeCancelModal();
+        return;
+    }
+
+    const id_solicitud = this.selectedRequestId;
+    this.isLoading = true; // Mostrar spinner al iniciar la cancelación
+    this.closeCancelModal(); // Cerrar el modal de confirmación
+
+    this.solicitudesApi.cancelarSolicitud(id_solicitud).subscribe({
+        next: (response) => {
+            this.isLoading = false;
+            if (response.status === 'success') {
+                this.showSuccess(response.message || "Solicitud cancelada correctamente.");
+                this.cargarSolicitudes(); 
+            } else {
+                this.showError(response.message || "No se pudo cancelar la solicitud.");
+            }
+        },
+        error: (httpError) => {
+            this.isLoading = false;
+            let message = "Error de conexión con el servidor al cancelar.";
+            if (httpError.status === 403) {
+                message = "No autorizado para cancelar esta solicitud o ya ha sido resuelta.";
+            } else if (httpError.error && httpError.error.message) {
+                message = httpError.error.message;
+            } else if (httpError.statusText) {
+                message = `Error ${httpError.status}: ${httpError.statusText}`;
+            }
+
+            this.showError(message);
+        }
+    });
+}
 
   viewDetails(id: string) {
     this.router.navigate(['/tabs/solicitudes/detalle', id]);

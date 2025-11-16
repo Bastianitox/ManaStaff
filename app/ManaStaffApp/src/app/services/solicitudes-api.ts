@@ -29,11 +29,6 @@ export class SolicitudesApiService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * 📲 Obtiene la lista de solicitudes del usuario autenticado desde la API de Django.
-   * La autenticación con el token Bearer se añade automáticamente por el Interceptor.
-   * * @returns Un Observable con la respuesta de la API.
-   */
   obtenerSolicitudes(): Observable<ApiResponse> {
     const url = this.API_URL + 'obtener_solicitudes/';
     return this.http.get<ApiResponse>(url);
@@ -52,5 +47,10 @@ export class SolicitudesApiService {
   obtenerTiposSolicitud(): Observable<TiposApiResponse> {
     const url = this.API_URL + `obtener_tipos_solicitud/`; 
     return this.http.get<TiposApiResponse>(url);
+  }
+
+  cancelarSolicitud(id_solicitud: string): Observable<any> {
+    const url = this.API_URL + `cancelar_solicitud/${id_solicitud}`; 
+    return this.http.delete<any>(url);
   }
 }

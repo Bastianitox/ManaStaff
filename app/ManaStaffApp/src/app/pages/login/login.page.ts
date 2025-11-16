@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
 import { AuthService } from 'src/app/services/auth-service';
+import { UsuarioService } from 'src/app/services/usuario-service';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +28,8 @@ export class LoginPage implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit() {}
@@ -57,8 +59,12 @@ export class LoginPage implements OnInit {
     this.isLoggingIn = true;
     
     this.authService.login(this.email, this.password).subscribe({
-      next: (userCredential) => {
+      next: async (userCredential) => {
         this.isLoggingIn = false;
+
+        const uid = userCredential.user.uid;
+
+        await this.usuarioService.obtenerDatosUsuario(userCredential.user.uid);
         
         this.toastType = "success";
         this.toastMessage = "¡Bienvenido a ManaStaff!";

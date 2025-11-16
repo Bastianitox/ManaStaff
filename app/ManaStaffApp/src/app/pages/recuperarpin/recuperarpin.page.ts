@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router"
+import { finalize } from 'rxjs';
+import { UsuarioService } from 'src/app/services/usuario-service';
 
 @Component({
   selector: 'app-recuperarpin',
@@ -9,7 +11,7 @@ import { Router } from "@angular/router"
 })
 export class RecuperarpinPage implements OnInit {
   // Datos del usuario
-  userEmail = "usuario@ejemplo.com" 
+  userData: any = null
 
   // Campos del formulario
   verificationCode = ""
@@ -34,9 +36,12 @@ export class RecuperarpinPage implements OnInit {
   toastType: "success" | "error" = "success"
   toastMessage = ""
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private usuarioService: UsuarioService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.userData = this.usuarioService.userData;
   }
 
   // Solicitar código de verificación
@@ -45,32 +50,36 @@ export class RecuperarpinPage implements OnInit {
 
     this.isRequestingCode = true
 
+    const formData = new FormData
+    formData.append('email', this.userData.correo)
+
     // Simular llamada a API
-    setTimeout(() => {
-      this.isRequestingCode = false
 
-      // Simular éxito
-      const success = true
+    this.usuarioService.enviarCodigo(formData)
+      .pipe(finalize(() => {
+        this.isRequestingCode = false;
+      }))
+      .subscribe({
+        next: async (response) => {
+          this.showCodeSection = true
+          this.toastType = "success"
+          this.toastMessage = "Código enviado a tu correo electrónico"
+          this.showToast = true
+          setTimeout(() => {
+            this.showToast = false
+          }, 3000)
+        },
+        error: (httpError) => {
+          const errorMessage = httpError.error?.error || httpError.error?.message || "Error desconocido al enviar la solicitud.";
+          this.toastType = "error"
+          this.toastMessage = errorMessage
+          this.showToast = true
 
-      if (success) {
-        this.showCodeSection = true
-        this.toastType = "success"
-        this.toastMessage = "Código enviado a tu correo electrónico"
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-        }, 3000)
-      } else {
-        this.toastType = "error"
-        this.toastMessage = "Error al enviar el código. Intenta nuevamente."
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-        }, 3000)
-      }
-    }, 1500)
+          setTimeout(() => {
+            this.showToast = false
+          }, 3000)
+        }
+      });
   }
 
   // Verificar código
@@ -79,67 +88,74 @@ export class RecuperarpinPage implements OnInit {
 
     this.isVerifyingCode = true
 
+    const formData = new FormData
+    formData.append('email', this.userData.correo)
+    formData.append('codigo', this.verificationCode)
+
     // Simular llamada a API
-    setTimeout(() => {
-      this.isVerifyingCode = false
 
-      // Simular éxito
-      const success = true
+    this.usuarioService.verificarCodigo(formData)
+      .pipe(finalize(() => {
+        this.isVerifyingCode = false;
+      }))
+      .subscribe({
+        next: async (response) => {
+          this.showPinSection = true
+          this.toastType = "success"
+          this.toastMessage = "Código verificado correctamente"
+          this.showToast = true
+          setTimeout(() => {
+            this.showToast = false
+          }, 3000)
+        },
+        error: (httpError) => {
+          const errorMessage = httpError.error?.error || httpError.error?.message || "Error desconocido al enviar la solicitud.";
+          this.toastType = "error"
+          this.toastMessage = errorMessage
+          this.showToast = true
 
-      if (success) {
-        this.showPinSection = true
-        this.toastType = "success"
-        this.toastMessage = "Código verificado correctamente"
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-        }, 3000)
-      } else {
-        this.toastType = "error"
-        this.toastMessage = "Código incorrecto. Verifica e intenta nuevamente."
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-        }, 3000)
-      }
-    }, 1500)
+          setTimeout(() => {
+            this.showToast = false
+          }, 3000)
+        }
+      });
   }
 
-  // Actualizar PIN
   async actualizarPin() {
     if (this.isUpdatingPin || !this.isPinFormValid) return
 
     this.isUpdatingPin = true
 
-    // Simular llamada a API
-    setTimeout(() => {
-      this.isUpdatingPin = false
+    const formData = new FormData
+    formData.append('email', this.userData.correo)
+    formData.append('codigo', this.verificationCode)
+    formData.append('nuevo_pin', this.newPin)
 
-      // Simular éxito
-      const success = true
+    this.usuarioService.cambiarPINverificado(formData)
+      .pipe(finalize(() => {
+        this.isUpdatingPin = false;
+      }))
+      .subscribe({
+        next: async (response) => {
+          this.toastType = "success"
+          this.toastMessage = "¡PIN actualizado correctamente!"
+          this.showToast = true
+          setTimeout(() => {
+            this.showToast = false
+            this.router.navigateByUrl("/tabs/configuracion")
+          }, 2000)
+        },
+        error: (httpError) => {
+          const errorMessage = httpError.error?.error || httpError.error?.message || "Error desconocido al enviar la solicitud.";
+          this.toastType = "error"
+          this.toastMessage = errorMessage
+          this.showToast = true
 
-      if (success) {
-        this.toastType = "success"
-        this.toastMessage = "¡PIN actualizado correctamente!"
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-          // Redirigir a configuración después de éxito
-          this.router.navigateByUrl("/tabs/configuracion")
-        }, 2000)
-      } else {
-        this.toastType = "error"
-        this.toastMessage = "Error al actualizar el PIN. Intenta nuevamente."
-        this.showToast = true
-
-        setTimeout(() => {
-          this.showToast = false
-        }, 3000)
-      }
-    }, 1500)
+          setTimeout(() => {
+            this.showToast = false
+          }, 3000)
+        }
+      });
   }
 
   // Permitir solo números

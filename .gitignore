@@ -18,3 +18,7 @@ Web/ManaStaff_Web/staffweb/__pycache__/urls.cpython-313.pyc
 Web/ManaStaff_Web/staffweb/__pycache__/views.cpython-313.pyc
 Web/ManaStaff_Web/staffweb/migrations/__pycache__/__init__.cpython-313.pyc
 *.pyc
+app/ManaStaffApp/src/environments/environment.ts
+app/ManaStaffApp/src/environments/environment.prod.ts
+Web/ManaStaff_Web/db.sqlite3
+Web/ManaStaff_Web/db.sqlite3

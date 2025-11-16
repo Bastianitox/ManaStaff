@@ -125,12 +125,12 @@ ion-content {
   font-weight: 600;
   text-transform: uppercase;
 
-  &.noticia {
+  &.Noticia {
     color: $success;
     background: rgba(16, 185, 129, 0.1);
   }
 
-  &.aviso {
+  &.Aviso {
     color: $warning;
     background: rgba(245, 158, 11, 0.1);
   }
@@ -151,22 +151,22 @@ ion-content {
   align-items: center;
   justify-content: center;
 
-  &.noticia {
+  &.Noticia {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
   }
 
-  &.aviso {
+  &.Aviso {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
   }
 
   ion-icon {
     font-size: 24px;
     
-    .noticia & {
+    .Noticia & {
       color: $success;
     }
     
-    .aviso & {
+    .Aviso & {
       color: $warning;
     }
   }

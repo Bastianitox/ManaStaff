@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from "@angular/router"
+import { ActivatedRoute, Router } from "@angular/router"
+import { AnunciosApi } from 'src/app/services/anuncios-api';
 
 interface Publicacion {
   id: string
   titulo: string
   contenido: string
-  tipo: "noticia" | "aviso"
-  fecha_publicacion: string
+  tipo_publicacion_nombre: "Noticia" | "Aviso" | null
+  fecha_emitida: string
+  id_empleador: string
 }
 
 @Component({
@@ -16,35 +18,68 @@ interface Publicacion {
   standalone: false
 })
 export class DetalleavisosPage implements OnInit {
-  // Datos mock de la publicación
+
+  publicacionId: string | null = null;
+
   publicacion: Publicacion = {
-    id: "1",
-    titulo: "Actualización del sistema de gestión documental",
-    contenido: `Estimados colaboradores,
-
-Nos complace informarles que el próximo lunes 15 de enero se implementará una actualización importante en nuestro sistema de gestión documental.
-
-Esta actualización incluye:
-- Mejoras en la velocidad de carga de documentos
-- Nueva interfaz más intuitiva y moderna
-- Funcionalidad de búsqueda avanzada
-- Integración con herramientas de colaboración
-
-El sistema estará temporalmente fuera de servicio entre las 6:00 AM y 8:00 AM para realizar la actualización. Les recomendamos descargar cualquier documento importante antes de ese horario.
-
-Para cualquier consulta o soporte técnico, pueden contactar al equipo de TI a través del correo soporte@empresa.com
-
-Agradecemos su comprensión y colaboración.
-
-Atentamente,
-Equipo de Tecnología`,
-    tipo: "noticia",
-    fecha_publicacion: "2024-01-15",
+    id: "",
+    titulo: "",
+    contenido: "",
+    tipo_publicacion_nombre: null,
+    fecha_emitida: "",
+    id_empleador: "",
   }
+  
+  isLoading = true;
+  errorMessage: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+      private publicacionesApi: AnunciosApi) {}
 
   ngOnInit() {
+    this.publicacionId = this.route.snapshot.paramMap.get('id');
+
+    if (this.publicacionId) {
+      this.cargarDetalle(this.publicacionId);
+    } else {
+      this.isLoading = false;
+      this.errorMessage = "ID de solicitud no encontrado en la ruta.";
+      this.publicacion.titulo = "Error";
+    }
+  }
+
+  
+  cargarDetalle(id: string) {
+    this.isLoading = true;
+
+    this.publicacionesApi.obtenerDetallePublicacion(id).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.status === 'success' && response.publicacion) {
+          
+          this.publicacion = {
+            ...response.publicacion,
+          } as Publicacion;
+
+        } else {
+          this.errorMessage = response.message || "No se pudo cargar el detalle de la solicitud.";
+          this.publicacion.titulo = "Error de Datos";
+        }
+      },
+      error: (httpError) => {
+        this.isLoading = false;
+        if (httpError.status === 404) {
+            this.errorMessage = "La solicitud no existe o fue eliminada.";
+        } else if (httpError.status === 403) {
+            this.errorMessage = "Acceso denegado: Esta solicitud no te pertenece.";
+        } else {
+            this.errorMessage = "Error de conexión con la API.";
+        }
+        this.publicacion.titulo = "Error de Carga";
+      }
+    });
   }
 
   goBack() {

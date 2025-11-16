@@ -215,24 +215,24 @@
     <div class="documents-grid">
       <div class="document-card" *ngFor="let doc of filteredDocuments">
         <!-- Badge de estado -->
-        <div class="badge" [ngClass]="'badge-' + doc.status">
-          {{ doc.status }}
+        <div class="badge" [ngClass]="'badge-' + doc.tipo_estado_nombre">
+          {{ doc.tipo_estado_nombre }}
         </div>
 
         <!-- Icono del archivo -->
         <div class="card-icon">
-          <ion-icon [name]="getFileIcon(doc.type)"></ion-icon>
+          <ion-icon [name]="getFileIcon(doc.tipo_documento)"></ion-icon>
         </div>
 
         <!-- Contenido -->
         <div class="card-content">
-          <h3 class="card-title">{{ doc.name }}</h3>
+          <h3 class="card-title">{{ doc.nombre }}</h3>
           <div class="card-meta">
-            <span class="meta-item">{{ doc.type }}</span>
+            <span class="meta-item">{{ doc.tipo_documento }}</span>
             <span class="meta-separator">•</span>
-            <span class="meta-item">{{ doc.size }}</span>
+            <span class="meta-item">{{ doc.tamano_archivo }}</span>
             <span class="meta-separator">•</span>
-            <span class="meta-item">{{ doc.date }}</span>
+            <span class="meta-item">{{ doc.Fecha_emitida }}</span>
           </div>
         </div>
 
@@ -240,14 +240,14 @@
         <div class="card-actions">
           <button 
             class="action-btn view-btn"
-            [disabled]="doc.status === 'Pendiente'"
+            [disabled]="doc.tipo_estado_nombre === 'Pendiente'"
             (click)="viewDocument(doc)">
             Ver
           </button>
           <button 
             class="action-btn download-btn"
-            [disabled]="doc.status === 'Pendiente'"
-            (click)="downloadDocument(doc)">
+            [disabled]="doc.tipo_estado_nombre === 'Pendiente'"
+            (click)="descargarDocumento(doc.id, doc.nombre)">
             Descargar
           </button>
         </div>
