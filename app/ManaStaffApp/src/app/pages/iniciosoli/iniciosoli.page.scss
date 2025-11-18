@@ -8,8 +8,9 @@ $warning: #F59E0B;
 $danger: #DC2626;
 
 ion-content {
-  --padding-top: 55px; 
-  --padding-bottom: 84px; 
+  --background: var(--app-bg-primary);
+  --padding-top: calc(55px + var(--ion-safe-area-top, 0px)); 
+  --padding-bottom: calc(84px + var(--ion-safe-area-bottom, 0px)); 
 }
 
 // Buscador y filtro 

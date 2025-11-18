@@ -6,8 +6,9 @@ $error-red: #DC2626;
 
 // Fondo general
 ion-content {
-  --padding-top: 72px; 
-  --padding-bottom: 84px; 
+  --background: var(--app-bg-primary);
+  --padding-top: calc(72px + var(--ion-safe-area-top, 0px)); 
+  --padding-bottom: calc(84px = var(--ion-safe-area-bottom, 0px)); 
 }
 
 // Contenedor principal
