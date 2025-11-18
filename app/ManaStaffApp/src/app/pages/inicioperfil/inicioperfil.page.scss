@@ -7,8 +7,9 @@ $success: #10B981;
 $error: #DC2626;
 
 ion-content {
-  --padding-top: 72px; 
-  --padding-bottom: 84px; 
+  --background: var(--app-bg-primary);
+  --padding-top: calc(72px + var(--ion-safe-area-top, 0px)); 
+  --padding-bottom: calc(84px = var(--ion-safe-area-bottom, 0px));  
 }
 
 // Contenedor principal
