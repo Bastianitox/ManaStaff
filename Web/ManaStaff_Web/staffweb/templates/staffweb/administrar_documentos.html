@@ -82,6 +82,30 @@
   </div>
 </div>
 
+{% if messages %}
+  {% for message in messages %}
+    <div id="djangoMessageAlert_{{ forloop.counter }}"
+    class="alert {% if message.tags == 'error' %}error{% else %}success{% endif %}"
+    style="display:flex;">
+      <div class="alert-icon">
+        {% if message.tags == 'error' %}✕{% else %}✓{% endif %}
+      </div>
+      <span>{{ message }}</span>
+
+      <script>
+        setTimeout(function() {
+          var alertEl = document.getElementById("djangoMessageAlert_{{ forloop.counter }}");
+          if (alertEl) {
+            alertEl.style.transition = "opacity 0.5s ease";
+            alertEl.style.opacity = "0";
+            setTimeout(() => alertEl.style.display = "none", 500);
+          }
+        }, 5000);
+      </script>
+    </div>
+  {% endfor %}
+{% endif %}
+
 <!-- Alertas centradas -->
 <div id="successAlert" class="alert success" style="display:none;">
   <div class="alert-icon">✓</div>
