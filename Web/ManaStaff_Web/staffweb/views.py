@@ -610,7 +610,7 @@ def administrar_documentos(request):
             "rut": rut,
             "rut_visible": rut,
             "nombre": nombre,
-            "documentos": docs_por_rut.get(rut, []),
+            "documentos": docs_por_rut.get(rut, [])[:2],
         })
 
     context = {"users_docs_json": json.dumps(bloques, ensure_ascii=False)}
