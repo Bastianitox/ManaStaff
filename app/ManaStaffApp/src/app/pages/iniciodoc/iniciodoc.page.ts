@@ -4,9 +4,8 @@ import { Router } from '@angular/router'
 import { DocumentosApi } from "src/app/services/documentos-api"
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { HttpClient, HttpEventType, HttpResponse } from "@angular/common/http";
-import { LocalNotifications } from "@capacitor/local-notifications";
 import { Capacitor } from "@capacitor/core";
-import { FileOpener } from "@capacitor-community/file-opener";
+import { App } from '@capacitor/app';
 import { Download } from "src/app/services/download";
 import { finalize } from "rxjs";
 import { Utils } from "src/app/services/utils";
@@ -83,7 +82,9 @@ export class IniciodocPage implements OnInit, ViewWillEnter {
     private router: Router,
     private documentosApi: DocumentosApi,
     private downloadService: Download,
-    private utils: Utils) {
+    private utils: Utils,
+    private alertController: AlertController
+  ) {
 
     this.documents = []
     this.filteredDocuments = []
@@ -336,9 +337,9 @@ export class IniciodocPage implements OnInit, ViewWillEnter {
     })
   }
 
-  // ---------------------------------------- DESCARGA ----------------------------------------
+  // ---------------------------------------- DESCARGA ----------------------------------------
 
-  async descargarDocumento(id_doc: string, nombre_archivo: string) {
+  async descargarDocumento(id_doc: string, nombre_archivo: string) {
     await this.downloadService.downloadAndSaveDocument(id_doc, nombre_archivo);
-  }
+  }
 }
