@@ -5,7 +5,7 @@ $background: #F8FAFC;
 /* para bajar el contenido */
 .tabs-content {
   padding-top: calc(72px + var(--ion-safe-area-top, 0px));
-  padding-bottom: 84px;
+  padding-bottom: calc(84px + var(--ion-safe-area-bottom, 0px));
   min-height: 100vh;
 }
 
@@ -125,12 +125,15 @@ $background: #F8FAFC;
   background: $primary-blue;
   display: flex;
   justify-content: space-around;
-  align-items: center;
+  align-items: flex-start;
   padding: 8px 0;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
   z-index: 1001;
+
+  padding-bottom: var(--ion-safe-area-bottom, 0px);
+  height: calc(72px + var(--ion-safe-area-bottom, 0px));
 }
 
 .bottom-nav-item {
