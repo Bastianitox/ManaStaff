@@ -4,8 +4,6 @@ $background: #F8FAFC;
 
 /* para bajar el contenido */
 .tabs-content {
-  padding-top: calc(72px + var(--ion-safe-area-top, 0px));
-  padding-bottom: calc(84px + var(--ion-safe-area-bottom, 0px));
   min-height: 100vh;
 }
 

@@ -5,8 +5,9 @@ $light-blue: #0a4a8f;
 $white: #FFFFFF;
 
 ion-content {
-  --padding-top: 55px; 
-  --padding-bottom: 84px; 
+  --background: var(--app-bg-primary);
+  --padding-top: calc(55px + var(--ion-safe-area-top, 0px)); 
+  --padding-bottom: calc(84px + var(--ion-safe-area-bottom, 0px)); 
 }
 
 // Buscador y filtro
