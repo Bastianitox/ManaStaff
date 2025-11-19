@@ -1176,11 +1176,14 @@ def administrar_noticiasyeventos(request):
 @admin_required
 def crear_publicacion(request):
     if request.method == "POST":
+        #obtenemos id
+        id_usuario_actual = obtener_rut_actual(request)
+
         data = {
             "titulo": request.POST.get("titulo"),
             "contenido": request.POST.get("contenido"),
             "fecha_emitida": request.POST.get("fecha"),
-            "id_empleador": request.POST.get("autor"),
+            "id_empleador": id_usuario_actual,
             "TipoAnuncio": request.POST.get("tipo")
         }
         crear_publicacion_funcion(data)
