@@ -1,116 +1,121 @@
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f6fa;
-  }
-  
-  .container {
-    display: flex;
-    height: 100vh;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .login-box {
-    display: flex;
-    width: 900px;
-    height: 500px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border-radius: 6px;
-    overflow: hidden;
-    background: #fff;
-  }
-  
-  /* Columna izquierda */
-  .login-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 40px;
-  }
-  
-  .login-left img {
-    width: 60px;
-    margin-bottom: 10px;
-  }
-  
-  .login-left h2 {
-    margin: 0;
-    color: #003366;
-    font-size: 22px;
-  }
-  
-  .login-left p {
-    font-size: 14px;
-    color: #003366;
-    margin-bottom: 20px;
-  }
-  
-  label {
-    font-weight: bold;
-    color: #003366;
-    display: block;
-    margin: 10px 0 5px;
-  }
-  
-  input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #003366;
-    border-radius: 6px;
-    margin-bottom: 10px;
-  }
-  
-  .forgot {
-    font-size: 13px;
-    color: #003366;
-    text-decoration: none;
-    display: block;
-    margin-bottom: 20px;
-  }
-  
-  button {
-    width: 100%;
-    background-color: #003366;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: bold;
-  }
-  
-  button:hover {
-    background-color: #002244;
-  }
-  
-  /* Columna derecha */
-  .login-right {
-    flex: 1;
-    background-color: #003366;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .login-right img {
-    width: 120px;
-    margin-right: 15px;
-  }
-  
-  .login-right h1 {
-    color: white;
-    font-size: 40px;
-    margin: 0;
-  }
-  
-  .login-right span {
-    color: white;
-    font-size: 18px;
-    letter-spacing: 6px;
-  }
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f6fa;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-box {
+  display: flex;
+  width: 900px;
+  height: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Columna izquierda */
+.login-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-left img {
+  width: 60px;
+  margin-bottom: 10px;
+}
+
+.login-left h2 {
+  margin: 0;
+  color: #003366;
+  font-size: 22px;
+}
+
+.login-left p {
+  font-size: 14px;
+  color: #003366;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  color: #003366;
+  display: block;
+  margin: 10px 0 5px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #003366;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.forgot {
+  font-size: 13px;
+  color: #003366;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.forgot:hover{
+  text-decoration: underline;
+}
+
+button {
+  width: 100%;
+  background-color: #003366;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+button:hover {
+  background-color: #002244;
+}
+
+/* Columna derecha */
+.login-right {
+  flex: 1;
+  background-color: #003366;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-right img {
+  width: 120px;
+  margin-right: 15px;
+}
+
+.login-right h1 {
+  color: white;
+  font-size: 40px;
+  margin: 0;
+}
+
+.login-right span {
+  color: white;
+  font-size: 18px;
+  letter-spacing: 6px;
+}
 
 .recover-right {
   flex: 1;
@@ -290,4 +295,51 @@ body {
   right: 12px;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+
+.qr-login{
+  align-items: center;
+}
+
+.img-qr {
+  width: 100%;
+  display: flex;
+  justify-content: center; 
+  margin-top: 25px;
+}
+
+.img-qr img {
+  width: 250px;
+  height: 250px; 
+  
+  display: block;
+  border: 10px solid white;
+  border-radius: 8px; 
+  box-shadow: 0 8px 30px rgba(0, 51, 102, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
+
+.img-qr img:hover {
+    transform: scale(1.02); 
+}
+
+
+
+.volver-qr {
+  width: 100%;
+  background-color: #003366;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+}
+
+.volver-qr:hover {
+  background-color: #002244;
 }

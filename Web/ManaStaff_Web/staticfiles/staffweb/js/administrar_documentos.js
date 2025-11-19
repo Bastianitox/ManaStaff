@@ -77,7 +77,14 @@
     const baseHref = (window.ROUTES && window.ROUTES.documentosUsuarios) || "#";
     const verMasHref = `${baseHref}?rut=${encodeURIComponent(b.rut)}`;
 
-    const docsHTML = (b.documentos || []).map(d => documentoCardHTML(d)).join("");
+    //obtenemos documentos
+    const todosLosDocs = b.documentos || [];
+
+    //cortamos el array para tomar solo dos
+    const docsLimitados = todosLosDocs.slice(0, 2);
+
+    //generar html solo con esos dos documentos
+    const docsHTML = docsLimitados.map(d => documentoCardHTML(d)).join("");
 
     return `
       <div class="bloque-usuario" data-user-id="${esc(b.rut)}">
