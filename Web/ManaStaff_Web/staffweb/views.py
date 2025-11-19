@@ -34,6 +34,9 @@ def index(request):
 def recuperar_contrasena(request):
     return render(request, 'staffweb/recuperar_contrasena.html')
 
+def qr(request):
+    return render(request, "staffweb/qr.html")
+
 def inicio_solicitudes(request):
     return render(request, 'staffweb/inicio_solicitudes.html')
 

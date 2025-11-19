@@ -47,7 +47,8 @@ class FirebaseAuthAuditoriaMiddleware(MiddlewareMixin):
             reverse("index"),
             reverse("iniciarSesion"),
             reverse("recuperar_contrasena_funcion"),
-            reverse("recuperar_contrasena")
+            reverse("recuperar_contrasena"),
+            reverse("qr")
         ]
 
         # Obtener el estado de login

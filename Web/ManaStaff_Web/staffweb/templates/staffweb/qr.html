@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ICON -->
+    <link rel="icon" type="image/png" href="{% static 'staffweb/img/logo_grande.png' %}" />
+
+  <!-- STATIC CSS -->
+  <link rel="stylesheet" href="{% static 'staffweb/css/index.css' %}">
+
+
+  <title>Login - ManaStaff</title>
+</head>
+
+<body>
+  <div class="container">
+    <div class="login-box">
+      <!-- Columna Izquierda -->
+      <div class="login-left qr-login">
+        <h2>MANA STAFF</h2>
+        <p>Escanea el código para descargar la app.</p>
+        <div class="img-qr">
+            <img src="{% static 'staffweb/img/qr-code.png' %}" alt="Código QR de Descarga">
+        </div>
+
+        <a href="{% url 'index' %}" class="volver-qr">Volver</a>
+      </div>
+
+      <!-- Columna Derecha -->
+      <div class="recover-right">
+        <div class="logo-box">
+          <div class="img-logo"></div>
+        </div>
+        <div class="brand-text">
+          <h1>MANA</h1>
+          <span>STAFF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
