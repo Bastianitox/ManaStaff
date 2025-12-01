@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block head %}
- <!--STATIC CSS -->
 <link rel="stylesheet" href="{% static 'staffweb/css/documentos_usuarios.css' %}">
 <title>Documentos del Usuario</title>
 {% endblock head%}
@@ -21,7 +20,6 @@
     <p>Visualiza y gestiona todos los documentos del empleado</p>
 </div>
 
- <!--Tarjeta -->
 <div class="employee-info-card">
     <div class="employee-details">
         <div class="employee-label">Empleado</div>
@@ -33,7 +31,6 @@
     </div>
 </div>
 
- <!--Buscador -->
 <div class="search-filter-section">
     <div class="search-container">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" 
@@ -45,7 +42,6 @@
     </div>
 </div>
 
- <!--Tabs -->
 <div class="status-tabs">
     <button class="status-tab" data-status="todos">Todos</button>
     <button class="status-tab" data-status="activo">Activos</button>
@@ -53,11 +49,32 @@
     <button class="status-tab" data-status="caducado">Caducados</button>
 </div>
 
+<div class="documents-grid" id="documentsGrid"></div>
 
-<div class="documents-grid" id="documentsGrid">
+<div id="deleteModal" class="modal hidden">
+  <div class="modal-content" style="max-width:400px">
+    <h3 class="delete-title">Eliminar documento</h3>
+    <p>¿Eliminar este documento definitivamente?</p>
+    <div class="modal-actions modal-actions-center">
+      <button id="deleteCancelBtn" class="cancel-modal-btn">Cancelar</button>
+      <button id="deleteConfirmBtn" class="confirm-delete-btn">Eliminar</button>
+    </div>
+  </div>
+  <div id="loadingSpinner" class="hidden">
+    <div class="spinner"></div>
+  </div>
 </div>
 
-<!-- INYECTAMOS DATA -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Documento eliminado con éxito.</span>
+</div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">No se pudo eliminar el documento.</span>
+</div>
+
 <script id="usuario-data" type="application/json">
   {{ usuario_json|default:"{}"|safe }}
 </script>
@@ -71,6 +88,9 @@
   window.ROUTES.modificarDocumento  = "{% url 'modificar_documento' 'DOC_ID' %}";
 </script>
 
-<script src="{% static 'staffweb/js/documentos_usuarios.js' %}"></script>
+<script>
+    window.STATIC_JS_URI = "{% static 'staffweb/js/documentos_usuarios.js' %}";
+</script>
+<script src="{% static 'staffweb/js/documentos_usuarios.js' %}?v=5"></script>
 
 {% endblock principal %}

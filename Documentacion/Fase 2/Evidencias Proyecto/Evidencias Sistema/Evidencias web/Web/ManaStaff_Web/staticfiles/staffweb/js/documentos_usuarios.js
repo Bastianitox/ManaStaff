@@ -14,10 +14,39 @@ function getCSRFToken() {
   return m ? decodeURIComponent(m[1]) : "";
 }
 
+// Helpers UI
+function showAlert(type, message) {
+    const successEl = document.getElementById("successAlert");
+    const errorEl = document.getElementById("errorAlert");
+    [successEl, errorEl].forEach(el => { if(el) { el.style.display = "none"; el.classList.remove("hide"); } });
+
+    const alertEl = type === "success" ? successEl : errorEl;
+    const msgEl = type === "success" ? document.getElementById("successMessageAlert") : document.getElementById("errorMessageAlert");
+
+    if (msgEl) msgEl.textContent = message;
+    if (alertEl) {
+        alertEl.style.display = "flex";
+        setTimeout(() => {
+            alertEl.classList.add("hide");
+            setTimeout(() => { alertEl.style.display = "none"; }, 400);
+        }, 3000);
+    }
+}
+
+function toggleSpinner(show) {
+    const sp = document.getElementById("loadingSpinner");
+    if (!sp) return;
+    if (show) sp.classList.remove("hidden");
+    else sp.classList.add("hidden");
+}
+
 // State
 let currentFilter = "todos";
-const USUARIO    = readTemplateJSON("usuario-data", { nombre: "Usuario", rut: "-", rut_visible: "-" });
+const USUARIO     = readTemplateJSON("usuario-data", { nombre: "Usuario", rut: "-", rut_visible: "-" });
 const DOCUMENTOS = readTemplateJSON("documentos-data", []);
+
+// Estado para eliminación
+let docIdToDelete = null;
 
 // Init
 document.addEventListener("DOMContentLoaded", () => {
@@ -25,7 +54,26 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDocuments(DOCUMENTOS);
   initializeFilters();
   initializeSearch();
+  initializeModalEvents(); // <--- Nueva función
 });
+
+// Inicializar eventos del Modal
+function initializeModalEvents() {
+    const $deleteModal = document.getElementById("deleteModal");
+    const $deleteCancelBtn = document.getElementById("deleteCancelBtn");
+    const $deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+
+    if ($deleteCancelBtn) {
+        $deleteCancelBtn.addEventListener("click", () => {
+            docIdToDelete = null;
+            if ($deleteModal) $deleteModal.classList.add("hidden");
+        });
+    }
+
+    if ($deleteConfirmBtn) {
+        $deleteConfirmBtn.addEventListener("click", performDelete);
+    }
+}
 
 // Render
 function renderUserInfo() {
@@ -94,7 +142,7 @@ function renderDocuments(lista) {
       <div class="document-actions">
         <button class="btn-view"   onclick="verDocumento('${esc(d.id || '')}', '${esc(d.url || '')}')">Ver</button>
         <button class="btn-modify" onclick="modificarDocumento('${esc(d.id || '')}')">Modificar</button>
-        <button class="btn-delete" onclick="eliminarDocumento('${esc(d.id || '')}')">Eliminar</button>
+        <button class="btn-delete" onclick="abrirModalEliminar('${esc(d.id || '')}')">Eliminar</button>
       </div>
     `;
     container.appendChild(card);
@@ -143,7 +191,7 @@ function verDocumento(id, url) {
   if (url) {
     window.open(url, "_blank");
   } else {
-    alert("Este documento no tiene archivo cargado todavía.");
+    showAlert('error', "Este documento no tiene archivo cargado todavía.");
   }
 }
 
@@ -154,34 +202,59 @@ function modificarDocumento(id){
   window.location.href = `${url}?next=${encodeURIComponent(next)}`;
 }
 
-function eliminarDocumento(id){
-  if (!id) return;
-  if (!confirm("¿Estás seguro de eliminar este documento?")) return;
+// --- NUEVA LÓGICA DE ELIMINAR CON MODAL ---
 
+// 1. Abrir Modal
+function abrirModalEliminar(id) {
+    if (!id) return;
+    docIdToDelete = id;
+    const modal = document.getElementById("deleteModal");
+    if (modal) modal.classList.remove("hidden");
+}
+
+// 2. Ejecutar Eliminación (llamado por el botón Confirmar del modal)
+function performDelete() {
+  if (!docIdToDelete) return;
+
+  toggleSpinner(true);
   const endpoint = (window.ROUTES && window.ROUTES.eliminarDocumento) || "/eliminar_documento";
+  
   fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-CSRFToken": getCSRFToken()
     },
-    body: JSON.stringify({ doc_id: id })
+    body: JSON.stringify({ doc_id: docIdToDelete })
   })
   .then(r => r.json())
   .then(res => {
     if (res.ok) {
+      // Remover tarjeta del DOM visualmente
       document.querySelectorAll('.document-card').forEach(card => {
-        if ((card.getAttribute('data-doc-id') || '') === id) {
-          card.remove();
+        if ((card.getAttribute('data-doc-id') || '') === docIdToDelete) {
+          card.style.opacity = '0';
+          setTimeout(() => card.remove(), 400);
         }
       });
-      alert("Documento eliminado.");
+      showAlert("success", "Documento eliminado correctamente.");
     } else {
-      alert("No se pudo eliminar: " + (res.error || "Error desconocido"));
+      showAlert("error", "No se pudo eliminar: " + (res.error || "Error desconocido"));
     }
   })
-  .catch(() => alert("Error de red al eliminar."));
+  .catch(() => showAlert("error", "Error de red al eliminar."))
+  .finally(() => {
+    toggleSpinner(false);
+    docIdToDelete = null;
+    const modal = document.getElementById("deleteModal");
+    if (modal) modal.classList.add("hidden");
+  });
 }
+
+// Exponer funciones al scope global si es necesario
+window.verDocumento = verDocumento;
+window.modificarDocumento = modificarDocumento;
+window.abrirModalEliminar = abrirModalEliminar;
 
 function getStatusIcon(estado) {
   const icons = {
