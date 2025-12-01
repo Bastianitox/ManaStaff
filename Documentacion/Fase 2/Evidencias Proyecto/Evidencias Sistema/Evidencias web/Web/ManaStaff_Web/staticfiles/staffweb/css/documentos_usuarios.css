@@ -450,8 +450,6 @@
   }
 }
 
-/* --- ESTILOS MODAL Y ALERTAS (NUEVO) --- */
-
 .modal {
   position: fixed;
   top: 0;
@@ -480,7 +478,7 @@
   margin: 0 0 12px 0;
   font-size: 18px;
   font-weight: 600;
-  color: #ef4444; /* Rojo */
+  color: #ef4444;
 }
 
 .modal-content p {

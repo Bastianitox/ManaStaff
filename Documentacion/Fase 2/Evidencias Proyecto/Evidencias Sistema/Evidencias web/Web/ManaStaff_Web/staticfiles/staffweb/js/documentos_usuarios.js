@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDocuments(DOCUMENTOS);
   initializeFilters();
   initializeSearch();
-  initializeModalEvents(); // <--- Nueva función
+  initializeModalEvents();
 });
 
 // Inicializar eventos del Modal
@@ -202,9 +202,6 @@ function modificarDocumento(id){
   window.location.href = `${url}?next=${encodeURIComponent(next)}`;
 }
 
-// --- NUEVA LÓGICA DE ELIMINAR CON MODAL ---
-
-// 1. Abrir Modal
 function abrirModalEliminar(id) {
     if (!id) return;
     docIdToDelete = id;
@@ -212,7 +209,6 @@ function abrirModalEliminar(id) {
     if (modal) modal.classList.remove("hidden");
 }
 
-// 2. Ejecutar Eliminación (llamado por el botón Confirmar del modal)
 function performDelete() {
   if (!docIdToDelete) return;
 
@@ -230,7 +226,6 @@ function performDelete() {
   .then(r => r.json())
   .then(res => {
     if (res.ok) {
-      // Remover tarjeta del DOM visualmente
       document.querySelectorAll('.document-card').forEach(card => {
         if ((card.getAttribute('data-doc-id') || '') === docIdToDelete) {
           card.style.opacity = '0';
@@ -251,7 +246,6 @@ function performDelete() {
   });
 }
 
-// Exponer funciones al scope global si es necesario
 window.verDocumento = verDocumento;
 window.modificarDocumento = modificarDocumento;
 window.abrirModalEliminar = abrirModalEliminar;

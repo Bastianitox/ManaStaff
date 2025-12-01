@@ -150,7 +150,7 @@ function createDetailedViewHTML(request) {
             <div class="detail-description">${request.contenido}</div>
           </div>
           <div class="detail-section">
-            <h3>Fecha del evento</h3>
+            <h3>Fechas del evento</h3>
             <div class="dates-grid">
               <div class="date-item">
                 <div class="date-label">Fecha del evento</div>
