@@ -1,12 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const $deleteModal = document.getElementById("deleteModal");
-  const $deleteCancelBtn = document.getElementById("deleteCancelBtn");
-  const $deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
   const $loadingSpinner = document.getElementById("loadingSpinner");
-  
-  const $btnDeleteDoc = document.getElementById("btnDeleteDoc");
-  
-  let docIdToDelete = null;
 
   function getCSRFToken() {
     const input = document.querySelector('[name=csrfmiddlewaretoken]');

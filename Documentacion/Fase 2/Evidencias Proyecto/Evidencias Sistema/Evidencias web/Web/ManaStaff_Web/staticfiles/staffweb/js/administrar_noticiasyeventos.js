@@ -1,5 +1,119 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("[v3] administrar_noticiasyeventos.js with filter modal");
+  function showAlert(type, message) {
+    const successEl = document.getElementById("successAlert");
+    const errorEl   = document.getElementById("errorAlert");
+
+    [successEl, errorEl].forEach(el => {
+      if (!el) return;
+      el.classList.add("hide");
+      el.style.display = "none";
+    });
+
+    const alertEl = type === "success" ? successEl : errorEl;
+    const msgEl   = type === "success"
+      ? document.getElementById("successMessageAlert")
+      : document.getElementById("errorMessageAlert");
+
+    if (msgEl) msgEl.textContent = message;
+    
+    if (alertEl) {
+        alertEl.style.display = "flex";
+        alertEl.classList.remove("hide");
+        setTimeout(() => {
+            alertEl.classList.add("hide");
+            setTimeout(() => {
+                alertEl.style.display = "none";
+            }, 400);
+        }, 3000);
+    }
+  }
+
+  function toggleSpinner(show) {
+    const sp = document.getElementById("loadingSpinner");
+    if (!sp) return;
+    if (show) sp.classList.remove("hidden");
+    else sp.classList.add("hidden");
+  }
+
+  function getCSRFToken() {
+    const input = document.querySelector('#csrf_token_container input');
+    if (input) return input.value;
+    const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : "";
+  }
+
+  let pubToDelete = null;
+  const $deleteModal = document.getElementById("deleteModal");
+  const $deleteCancelBtn = document.getElementById("deleteCancelBtn");
+  const $deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+
+  // Función global para abrir el modal
+  window.abrirModalEliminar = (id) => {
+      pubToDelete = id;
+      if ($deleteModal) {
+          $deleteModal.classList.remove("hidden");
+          $deleteModal.style.display = "flex";
+      }
+  };
+
+  // Evento Cancelar
+  if ($deleteCancelBtn) {
+      $deleteCancelBtn.addEventListener("click", () => {
+          pubToDelete = null;
+          if ($deleteModal) {
+              $deleteModal.classList.add("hidden");
+              $deleteModal.style.display = "none";
+          }
+      });
+  }
+
+  // Evento Confirmar
+  if ($deleteConfirmBtn) {
+      $deleteConfirmBtn.addEventListener("click", () => {
+          if (!pubToDelete) return;
+          
+          toggleSpinner(true);
+
+          fetch(`/eliminar_publicacion/${pubToDelete}`, {
+              method: "POST",
+              headers: {
+                  "X-CSRFToken": getCSRFToken(),
+                  "Content-Type": "application/json"
+              }
+          })
+          .then(r => r.json())
+          .then(res => {
+              if (res.ok) {
+                  // Eliminar tarjeta del DOM visualmente
+                  const card = document.getElementById(`pub-card-${pubToDelete}`);
+                  if (card) {
+                      card.style.transition = "opacity 0.5s, transform 0.5s";
+                      card.style.opacity = "0";
+                      card.style.transform = "scale(0.9)";
+                      setTimeout(() => card.remove(), 500);
+                  }
+                  // Actualizar lista en memoria para filtros
+                  publicaciones = publicaciones.filter(p => p.id !== pubToDelete);
+                  
+                  showAlert("success", "Publicación eliminada con éxito.");
+              } else {
+                  showAlert("error", res.error || "No se pudo eliminar.");
+              }
+          })
+          .catch(err => {
+              console.error(err);
+              showAlert("error", "Error de conexión.");
+          })
+          .finally(() => {
+              toggleSpinner(false);
+              if ($deleteModal) {
+                  $deleteModal.classList.add("hidden");
+                  $deleteModal.style.display = "none";
+              }
+              pubToDelete = null;
+          });
+      });
+  }
 
   // DOM
   const searchInput = document.getElementById("searchNoticias");
@@ -95,6 +209,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lista.forEach((pub) => {
       const card = document.createElement("div");
       card.classList.add("noticia-card", "fade-card");
+      card.id = `pub-card-${pub.id}`; 
+      
       card.innerHTML = `
         <h3>${pub.titulo}</h3>
         <p class="fecha">📅 ${pub.fecha || ""}</p>
@@ -102,10 +218,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <p class="contenido">${pub.contenido || ""}</p>
         <div class="acciones-card">
           <a href="/editar_publicacion/${pub.id}" class="btn btn-editar">Editar</a>
-          <a href="/eliminar_publicacion/${pub.id}" class="btn btn-eliminar"
-             onclick="return confirm('¿Seguro que deseas eliminar esta publicación?');">
+          
+          <button type="button" class="btn btn-eliminar" onclick="abrirModalEliminar('${pub.id}')">
             Eliminar
-          </a>
+          </button>
         </div>
       `;
       requestsGrid.appendChild(card);

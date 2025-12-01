@@ -532,3 +532,22 @@
 .disable-title {
   color: #ef4444;
 }
+
+/* TEXTOS LARGOS EN MODALES */
+.reason-content {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+
+  background-color: #f9fafb;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  margin-top: 8px;
+  text-align: left;
+
+  max-height: 250px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: #4b5563;
+}

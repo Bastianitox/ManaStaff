@@ -3,6 +3,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'staffweb/css/ver_documentos.css' %}">
+<script src="{% static 'staffweb/js/ver_documentos.js' %}"></script>
 <title>Ver Documento</title>
 {% endblock head %}
 
@@ -30,25 +31,24 @@
         </div>
 
         <div class="document-actions">
-            {% if documento %}
-                {% if documento.downloadPath %}
-                    <a class="action-btn download-btn" href="{% url 'descargar_documento' documento.id %}">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
-                        </svg>
-                        Descargar
-                    </a>
-                {% else %}
-                    <button class="action-btn download-btn" disabled style="opacity:.5;cursor:not-allowed;">
-                        Descargar
-                    </button>
-                {% endif %}
-
-                <button class="action-btn delete-main-btn" id="btnDeleteDoc" data-doc-id="{{ documento.id }}">
+            {% if documento and documento.downloadPath %}
+                <a
+                    class="action-btn download-btn"
+                    id="downloadBtn"
+                    data-doc-id="{{ documento.id }}"
+                    href="{% url 'descargar_documento' documento.id %}"
+                >
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
                     </svg>
-                    Eliminar
+                    Descargar
+                </a>
+            {% else %}
+                <button class="action-btn download-btn" id="downloadBtn" disabled style="opacity:.5;cursor:not-allowed;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    </svg>
+                    Descargar
                 </button>
             {% endif %}
         </div>
@@ -72,42 +72,11 @@
                 </div>
                 <h3>Documento no encontrado</h3>
                 <p>El documento solicitado no está disponible o no se pudo encontrar.</p>
-                <button class="back-to-documents" onclick="window.location.href='/administrar_documentos'">
-                    Volver a Administración
+                <button class="back-to-documents" onclick="window.location.href='/inicio_documentos'">
+                    Volver a Mis Documentos
                 </button>
             </div>
         {% endif %}
     </div>
 </div>
-
-<div id="deleteModal" class="modal hidden">
-  <div class="modal-content" style="max-width:400px">
-    <h3 class="delete-title">Eliminar documento</h3>
-    <p>¿Eliminar este documento definitivamente?</p>
-    <div class="modal-actions modal-actions-center">
-      <button id="deleteCancelBtn" class="cancel-modal-btn">Cancelar</button>
-      <button id="deleteConfirmBtn" class="confirm-delete-btn">Eliminar</button>
-    </div>
-  </div>
-  <div id="loadingSpinner" class="hidden">
-    <div class="spinner"></div>
-  </div>
-</div>
-
-<div id="successAlert" class="alert success" style="display:none;">
-  <div class="alert-icon">✓</div>
-  <span id="successMessageAlert">Documento borrado con éxito. Redirigiendo...</span>
-</div>
-
-<div id="errorAlert" class="alert error" style="display:none;">
-  <div class="alert-icon">✕</div>
-  <span id="errorMessageAlert">No se pudo eliminar el documento.</span>
-</div>
-
-{% csrf_token %}
-
 {% endblock principal %}
-
-{% block js %}
-  <script src="{% static 'staffweb/js/ver_documentos.js' %}"></script>
-{% endblock js %}

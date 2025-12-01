@@ -420,9 +420,19 @@ function showDisableDetail(userId) {
       }
       if ($detailBody) {
         $detailBody.innerHTML = `
-          <p><strong>RUT:</strong> ${formatearRut(userId)}</p>
-          <p><strong>Fecha deshabilitación:</strong> ${data.fecha || ''}</p>
-          <p style="margin-top:10px"><strong>Motivo:</strong><br>${(data.detalle || '').replace(/\n/g, '<br>')}</p>
+          <div style="margin-bottom: 8px;">
+            <strong>RUT:</strong> ${formatearRut(userId)}
+          </div>
+          <div style="margin-bottom: 8px;">
+            <strong>Fecha deshabilitación:</strong> ${data.fecha || ''}
+          </div>
+
+          <div style="margin-top:12px">
+            <strong>Motivo:</strong>
+            <div class="reason-content">
+              ${(data.detalle || '').replace(/\n/g, '<br>')}
+            </div>
+          </div>
         `;
       }
       if ($modalDetail) $modalDetail.classList.remove('hidden');
