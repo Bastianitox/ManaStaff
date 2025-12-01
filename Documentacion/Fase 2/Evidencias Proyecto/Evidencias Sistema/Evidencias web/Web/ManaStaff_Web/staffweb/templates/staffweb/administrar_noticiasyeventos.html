@@ -99,6 +99,34 @@
     </div>
   </div>
 </div>
+
+<div id="deleteModal" class="modal hidden" style="display: none;"> <div class="modal-content" style="max-width:400px">
+    <h3 class="delete-title" style="color:#ef4444; margin-bottom:10px;">Eliminar publicación</h3>
+    <p>¿Eliminar esta publicación definitivamente?</p>
+    <div class="modal-actions modal-actions-center" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+      <button id="deleteCancelBtn" class="cancel-modal-btn">Cancelar</button>
+      <button id="deleteConfirmBtn" class="confirm-delete-btn">Eliminar</button>
+    </div>
+  </div>
+
+  <div id="loadingSpinner" class="hidden">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert">Publicación eliminada con éxito.</span>
+</div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert">No se pudo eliminar la publicación.</span>
+</div>
+
+<div id="csrf_token_container" style="display:none;">
+    {% csrf_token %}
+</div>
 {% endblock principal %}
 
 {% block js %}

@@ -1216,11 +1216,17 @@ def editar_publicacion(request, pub_id):
         "pub_id": pub_id
     })
 
-# Eliminar
 @admin_required
 def eliminar_publicacion(request, pub_id):
+    if request.method == "POST":
+        try:
+            eliminar_publicacion_funcion(pub_id)
+
+            registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {obtener_rut_actual(request)} eliminó una publicación.")
+            return JsonResponse({"ok": True, "message": "Publicación eliminada correctamente."})
+        except Exception as e:
+            return JsonResponse({"ok": False, "error": str(e)}, status=500)
     eliminar_publicacion_funcion(pub_id)
-    registrar_auditoria_manual(request, "Cuatro", "éxito", f"El usuario {obtener_rut_actual(request)} elimino la publicación {request.POST.get("titulo")}.")
     return redirect("administrar_noticiasyeventos")
 
 
