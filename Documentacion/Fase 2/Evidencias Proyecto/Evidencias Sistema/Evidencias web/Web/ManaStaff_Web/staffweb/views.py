@@ -1176,20 +1176,39 @@ def administrar_noticiasyeventos(request):
 @admin_required
 def crear_publicacion(request):
     if request.method == "POST":
-        #obtenemos id
         id_usuario_actual = obtener_rut_actual(request)
 
-        data = {
-            "titulo": request.POST.get("titulo"),
-            "contenido": request.POST.get("contenido"),
-            "fecha_emitida": request.POST.get("fecha"),
-            "id_empleador": id_usuario_actual,
-            "TipoAnuncio": request.POST.get("tipo")
-        }
-        crear_publicacion_funcion(data)
-        registrar_auditoria_manual(request, "Dos", "éxito", f"El usuario {obtener_rut_actual(request)} creo la publicación {request.POST.get("titulo")}.")
+        titulo = request.POST.get("titulo")
+        contenido = request.POST.get("contenido")
+        fecha = request.POST.get("fecha")
+        tipo = request.POST.get("tipo")
 
-        return redirect("administrar_noticiasyeventos")
+        # Validaciones igual que editar
+        if not titulo or not contenido or not fecha or not tipo:
+            return JsonResponse({"status": False, "message": "Todos los campos son obligatorios."}, status=400)
+
+        if len(titulo) > 200:
+            return JsonResponse({"status": False, "message": "El título no puede exceder los 200 caracteres."}, status=400)
+
+        if len(contenido) > 5000:
+            return JsonResponse({"status": False, "message": "El contenido no puede exceder los 5000 caracteres."}, status=400)
+
+        if tipo not in ["Uno", "Dos"]:
+            return JsonResponse({"status": False, "message": "El tipo de publicación es inválido."}, status=400)
+
+        data = {
+            "titulo": titulo,
+            "contenido": contenido,
+            "fecha_emitida": fecha,
+            "id_empleador": id_usuario_actual,
+            "TipoAnuncio": tipo,
+            "id_empleador": id_usuario_actual
+        }
+
+        crear_publicacion_funcion(data)
+        registrar_auditoria_manual(request, "Dos", "éxito", f"El usuario {id_usuario_actual} creó la publicación {titulo}.")
+
+        return JsonResponse({"status": True, "message": "Publicación creada correctamente."})
 
     return render(request, "staffweb/editar_noticiasyeventos.html")
 
@@ -1199,17 +1218,35 @@ def editar_publicacion(request, pub_id):
     publicacion = obtener_publicacion(pub_id)
 
     if request.method == "POST":
+        if not publicacion:
+            return JsonResponse({"status": False, "message": "La publicación no existe."}, status=404)
+
+        titulo = request.POST.get("titulo")
+        contenido = request.POST.get("contenido")
+        fecha = request.POST.get("fecha")
+        tipo = request.POST.get("tipo")
+
+        if not titulo or not contenido or not fecha or not tipo:
+            return JsonResponse({"status": False, "message": "Todos los campos son obligatorios."}, status=400)
+        
+        if len(titulo) > 200:
+            return JsonResponse({"status": False, "message": "El título no puede exceder los 200 caracteres."}, status=400)
+
+        if len(contenido) > 5000:
+            return JsonResponse({"status": False, "message": "El contenido no puede exceder los 5000 caracteres."}, status=400)
+        
+        if tipo not in ["Uno", "Dos"]:
+            return JsonResponse({"status": False, "message": "El tipo de publicación es inválido."}, status=400)
+
         data = {
-            "titulo": request.POST.get("titulo"),
-            "contenido": request.POST.get("contenido"),
-            "fecha_emitida": request.POST.get("fecha"),
-            "id_empleador": request.POST.get("autor"),
-            "TipoAnuncio": request.POST.get("tipo")
+            "titulo": titulo,
+            "contenido": contenido,
+            "fecha_emitida": fecha,
+            "TipoAnuncio": tipo
         }
         modificar_publicacion(pub_id, data)
-        registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} modifico la publicación {request.POST.get("titulo")}.")
-
-        return redirect("administrar_noticiasyeventos")
+        registrar_auditoria_manual(request, "Tres", "éxito", f"El usuario {obtener_rut_actual(request)} modifico la publicación {titulo}.")
+        return JsonResponse({"status": True, "message": "Publicación modificada correctamente."}, status=200)
 
     return render(request, "staffweb/editar_noticiasyeventos.html", {
         "publicacion": publicacion,

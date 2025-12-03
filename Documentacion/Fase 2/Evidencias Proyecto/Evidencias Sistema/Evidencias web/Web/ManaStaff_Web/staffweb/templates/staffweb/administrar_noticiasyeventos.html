@@ -1,16 +1,20 @@
-{% extends 'staffweb/plantilla.html' %}
-{% load static %}
-
-{% block head %}
-<link rel="stylesheet" href="{% static 'staffweb/css/solicitudes.css' %}">
-<link rel="stylesheet" href="{% static 'staffweb/css/administrar_noticiasyeventos.css' %}">
-<link rel="stylesheet" href="{% static 'staffweb/css/detalle_solicitud.css' %}">
+{% extends 'staffweb/plantilla.html' %} {% load static %} {% block head %}
+<link rel="stylesheet" href="{% static 'staffweb/css/solicitudes.css' %}" />
+<link rel="stylesheet" href="{% static 'staffweb/css/administrar_noticiasyeventos.css' %}" />
+<link rel="stylesheet" href="{% static 'staffweb/css/detalle_solicitud.css' %}" />
 <title>Administrar noticias y eventos</title>
-{% endblock head %}
-
-{% block principal %}
+{% endblock head %} {% block principal %}
 <div class="header">
-  <h1>Administrar noticias y eventos</h1>
+  <h1>
+    Administrar noticias y eventos
+    <a href="{% url 'crear_publicacion' %}" class="new-request-btn">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+      </svg>
+      Crear publicación
+    </a>
+  </h1>
+
   <p>Aquí puedes modificar, crear o eliminar noticias y avisos.</p>
 </div>
 
@@ -18,17 +22,18 @@
 <div class="search-filter-section">
   <div class="search-container">
     <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
     </svg>
-    <input type="text" class="search-input" placeholder="Buscar noticias o avisos..." id="searchNoticias">
+    <input type="text" class="search-input" placeholder="Buscar noticias o avisos..." id="searchNoticias" />
   </div>
 
   <!-- botón de filtro -->
   <button class="filter-btn" id="filterBtn">
     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd"
-            d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"/>
+      <path
+        fill-rule="evenodd"
+        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+      />
     </svg>
     Filtrar
   </button>
@@ -41,30 +46,19 @@
   <button class="status-tab" data-status="aviso">Avisos</button>
 </div>
 
-<!-- Sección de publicaciones -->
-<div class="documents-section">
-  <div class="section-header">
-    <h2>Publicaciones</h2>
-    <a href="{% url 'crear_publicacion' %}" class="btn-create-document" style="text-decoration: none;">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-           stroke="currentColor" width="20" height="20">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 4v16m8-8H4"/>
-      </svg>
-      Crear publicación
-    </a>
-  </div>
-</div>
-
 <!--  Grid -->
 <div class="requests-section">
   <h2 class="title-section">Novedades recientes</h2>
   <div class="requests-grid" id="requestsGrid"></div>
 
-  <div class="no-results" id="noResults" style="display:none;">
+  <div class="no-results" id="noResults" style="display: none">
     <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
     </svg>
     <h3>No se encontraron noticias o avisos</h3>
     <p>Intenta ajustar tus filtros de búsqueda.</p>
@@ -72,13 +66,13 @@
 </div>
 
 <!-- Modal Filtros -->
-<div class="filter-modal" id="filterModal" style="display:none;">
+<div class="filter-modal" id="filterModal" style="display: none">
   <div class="filter-content">
     <div class="filter-header">
       <h3>Filtrar publicaciones</h3>
       <button class="close-filter" id="closeFilter" title="Cerrar">
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+          <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
         </svg>
       </button>
     </div>
@@ -100,10 +94,11 @@
   </div>
 </div>
 
-<div id="deleteModal" class="modal hidden" style="display: none;"> <div class="modal-content" style="max-width:400px">
-    <h3 class="delete-title" style="color:#ef4444; margin-bottom:10px;">Eliminar publicación</h3>
+<div id="deleteModal" class="modal hidden" style="display: none">
+  <div class="modal-content" style="max-width: 400px">
+    <h3 class="delete-title" style="color: #ef4444; margin-bottom: 10px">Eliminar publicación</h3>
     <p>¿Eliminar esta publicación definitivamente?</p>
-    <div class="modal-actions modal-actions-center" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+    <div class="modal-actions modal-actions-center" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px">
       <button id="deleteCancelBtn" class="cancel-modal-btn">Cancelar</button>
       <button id="deleteConfirmBtn" class="confirm-delete-btn">Eliminar</button>
     </div>
@@ -114,22 +109,18 @@
   </div>
 </div>
 
-<div id="successAlert" class="alert success" style="display:none;">
+<div id="successAlert" class="alert success" style="display: none">
   <div class="alert-icon">✓</div>
   <span id="successMessageAlert">Publicación eliminada con éxito.</span>
 </div>
 
-<div id="errorAlert" class="alert error" style="display:none;">
+<div id="errorAlert" class="alert error" style="display: none">
   <div class="alert-icon">✕</div>
   <span id="errorMessageAlert">No se pudo eliminar la publicación.</span>
 </div>
 
-<div id="csrf_token_container" style="display:none;">
-    {% csrf_token %}
-</div>
-{% endblock principal %}
-
-{% block js %}
+<div id="csrf_token_container" style="display: none">{% csrf_token %}</div>
+{% endblock principal %} {% block js %}
 <script src="{% static 'staffweb/js/administrar_noticiasyeventos.js' %}"></script>
 <script id="publicaciones-data" type="application/json">
   {{ publicaciones|default:"[]"|safe }}

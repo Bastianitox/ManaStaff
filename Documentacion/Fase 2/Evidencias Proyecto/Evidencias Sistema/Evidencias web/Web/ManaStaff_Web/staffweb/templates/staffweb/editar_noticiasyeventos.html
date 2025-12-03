@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block head %}
+<link rel="stylesheet" href="{% static 'staffweb/css/cambiar_contrasena.css' %}">
 <link rel="stylesheet" href="{% static 'staffweb/css/editar_noticiasyeventos.css' %}">
 <title>{% if publicacion %}Editar{% else %}Nueva{% endif %} Publicación</title>
 {% endblock head %}
@@ -51,4 +52,27 @@
     </form>
   </div>
 </div>
+
+<!-- ALERTAS CENTRADAS -->
+<div id="successAlert" class="alert success" style="display:none;">
+  <div class="alert-icon">✓</div>
+  <span id="successMessageAlert"></span>
+</div>
+
+<div id="errorAlert" class="alert error" style="display:none;">
+  <div class="alert-icon">✕</div>
+  <span id="errorMessageAlert"></span>
+</div>
+
+
+<!-- Overlay de carga -->
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
 {% endblock principal %}
+
+
+{% block js %}
+  <script src="{% static 'staffweb/js/editar_noticiasyeventos.js' %}"></script>
+{% endblock js %}
