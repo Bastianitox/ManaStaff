@@ -20,6 +20,7 @@ ion-content {
 .search-bar {
   flex: 1;
   --background: var(--app-bg-secondary);
+  --color: var(--app-text-primary);
   --border-radius: 12px;
   --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   --placeholder-color: var(--app-text-tertiary);
